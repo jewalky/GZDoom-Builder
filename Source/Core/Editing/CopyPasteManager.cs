@@ -29,6 +29,7 @@ using CodeImp.DoomBuilder.IO;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Types;
 using CodeImp.DoomBuilder.Windows;
+using CodeImp.DoomBuilder.VisualModes;
 
 #endregion
 
@@ -380,9 +381,14 @@ namespace CodeImp.DoomBuilder.Editing
 				}
 				else
 				{
-					// Nothing usefull on the clipboard
-					General.MessageBeep(MessageBeepType.Warning);
-				}
+                    // Nothing useful on the clipboard
+                    // [ZZ] don't beep if 3D mode is currently engaged. the 3D mode allows you to copy/paste non-geometry stuff.
+                    //      note that this is a hack and probably needs to be fixed properly by making it beep elsewhere so that the current active mode can decide this.
+                    if (!(General.Editing.Mode is VisualMode))
+                    {
+                        General.MessageBeep(MessageBeepType.Warning);
+                    }
+                }
 			}
 			else
 			{

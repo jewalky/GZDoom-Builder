@@ -1688,8 +1688,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 		}
 
-		// This returns all selected objects
-		internal List<IVisualEventReceiver> GetSelectedObjects(bool includesectors, bool includesidedefs, bool includethings, bool includevertices)
+        // This returns all selected objects
+        internal List<IVisualEventReceiver> GetSelectedObjects(bool includesectors, bool includesidedefs, bool includethings, bool includevertices)
 		{
 			List<IVisualEventReceiver> objs = new List<IVisualEventReceiver>();
 			foreach(IVisualEventReceiver i in selectedobjects)
@@ -1951,54 +1951,82 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			return t;
-		}
+        }
 		
 		#endregion
 
 		#region ================== Actions
 
-		[BeginAction("clearselection", BaseAction = true)]
+        // [ZZ] I moved this out of ClearSelection because "cut selection" action needs this to only affect things.
+        private void ClearSelection(bool clearsectors, bool clearsidedefs, bool clearthings, bool clearvertices, bool displaystatus)
+        {
+            selectedobjects.RemoveAll(obj =>
+            {
+                return ((obj is BaseVisualGeometrySector && clearsectors) ||
+                        (obj is BaseVisualGeometrySidedef && clearsidedefs) ||
+                        (obj is BaseVisualThing && clearthings) ||
+                        (obj is BaseVisualVertex && clearvertices));
+            });
+
+            //
+            foreach (KeyValuePair<Sector, VisualSector> vs in allsectors)
+            {
+                if (vs.Value != null)
+                {
+                    BaseVisualSector bvs = (BaseVisualSector)vs.Value;
+                    if (clearsectors)
+                    {
+                        if (bvs.Floor != null) bvs.Floor.Selected = false;
+                        if (bvs.Ceiling != null) bvs.Ceiling.Selected = false;
+                        foreach (VisualFloor vf in bvs.ExtraFloors) vf.Selected = false;
+                        foreach (VisualCeiling vc in bvs.ExtraCeilings) vc.Selected = false;
+                        foreach (VisualFloor vf in bvs.ExtraBackFloors) vf.Selected = false; //mxd
+                        foreach (VisualCeiling vc in bvs.ExtraBackCeilings) vc.Selected = false; //mxd
+                    }
+
+                    if (clearsidedefs)
+                    {
+                        foreach (Sidedef sd in vs.Key.Sidedefs)
+                        {
+                            //mxd. VisualSidedefParts can contain references to visual geometry, which is not present in VisualSector.sidedefgeometry
+                            bvs.GetSidedefParts(sd).DeselectAllParts();
+                        }
+                    }
+                }
+            }
+
+            if (clearthings)
+            {
+                foreach (KeyValuePair<Thing, VisualThing> vt in allthings)
+                {
+                    if (vt.Value != null)
+                    {
+                        BaseVisualThing bvt = (BaseVisualThing)vt.Value;
+                        bvt.Selected = false;
+                    }
+                }
+            }
+
+            //mxd
+            if (clearvertices)
+            {
+                if (General.Map.UDMF)
+                {
+                    foreach (KeyValuePair<Vertex, VisualVertexPair> pair in vertices) pair.Value.Deselect();
+                }
+            }
+
+            //mxd
+            if (displaystatus)
+            {
+                General.Interface.DisplayStatus(StatusType.Selection, string.Empty);
+            }
+        }
+
+        [BeginAction("clearselection", BaseAction = true)]
 		public void ClearSelection()
 		{
-			selectedobjects = new List<IVisualEventReceiver>();
-			
-			foreach(KeyValuePair<Sector, VisualSector> vs in allsectors)
-			{
-				if(vs.Value != null)
-				{
-					BaseVisualSector bvs = (BaseVisualSector)vs.Value;
-					if(bvs.Floor != null) bvs.Floor.Selected = false;
-					if(bvs.Ceiling != null) bvs.Ceiling.Selected = false;
-					foreach(VisualFloor vf in bvs.ExtraFloors) vf.Selected = false;
-					foreach(VisualCeiling vc in bvs.ExtraCeilings) vc.Selected = false;
-					foreach(VisualFloor vf in bvs.ExtraBackFloors) vf.Selected = false; //mxd
-					foreach(VisualCeiling vc in bvs.ExtraBackCeilings) vc.Selected = false; //mxd
-
-					foreach(Sidedef sd in vs.Key.Sidedefs)
-					{
-						//mxd. VisualSidedefParts can contain references to visual geometry, which is not present in VisualSector.sidedefgeometry
-						bvs.GetSidedefParts(sd).DeselectAllParts();
-					}
-				}
-			}
-
-			foreach(KeyValuePair<Thing, VisualThing> vt in allthings)
-			{
-				if(vt.Value != null)
-				{
-					BaseVisualThing bvt = (BaseVisualThing)vt.Value;
-					bvt.Selected = false;
-				}
-			}
-
-			//mxd
-			if(General.Map.UDMF) 
-			{
-				foreach(KeyValuePair<Vertex, VisualVertexPair> pair in vertices) pair.Value.Deselect();
-			}
-
-			//mxd
-			General.Interface.DisplayStatus(StatusType.Selection, string.Empty);
+            ClearSelection(true, true, true, true, true);
 		}
 
 		[BeginAction("visualselect", BaseAction = true)]
@@ -3111,8 +3139,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			PreAction(UndoGroup.None);
 			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-			foreach(IVisualEventReceiver i in objs) i.OnDelete();
-			PostAction();
+            foreach (IVisualEventReceiver i in objs)
+            {
+                if (i is BaseVisualThing)
+                    visiblethings.Remove(((BaseVisualThing)i).Thing); // [ZZ] if any
+                i.OnDelete();
+            }
+            PostAction();
 
 			ClearSelection();
 		}
@@ -3150,7 +3183,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			foreach(IVisualEventReceiver i in objs) 
 			{
 				BaseVisualThing thing = (BaseVisualThing)i;
-				thing.Thing.Fields.BeforeFieldsChange();
+                visiblethings.Remove(thing.Thing); // [ZZ] if any
+                thing.Thing.Fields.BeforeFieldsChange();
 				thing.Thing.Dispose();
 				thing.Dispose();
 			}
@@ -3158,8 +3192,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			General.Map.IsChanged = true;
 			General.Map.ThingsFilter.Update();
 
-			// Update event lines
-			renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
+            // [ZZ] Clear selected things.
+            ClearSelection(false, false, true, false, false);
+
+            // Update event lines
+            renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
 		}
 
 		//mxd. We'll just use currently selected objects 

@@ -387,9 +387,9 @@ namespace CodeImp.DoomBuilder.Map
 					flatvertices[i].y = triangles.Vertices[i].y;
 					flatvertices[i].z = 1.0f;
 					flatvertices[i].c = brightint;
-					flatvertices[i].u = triangles.Vertices[i].x;
-					flatvertices[i].v = triangles.Vertices[i].y;
-				}
+                    flatvertices[i].u = flatvertices[i].x;
+                    flatvertices[i].v = flatvertices[i].y;
+                }
 
 				// Create bounding box
 				bbox = CreateBBox();
@@ -414,8 +414,8 @@ namespace CodeImp.DoomBuilder.Map
 		// This updates the floor surface
 		public void UpdateFloorSurface()
 		{
-			if(flatvertices == null) return;
-			
+            if (flatvertices == null) return;
+
 			// Create floor vertices
 			SurfaceUpdate updateinfo = new SurfaceUpdate(flatvertices.Length, true, false);
 			flatvertices.CopyTo(updateinfo.floorvertices, 0);

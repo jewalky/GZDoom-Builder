@@ -105,7 +105,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			byte alpha = 255;
 			if(Thing.Sector != null)
 			{
-				string renderstyle = info.RenderStyle;
+				string renderstyle = info.RenderStyle.ToLowerInvariant();
 				alpha = info.AlphaByte;
 				
 				if(General.Map.UDMF)
@@ -122,15 +122,22 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					}
 					else if(Thing.Fields.ContainsKey("renderstyle"))
 					{
-						renderstyle = Thing.Fields.GetValue("renderstyle", renderstyle);
+						renderstyle = Thing.Fields.GetValue("renderstyle", renderstyle).ToLowerInvariant();
 					}
 
-					if((renderstyle == "add" || renderstyle == "translucent" || renderstyle == "subtract" || renderstyle == "stencil") 
+					if((renderstyle == "add" || renderstyle == "translucent" || renderstyle == "subtract" || renderstyle.EndsWith("stencil")) 
 						&& Thing.Fields.ContainsKey("alpha"))
 					{
 						alpha = (byte)(General.Clamp(Thing.Fields.GetValue("alpha", info.Alpha), 0f, 1f) * 255);
 					}
-				}
+
+                    if (renderstyle.EndsWith("stencil"))
+                    {
+                        stencilColor = PixelColor.FromInt(UniFields.GetInteger(Thing.Fields, "fillcolor", 0));
+                        stencilColor.a = 255; // 0xFF alpha means nothing was read. 0x00 alpha means there was a valid fillcolor.
+                    }
+                    else stencilColor.a = 0;
+                }
 				else if(General.Map.HEXEN)
 				{
 					if(Thing.IsFlagSet("2048"))
@@ -155,6 +162,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						break;
 
 					case "add":
+                    case "addstencil":
 						RenderPass = RenderPass.Additive;
 						break;
 
@@ -170,9 +178,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						break;
 				}
 			}
-
-			// Don't bother when alpha is unchanged, unless Additive RenderStyle is used
-			if(RenderPass != RenderPass.Additive && alpha == 255) RenderPass = RenderPass.Mask;
 
 			int sectorcolor = new PixelColor(alpha, 255, 255, 255).ToInt();
 			fogfactor = 0f; //mxd

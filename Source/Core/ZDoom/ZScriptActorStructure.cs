@@ -331,6 +331,38 @@ namespace CodeImp.DoomBuilder.ZDoom
             return true;
         }
 
+        private string ParseVersion(bool required)
+        {
+            // read in the version.
+            tokenizer.SkipWhitespace();
+            ZScriptToken token = tokenizer.ExpectToken(ZScriptTokenType.OpenParen);
+            if (token == null || !token.IsValid)
+            {
+                if (required)
+                    parser.ReportError("Expected (, got " + ((Object)token ?? "<null>").ToString());
+                return null;
+            }
+
+            tokenizer.SkipWhitespace();
+            token = tokenizer.ExpectToken(ZScriptTokenType.String);
+            if (token == null || !token.IsValid)
+            {
+                parser.ReportError("Expected version, got " + ((Object)token ?? "<null>").ToString());
+                return null;
+            }
+
+            string version = token.Value.Trim();
+            tokenizer.SkipWhitespace();
+            token = tokenizer.ExpectToken(ZScriptTokenType.CloseParen);
+            if (token == null || !token.IsValid)
+            {
+                parser.ReportError("Expected ), got " + ((Object)token ?? "<null>").ToString());
+                return null;
+            }
+
+            return version;
+        }
+
         internal ZScriptActorStructure(ZDTextParser zdparser, DecorateCategoryInfo catinfo, string _classname, string _replacesname, string _parentname)
         {
             this.catinfo = catinfo; //mxd
@@ -414,7 +446,8 @@ namespace CodeImp.DoomBuilder.ZDoom
 
                 // try to read in a variable/method.
                 bool bmethod = false;
-                string[] availablemodifiers = new string[] { "static", "native", "action", "readonly", "protected", "private", "virtual", "override", "meta", "transient", "deprecated", "final" };
+                string[] availablemodifiers = new string[] { "static", "native", "action", "readonly", "protected", "private", "virtual", "override", "meta", "transient", "deprecated", "final", "play", "ui", "clearscope", "virtualscope", "version" };
+                string[] versionedmodifiers = new string[] { "version", "deprecated" };
                 string[] methodmodifiers = new string[] { "action", "virtual", "override", "final" };
                 HashSet<string> modifiers = new HashSet<string>();
                 List<string> types = new List<string>();
@@ -446,6 +479,13 @@ namespace CodeImp.DoomBuilder.ZDoom
 
                         if (methodmodifiers.Contains(b_lower))
                             bmethod = true;
+
+                        if (versionedmodifiers.Contains(b_lower))
+                        {
+                            string version = ParseVersion(b_lower == "version"); // deprecated doesn't require version string for historical reasons. (compatibility with old gzdoom.pk3)
+                            if (version == null && b_lower == "version")
+                                return;
+                        }
 
                         modifiers.Add(b_lower);
                     }
@@ -541,14 +581,32 @@ namespace CodeImp.DoomBuilder.ZDoom
                         // also get the body block, if any.
                         tokenizer.SkipWhitespace();
                         cpos = stream.Position;
-                        token = tokenizer.ExpectToken(ZScriptTokenType.Semicolon, ZScriptTokenType.OpenCurly);
+                        token = tokenizer.ExpectToken(ZScriptTokenType.Semicolon, ZScriptTokenType.OpenCurly, ZScriptTokenType.Identifier);
                         if (token == null || !token.IsValid)
                         {
-                            parser.ReportError("Expected ; or {, got " + ((Object)token ?? "<null>").ToString());
+                            parser.ReportError("Expected 'const', ; or {, got " + ((Object)token ?? "<null>").ToString());
                             return;
                         }
 
                         //
+                        if (token.Type == ZScriptTokenType.Identifier)
+                        {
+                            if (token.Value.ToLowerInvariant() != "const")
+                            {
+                                parser.ReportError("Expected 'const', got " + ((Object)token ?? "<null>").ToString());
+                                return;
+                            }
+
+                            tokenizer.SkipWhitespace();
+                            cpos = stream.Position;
+                            token = tokenizer.ExpectToken(ZScriptTokenType.Semicolon, ZScriptTokenType.OpenCurly);
+                            if (token == null || !token.IsValid)
+                            {
+                                parser.ReportError("Expected ; or {, got " + ((Object)token ?? "<null>").ToString());
+                                return;
+                            }
+                        }
+
                         if (token.Type == ZScriptTokenType.OpenCurly)
                         {
                             stream.Position = cpos;
@@ -673,6 +731,9 @@ namespace CodeImp.DoomBuilder.ZDoom
                     }
                 }
             }
+
+            // parsing done, process thing arguments
+            ParseCustomArguments();
         }
     }
 }

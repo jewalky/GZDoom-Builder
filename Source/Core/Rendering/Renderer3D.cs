@@ -877,8 +877,8 @@ namespace CodeImp.DoomBuilder.Rendering
 						// Update buffer if needed
 						t.Update();
 
-						//mxd. Check 3D distance
-						if(t.Info.DistanceCheckSq < int.MaxValue && (t.Thing.Position - cameraposition).GetLengthSq() > t.Info.DistanceCheckSq)
+                        //mxd. Check 3D distance
+                        if (t.Info.DistanceCheckSq < int.MaxValue && (t.Thing.Position - cameraposition).GetLengthSq() > t.Info.DistanceCheckSq)
 							continue;
 
 						// Only do this sector when a vertexbuffer is created
@@ -895,7 +895,7 @@ namespace CodeImp.DoomBuilder.Rendering
 							world = CreateThingPositionMatrix(t);
 
 							//mxd. If current thing is light - set it's color to light color
-							if(Array.IndexOf(GZBuilder.GZGeneral.GZ_LIGHTS, t.Thing.Type) != -1 && !fullbrightness) 
+							if(GZBuilder.GZGeneral.GetGZLightTypeByThing(t.Thing) != -1 && !fullbrightness) 
 							{
 								wantedshaderpass += 4; // Render using one of passes, which uses World3D.VertexColor
 								vertexcolor = t.LightColor;
@@ -935,8 +935,11 @@ namespace CodeImp.DoomBuilder.Rendering
 							graphics.Shaders.World3D.VertexColor = vertexcolor;
 							graphics.Shaders.World3D.HighlightColor = CalculateHighlightColor((t == highlighted) && showhighlight, (t.Selected && showselection));
 
-							// Apply changes
-							ApplyMatrices3D();
+                            // [ZZ] check if we want stencil
+                            graphics.Shaders.World3D.StencilColor = t.StencilColor.ToColorValue();
+
+                            // Apply changes
+                            ApplyMatrices3D();
 							graphics.Shaders.World3D.ApplySettings();
 
 							// Apply buffer
@@ -944,12 +947,15 @@ namespace CodeImp.DoomBuilder.Rendering
 
 							// Render!
 							graphics.Device.DrawPrimitives(PrimitiveType.TriangleList, 0, t.Triangles);
-						}
+                        }
 					}
-				}
 
-				// Texture addressing
-				graphics.Device.SetSamplerState(0, SamplerState.AddressU, TextureAddress.Wrap);
+                    // [ZZ]
+                    graphics.Shaders.World3D.StencilColor = new Color4(0f, 1f, 1f, 1f);
+                }
+
+                // Texture addressing
+                graphics.Device.SetSamplerState(0, SamplerState.AddressU, TextureAddress.Wrap);
 				graphics.Device.SetSamplerState(0, SamplerState.AddressV, TextureAddress.Wrap);
 				graphics.Device.SetSamplerState(0, SamplerState.AddressW, TextureAddress.Wrap);
 				graphics.Device.SetRenderState(RenderState.CullMode, Cull.Counterclockwise); //mxd
@@ -1205,7 +1211,7 @@ namespace CodeImp.DoomBuilder.Rendering
 						world = CreateThingPositionMatrix(t);
 
 						//mxd. If current thing is light - set it's color to light color
-						if(Array.IndexOf(GZBuilder.GZGeneral.GZ_LIGHTS, t.Thing.Type) != -1 && !fullbrightness)
+						if(GZBuilder.GZGeneral.GetGZLightTypeByThing(t.Thing) != -1 && !fullbrightness)
 						{
 							wantedshaderpass += 4; // Render using one of passes, which uses World3D.VertexColor
 							vertexcolor = t.LightColor;
@@ -1249,8 +1255,11 @@ namespace CodeImp.DoomBuilder.Rendering
 						graphics.Shaders.World3D.VertexColor = vertexcolor;
 						graphics.Shaders.World3D.HighlightColor = CalculateHighlightColor((t == highlighted) && showhighlight, (t.Selected && showselection));
 
-						// Apply changes
-						ApplyMatrices3D();
+                        // [ZZ] check if we want stencil
+                        graphics.Shaders.World3D.StencilColor = t.StencilColor.ToColorValue();
+
+                        // Apply changes
+                        ApplyMatrices3D();
 						graphics.Shaders.World3D.ApplySettings();
 
 						// Apply buffer
@@ -1261,8 +1270,11 @@ namespace CodeImp.DoomBuilder.Rendering
 					}
 				}
 
-				// Texture addressing
-				graphics.Device.SetSamplerState(0, SamplerState.AddressU, TextureAddress.Wrap);
+                // [ZZ] check if we want stencil
+                graphics.Shaders.World3D.StencilColor = new Color4(0f, 1f, 1f, 1f);
+
+                // Texture addressing
+                graphics.Device.SetSamplerState(0, SamplerState.AddressU, TextureAddress.Wrap);
 				graphics.Device.SetSamplerState(0, SamplerState.AddressV, TextureAddress.Wrap);
 				graphics.Device.SetSamplerState(0, SamplerState.AddressW, TextureAddress.Wrap);
 				graphics.Device.SetRenderState(RenderState.CullMode, Cull.Counterclockwise); //mxd

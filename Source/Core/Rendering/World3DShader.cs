@@ -38,11 +38,14 @@ namespace CodeImp.DoomBuilder.Rendering
 		private readonly EffectHandle highlightcolor;
 
 		//mxd
-		private readonly EffectHandle vertexColorHadle;
+		private readonly EffectHandle vertexColorHandle;
 		private readonly EffectHandle lightPositionAndRadiusHandle; //lights
 		private readonly EffectHandle lightColorHandle;
 		private readonly EffectHandle world;
 		private readonly EffectHandle camPosHandle; //used for fog rendering
+
+        // [ZZ]
+        private readonly EffectHandle stencilColorHandle;
 		
 		#endregion
 
@@ -72,12 +75,27 @@ namespace CodeImp.DoomBuilder.Rendering
 			{
 				if(vertexcolor != value)
 				{
-					effect.SetValue(vertexColorHadle, value);
+					effect.SetValue(vertexColorHandle, value);
 					vertexcolor = value;
 					settingschanged = true; 
 				}
 			} 
 		}
+
+        // [ZZ]
+        private Color4 stencilcolor;
+        public Color4 StencilColor
+        {
+            set
+            {
+                if (stencilcolor != value)
+                {
+                    effect.SetValue(stencilColorHandle, value);
+                    stencilcolor = value;
+                    settingschanged = true;
+                }
+            }
+        }
 		
 		//lights
 		private Color4 lightcolor;
@@ -174,12 +192,15 @@ namespace CodeImp.DoomBuilder.Rendering
 				maxanisotropysetting = effect.GetParameter(null, "maxanisotropysetting");
 
 				//mxd
-				vertexColorHadle = effect.GetParameter(null, "vertexColor");
+				vertexColorHandle = effect.GetParameter(null, "vertexColor");
 				//lights
 				lightPositionAndRadiusHandle = effect.GetParameter(null, "lightPosAndRadius");
 				lightColorHandle = effect.GetParameter(null, "lightColor");
 				//fog
 				camPosHandle = effect.GetParameter(null, "campos");
+
+                // [ZZ]
+                stencilColorHandle = effect.GetParameter(null, "stencilColor");
 
 				world = effect.GetParameter(null, "world");
 			}
@@ -215,10 +236,11 @@ namespace CodeImp.DoomBuilder.Rendering
 				if(maxanisotropysetting != null) maxanisotropysetting.Dispose();
 
 				//mxd
-				if(vertexColorHadle != null) vertexColorHadle.Dispose();
+				if(vertexColorHandle != null) vertexColorHandle.Dispose();
 				if(lightColorHandle != null) lightColorHandle.Dispose();
 				if(lightPositionAndRadiusHandle != null) lightPositionAndRadiusHandle.Dispose();
 				if(camPosHandle != null) camPosHandle.Dispose();
+                if (stencilColorHandle != null) stencilColorHandle.Dispose();
 				if(world != null) world.Dispose();
 
 				// Done

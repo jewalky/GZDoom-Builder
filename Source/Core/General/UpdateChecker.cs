@@ -38,7 +38,7 @@ namespace CodeImp.DoomBuilder
 			// Check if we have write access...
 			if(!General.CheckWritePremissions(General.AppPath))
 			{
-				string msg = "Cannot perform update: your user account does not have write access to the destination folder \"" + General.AppPath + "\"" 
+				string msg = "Cannot perform update: your user account does not have write access to the destination folder \"" + General.AppPath + "\"\n" 
 					+ "Move the editor to a folder with write access, or run it as Administrator.";
 
 				if(verbosemode) General.ShowWarningMessage(msg, MessageBoxButtons.OK);

@@ -42,7 +42,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			  ButtonGroup = "000_editing",
 			  UseByDefault = true,
 			  SafeStartMode = true)]
-
+    
 	public class ThingsMode : BaseClassicMode
 	{
 		#region ================== Constants

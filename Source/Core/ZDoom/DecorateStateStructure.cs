@@ -30,9 +30,23 @@ namespace CodeImp.DoomBuilder.ZDoom
                 if ((token == "loop") || (token == "stop") || (token == "wait") || (token == "fail"))
                 {
                     // Ignore flow control
+                    // [ZZ] sometimes "fail" is a sprite name... (Skulltag, Zandronum)
+                    //      probably the same can happen to other single-word flow control keywords.
+                        
+                    // check if next token is newline.
+                    long cpos = parser.DataStream.Position;
+                    parser.SkipWhitespace(false);
+                    string newline = parser.ReadToken();
+                    parser.DataStream.Position = cpos;
+                    if (newline == "\n") // this is actually a loop/stop/wait/fail directive and not a sprite name or something
+                    {
+                        lasttoken = token;
+                        continue;
+                    }
                 }
+
                 // Goto?
-                else if (token == "goto")
+                if (token == "goto")
                 {
                     gotostate = new DecorateStateGoto(actor, parser);
                     if (parser.HasError) return;
@@ -119,6 +133,19 @@ namespace CodeImp.DoomBuilder.ZDoom
                             if (/*!realspritename.StartsWith("TNT1") && */!spritename.StartsWith("----") && !spritename.Contains("#")) // [ZZ] some actors have only TNT1 state and receive a random image because of this
                             {
                                 info.Sprite = spritename; //mxd
+                                int duration = -1;
+                                parser.SkipWhitespace(false);
+                                string durationstr = parser.ReadToken();
+                                if (durationstr == "-")
+                                    durationstr += parser.ReadToken();
+                                if (string.IsNullOrEmpty(durationstr) || durationstr == "\n")
+                                {
+                                    parser.ReportError("Expected frame duration");
+                                    return;
+                                }
+                                if (!int.TryParse(durationstr.Trim(), out duration))
+                                    parser.DataStream.Seek(-(durationstr.Length), SeekOrigin.Current);
+                                info.Duration = duration;
                                 sprites.Add(info);
                             }
                         }

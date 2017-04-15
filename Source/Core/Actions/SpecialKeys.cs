@@ -24,5 +24,7 @@ namespace CodeImp.DoomBuilder.Actions
 	{
 		MScrollUp = 65530,
 		MScrollDown = 65531,
+        MScrollLeft = 65532,
+        MScrollRight = 65533
 	}
 }

@@ -162,6 +162,16 @@ namespace CodeImp.DoomBuilder.Actions
 					// Make string representation
 					return ctrlprefix + "ScrollUp";
 
+                case (int)SpecialKeys.MScrollLeft:
+
+                    //
+                    return ctrlprefix + "ScrollLeft";
+
+                case (int)SpecialKeys.MScrollRight:
+
+                    //
+                    return ctrlprefix + "ScrollRight";
+
 				// Keys that would otherwise have odd names
 				case (int)Keys.Oemtilde: return ctrlprefix + "~";
 				case (int)Keys.OemMinus: return ctrlprefix + "-";

@@ -65,6 +65,7 @@ namespace CodeImp.DoomBuilder.IO
 		internal ClippedStream Stream { get { return stream; } }
 		internal bool IsDisposed { get { return isdisposed; } }
 
+
 		#endregion
 
 		#region ================== Constructor / Disposer
@@ -198,6 +199,26 @@ namespace CodeImp.DoomBuilder.IO
 			// Write changes
 			owner.WriteHeaders();
 		}
+
+        // [ZZ] this function is thread safe.
+        //      it produces a MemoryStream with copied contents of Stream.
+        public Stream GetSafeStream()
+        {
+            if (stream == null || stream.BaseStream == null)
+                return null;
+
+            // create new stream. do NOT return the WAD stream. This causes problems with multithreading, and other readers create a MemoryStream.
+            byte[] data;
+            lock (stream.BaseStream)
+            {
+                stream.Position = 0;
+                data = stream.ReadAllBytes();
+            }
+
+            MemoryStream ms = new MemoryStream(data);
+            ms.Position = 0;
+            return ms;
+        }
 		
 		#endregion
 	}

@@ -46,9 +46,10 @@ namespace CodeImp.DoomBuilder.Controls
 
 		//mxd. Textures cache
 		private static Dictionary<int, Dictionary<long, Image>> texturecache = new Dictionary<int, Dictionary<long, Image>>(); // <imagesize, < texture longname, preview image>>
+        private static Dictionary<int, Dictionary<long, Image>> flatcache  = new Dictionary<int, Dictionary<long, Image>>(); // <imagesize, < texture longname, preview image>>
 
-		// Selection
-		private bool allowselection;
+        // Selection
+        private bool allowselection;
 		private bool allowmultipleselection;
 
 		#endregion
@@ -206,7 +207,7 @@ namespace CodeImp.DoomBuilder.Controls
 			selection.Clear();
 			this.items.AddRange(items);
 
-			OnSelectionChanged(selection);
+            OnSelectionChanged(selection);
 			UpdateRectangles();
 		}
 
@@ -654,13 +655,29 @@ namespace CodeImp.DoomBuilder.Controls
 
 		#region ================== Image Caching
 
+        // [ZZ] used during resource reload.
+        public static void ClearCachedPreviews()
+        {
+            foreach (Dictionary<long, Image> imgdict in texturecache.Values)
+                foreach (Image img in imgdict.Values)
+                    img.Dispose();
+            foreach (Dictionary<long, Image> imgdict in flatcache.Values)
+                foreach (Image img in imgdict.Values)
+                    img.Dispose();
+            texturecache.Clear();
+            flatcache.Clear();
+        }
+
 		private static Image GetPreview(ImageBrowserItem item, int imagesize)
 		{
 			if(!item.IsPreviewLoaded) return item.Icon.GetPreview();
-			if(!texturecache.ContainsKey(imagesize)) texturecache.Add(imagesize, new Dictionary<long, Image>());
+            Dictionary<int, Dictionary<long, Image>> cache = item.Icon.IsFlat ? flatcache : texturecache;
+
+			if(!cache.ContainsKey(imagesize)) cache.Add(imagesize, new Dictionary<long, Image>());
 
 			// Generate preview?
-			if(!texturecache[imagesize].ContainsKey(item.Icon.LongName))
+            // [ZZ] how does this work when texture images change?
+			if(!cache[imagesize].ContainsKey(item.Icon.LongName))
 			{
 				Image img = item.Icon.GetPreview();
 				
@@ -695,11 +712,11 @@ namespace CodeImp.DoomBuilder.Controls
 					g.DrawImage(img, new Rectangle(0, 0, previewwidth, previewheight));
 				}
 
-				texturecache[imagesize][item.Icon.LongName] = preview;
+                cache[imagesize][item.Icon.LongName] = preview;
 			}
 
 			// Get preview
-			return texturecache[imagesize][item.Icon.LongName];
+			return cache[imagesize][item.Icon.LongName];
 		}
 
 		#endregion

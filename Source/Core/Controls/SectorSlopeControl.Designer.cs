@@ -32,7 +32,7 @@
 			this.label24 = new System.Windows.Forms.Label();
 			this.reset = new System.Windows.Forms.Button();
 			this.label18 = new System.Windows.Forms.Label();
-			this.angletrackbar = new System.Windows.Forms.TrackBar();
+			this.angletrackbar = new CodeImp.DoomBuilder.Controls.TransparentTrackBar();
 			this.label1 = new System.Windows.Forms.Label();
 			this.pivotmodeselector = new System.Windows.Forms.ComboBox();
 			this.cbuselineangles = new System.Windows.Forms.CheckBox();
@@ -227,7 +227,7 @@
 		private ButtonsNumericTextbox slopeoffset;
 		private System.Windows.Forms.Label label18;
 		private CodeImp.DoomBuilder.Controls.AngleControlEx rotationcontrol;
-		private System.Windows.Forms.TrackBar angletrackbar;
+		private CodeImp.DoomBuilder.Controls.TransparentTrackBar angletrackbar;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.ComboBox pivotmodeselector;
 		private System.Windows.Forms.CheckBox cbuselineangles;

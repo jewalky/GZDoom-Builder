@@ -532,7 +532,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		protected static float GetRoundedTextureOffset(float oldValue, float offset, float scale, float textureSize) 
 		{
 			if(offset == 0f) return oldValue;
-			float scaledOffset = offset * scale;
+			float scaledOffset = offset * Math.Abs(scale);
 			float result = (float)Math.Round(oldValue + scaledOffset);
 			if(textureSize > 0) result %= textureSize;
 			if(result == oldValue) result += (scaledOffset < 0 ? -1 : 1);

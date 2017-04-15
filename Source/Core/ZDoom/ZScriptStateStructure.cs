@@ -148,6 +148,7 @@ namespace CodeImp.DoomBuilder.ZDoom
                 token = tokenizer.ExpectToken(ZScriptTokenType.Identifier);
                 if (token != null && token.IsValid)
                 {
+                    duration = -1;
                     tokenizer.SkipWhitespace();
                     token = tokenizer.ExpectToken(ZScriptTokenType.OpenParen);
                     if (token != null && token.IsValid)
@@ -181,6 +182,7 @@ namespace CodeImp.DoomBuilder.ZDoom
                 if (/*!realspritename.StartsWith("TNT1") && */!realspritename.StartsWith("----") && !realspritename.Contains("#")) // [ZZ] some actors have only TNT1 state and receive a random image because of this
                 {
                     info.Sprite = realspritename; //mxd
+                    info.Duration = duration;
                     sprites.Add(info);
                 }
 

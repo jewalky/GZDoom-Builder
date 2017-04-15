@@ -42,6 +42,7 @@ namespace CodeImp.DoomBuilder.IO
 
 		#region ================== Properties
 
+        public Stream BaseStream { get { return basestream; } }
 		public override long Length { get { return length; } }
 		public override long Position { get { return position; } set { this.Seek(value, SeekOrigin.Begin); } }
 		public override bool CanRead { get { return basestream.CanRead; } }

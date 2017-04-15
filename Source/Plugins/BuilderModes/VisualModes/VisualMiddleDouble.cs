@@ -83,7 +83,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			
 			Vector2D tscale = new Vector2D(Sidedef.Fields.GetValue("scalex_mid", 1.0f),
 										   Sidedef.Fields.GetValue("scaley_mid", 1.0f));
-			Vector2D toffset = new Vector2D(Sidedef.Fields.GetValue("offsetx_mid", 0.0f),
+            Vector2D tscaleAbs = new Vector2D(Math.Abs(tscale.x), Math.Abs(tscale.y));
+            Vector2D toffset = new Vector2D(Sidedef.Fields.GetValue("offsetx_mid", 0.0f),
 											Sidedef.Fields.GetValue("offsety_mid", 0.0f));
 			
 			// Left and right vertices for this sidedef
@@ -131,7 +132,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// Get texture offsets
 			Vector2D tof = new Vector2D(Sidedef.OffsetX, Sidedef.OffsetY);
 			tof = tof + toffset;
-			tof = tof / tscale;
+			tof = tof / tscaleAbs;
 			if(General.Map.Config.ScaledTextureOffsets && !base.Texture.WorldPanning)
 				tof = tof * base.Texture.Scale;
 

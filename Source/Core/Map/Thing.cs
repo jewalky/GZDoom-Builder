@@ -56,6 +56,7 @@ namespace CodeImp.DoomBuilder.Map
 		
 		// Properties
 		private int type;
+        private int dynamiclighttype;
 		private Vector3D pos;
 		private int angledoom;		// Angle as entered / stored in file
 		private float anglerad;		// Angle in radians
@@ -89,6 +90,7 @@ namespace CodeImp.DoomBuilder.Map
 
 		public MapSet Map { get { return map; } }
 		public int Type { get { return type; } set { BeforePropsChange(); type = value; } } //mxd
+        public int DynamicLightType { get { return dynamiclighttype; } internal set { BeforePropsChange(); dynamiclighttype = value; } }
 		public Vector3D Position { get { return pos; } }
 		public float ScaleX { get { return scaleX; } } //mxd. This is UDMF property, not actual scale!
 		public float ScaleY { get { return scaleY; } } //mxd. This is UDMF property, not actual scale!
@@ -223,6 +225,7 @@ namespace CodeImp.DoomBuilder.Map
 			
 			// Copy properties
 			t.type = type;
+            t.dynamiclighttype = dynamiclighttype;
 			t.anglerad = anglerad;
 			t.angledoom = angledoom;
 			t.roll = roll; //mxd
@@ -520,8 +523,9 @@ namespace CodeImp.DoomBuilder.Map
 		{
 			// Lookup settings
 			ThingTypeInfo ti = General.Map.Data.GetThingInfo(type);
-			
-			// Apply size
+
+            // Apply size
+            dynamiclighttype = (Array.IndexOf(GZBuilder.GZGeneral.GZ_LIGHTS, type)!=-1) ? type : ti.DynamicLightType;
 			size = ti.Radius;
 			height = ti.Height; //mxd
 			fixedsize = ti.FixedSize;
@@ -566,7 +570,12 @@ namespace CodeImp.DoomBuilder.Map
 				ModelData md = General.Map.Data.ModeldefEntries[type];
 				if((md.LoadState == ModelLoadState.None && General.Map.Data.ProcessModel(type)) || md.LoadState != ModelLoadState.None)
 					rendermode = (General.Map.Data.ModeldefEntries[type].IsVoxel ? ThingRenderMode.VOXEL : ThingRenderMode.MODEL);
-			}
+			} 
+            else // reset rendermode if we SUDDENLY became a sprite out of a model. otherwise it crashes violently.
+            {
+                ThingTypeInfo ti = General.Map.Data.GetThingInfo(Type);
+                rendermode = (ti != null) ? ti.RenderMode : ThingRenderMode.NORMAL;
+            }
 
 			// Update radian versions of pitch and roll
 			switch(rendermode)

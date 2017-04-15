@@ -539,7 +539,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 			const int linealpha = 128;
 			foreach(Thing t in things)
 			{
-				int lightid = Array.IndexOf(GZGeneral.GZ_LIGHTS, t.Type);
+                int lightid = GZGeneral.GetGZLightTypeByThing(t);
 				if(lightid == -1) continue;
 
 				// TODO: this basically duplicates VisualThing.UpdateLight()...
@@ -554,7 +554,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
                     else if (lightid < GZGeneral.GZ_LIGHT_TYPES[1]) n = 10;
                     else if (lightid < GZGeneral.GZ_LIGHT_TYPES[2]) n = 20;
                     else n = 30;
-					DynamicLightType lightType = (DynamicLightType)(t.Type - 9800 - n);
+					DynamicLightType lightType = (DynamicLightType)(t.DynamicLightType - 9800 - n);
 
 					if(lightType == DynamicLightType.SECTOR)
 					{
@@ -584,7 +584,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 				}
 				else
 				{
-					switch(t.Type)
+					switch(t.DynamicLightType)
 					{
 						case 1502: // Vavoom light
 							color = new PixelColor(linealpha, 255, 255, 255);

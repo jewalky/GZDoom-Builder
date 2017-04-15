@@ -31,7 +31,10 @@ namespace CodeImp.DoomBuilder.Data
 
 		private readonly PK3Reader datareader;
 		private readonly int probableformat;
-        private readonly string _c_filepathname;
+        private bool isBadForLongTextureNames = false;
+
+        // [ZZ]
+        public bool IsBadForLongTextureNames { get { return isBadForLongTextureNames; } }
 		
 		#endregion
 
@@ -42,7 +45,6 @@ namespace CodeImp.DoomBuilder.Data
 		{
 			// Initialize
 			this.datareader = datareader;
-            _c_filepathname = filepathname; // this is used to call SetName later
 			this.isFlat = asflat; //mxd
 
 			if(asflat)
@@ -71,12 +73,12 @@ namespace CodeImp.DoomBuilder.Data
         //mxd: filepathname is relative path to the image ("Textures\sometexture.png")
         protected override void SetName(string filepathname)
         {
-            SetName(filepathname, (probableformat == ImageDataFormat.DOOMFLAT) ? false : General.Map.Config.UseLongTextureNames);
+            SetName(filepathname, General.Map.Config.UseLongTextureNames);
         }
 
         private void SetName(string filepathname, bool longtexturenames) 
 		{
-			if(!longtexturenames || string.IsNullOrEmpty(Path.GetDirectoryName(filepathname))) 
+            if (!longtexturenames || string.IsNullOrEmpty(Path.GetDirectoryName(filepathname)))
 			{
 				this.name = Path.GetFileNameWithoutExtension(filepathname.ToUpperInvariant());
 				if(this.name.Length > DataManager.CLASIC_IMAGE_NAME_LENGTH)
@@ -116,7 +118,7 @@ namespace CodeImp.DoomBuilder.Data
 				if(bitmap != null) bitmap.Dispose(); bitmap = null;
 				MemoryStream filedata = datareader.LoadFile(filepathname); //mxd
 
-                bool isBadForLongTextureNames = false;
+                isBadForLongTextureNames = false;
 
                 if (filedata != null)
 				{
@@ -156,8 +158,6 @@ namespace CodeImp.DoomBuilder.Data
 
 					filedata.Dispose();
 				}
-
-                SetName(_c_filepathname, isBadForLongTextureNames ? false : General.Map.Config.UseLongTextureNames);
 
 				// Pass on to base
 				base.LocalLoadImage();

@@ -95,6 +95,9 @@ namespace CodeImp.DoomBuilder.VisualModes
 		private Vector3 lightOffset;
 		private int lightInterval;
 		private bool isGldefsLight;
+
+        // [ZZ]
+        protected PixelColor stencilColor;
 		
 		#endregion
 		
@@ -131,6 +134,9 @@ namespace CodeImp.DoomBuilder.VisualModes
 		public float LightRadius { get { return lightRadius; } }
 		public DynamicLightRenderStyle LightRenderStyle { get { return lightRenderStyle; } }
 		public Color4 LightColor { get { return lightColor; } }
+
+        // [ZZ]
+        public PixelColor StencilColor { get { return stencilColor; } }
 
 		/// <summary>
 		/// Returns the Thing that this VisualThing is created for.
@@ -611,9 +617,9 @@ namespace CodeImp.DoomBuilder.VisualModes
 		//mxd
 		protected void CheckLightState() 
 		{
-			//mxd. Check if thing is light
-			int light_id = Array.IndexOf(GZBuilder.GZGeneral.GZ_LIGHTS, thing.Type);
-			if(light_id != -1) 
+            //mxd. Check if thing is light
+            int light_id = GZBuilder.GZGeneral.GetGZLightTypeByThing(thing);
+            if (light_id != -1) 
 			{
 				isGldefsLight = false;
 				lightInterval = -1;
@@ -644,8 +650,8 @@ namespace CodeImp.DoomBuilder.VisualModes
 		//mxd. Used in ColorPicker to update light 
 		public void UpdateLight() 
 		{
-			int light_id = Array.IndexOf(GZBuilder.GZGeneral.GZ_LIGHTS, thing.Type);
-			if(light_id != -1) 
+			int light_id = GZBuilder.GZGeneral.GetGZLightTypeByThing(thing);
+            if (light_id != -1) 
 			{
 				UpdateLight(light_id);
 				UpdateBoundingBox(lightRadius, lightRadius * 2);
@@ -695,7 +701,7 @@ namespace CodeImp.DoomBuilder.VisualModes
                         thing.Args[1] / DYNLIGHT_INTENSITY_SCALER,
                         thing.Args[2] / DYNLIGHT_INTENSITY_SCALER);
                 }
-				lightType = (DynamicLightType)(thing.Type - 9800 - n);
+				lightType = (DynamicLightType)(thing.DynamicLightType - 9800 - n);
 
 				if(lightType == DynamicLightType.SECTOR) 
 				{
@@ -712,7 +718,7 @@ namespace CodeImp.DoomBuilder.VisualModes
 			else //it's one of vavoom lights
 			{ 
 				lightRenderStyle = DynamicLightRenderStyle.VAVOOM;
-				lightType = (DynamicLightType)thing.Type;
+				lightType = (DynamicLightType)thing.DynamicLightType;
 				if(lightType == DynamicLightType.VAVOOM_COLORED)
 				{
 					lightColor = new Color4((float)lightRenderStyle / 100.0f, 

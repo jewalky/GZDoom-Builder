@@ -983,8 +983,18 @@ namespace CodeImp.DoomBuilder.Map
 			// Calculate intersection offset
 			float u = ((p.x - v1.x) * (v2.x - v1.x) + (p.y - v1.y) * (v2.y - v1.y)) * lengthsqinv;
 
-			// Limit intersection offset to the line
-			if(bounded) if(u < lengthinv) u = lengthinv; else if(u > (1f - lengthinv)) u = 1f - lengthinv;
+            // Limit intersection offset to the line
+            if (bounded)
+            {
+                if (General.Map.UDMF)
+                {
+                    u = Math.Max(0f, Math.Min(1f, u));
+                }
+                else // restore old way for visplane explorer (which doesn't work for UDMF anyway)
+                {
+                    u = Math.Max(lengthinv, Math.Min(1f - lengthinv, u));
+                }
+            }
 
             /*
             // Calculate intersection point

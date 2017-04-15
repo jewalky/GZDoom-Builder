@@ -242,10 +242,42 @@ namespace CodeImp.DoomBuilder.Config
 		}
 
 		//mxd. Constructor for an argument info defined in DECORATE
-		internal ArgumentInfo(string actorname, string argtitle, string tooltip, string renderstyle, string rendercolor,
-			string minrange, string minrangecolor, string maxrange, string maxrangecolor, string targetclasses,
-			int type, int defaultvalue, string enumstr, IDictionary<string, EnumList> enums, bool str, string argtitlestr)
-		{
+        // [ZZ] Constructor for an argument info defined in DECORATE/ZScript. reworked.
+        internal ArgumentInfo(ActorStructure actor, int i)
+        {
+            if(!actor.HasPropertyWithValue("$arg" + i))
+            {
+                used = false;
+                return;
+            }
+
+			string argtitle = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i));
+			string tooltip = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "tooltip").Replace("\\n", Environment.NewLine));
+			int type = actor.GetPropertyValueInt("$arg" + i + "type", 0);
+			string targetclasses = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "targetclasses"));
+			int defaultvalue = actor.GetPropertyValueInt("$arg" + i + "default", 0);
+			string enumstr = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "enum"));
+			string renderstyle = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "renderstyle"));
+			string rendercolor, minrange, maxrange, minrangecolor, maxrangecolor;
+            bool str = (actor.HasProperty("$arg" + i + "str"));
+            string argtitlestr = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "str"));
+            if (string.IsNullOrEmpty(argtitlestr)) argtitlestr = argtitle;
+			if (!string.IsNullOrEmpty(renderstyle))
+			{
+                rendercolor = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "rendercolor"));
+				minrange = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "minrange"));
+				minrangecolor = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "minrangecolor"));
+				maxrange = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "maxrange"));
+				maxrangecolor = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "maxrangecolor"));
+			}
+			else
+			{
+                rendercolor = string.Empty; minrange = string.Empty; maxrange = string.Empty; minrangecolor = string.Empty; maxrangecolor = string.Empty;
+			}
+
+            string actorname = actor.ClassName;
+            IDictionary<string, EnumList> enums = General.Map.Config.Enums;
+            
 			this.used = true;
 			this.title = argtitle;
 			this.tooltip = tooltip;

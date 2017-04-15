@@ -1361,6 +1361,29 @@ namespace CodeImp.DoomBuilder.Windows
 			// Let the base know
 			base.OnMouseWheel(e);
 		}
+
+        // [ZZ]
+        private void OnMouseHWheel(int delta)
+        {
+            int mod = 0;
+            if (alt) mod |= (int)Keys.Alt;
+            if (shift) mod |= (int)Keys.Shift;
+            if (ctrl) mod |= (int)Keys.Control;
+
+            // Scrollwheel left?
+            if (delta < 0)
+            {
+                General.Actions.KeyPressed((int)SpecialKeys.MScrollLeft | mod);
+                General.Actions.KeyReleased((int)SpecialKeys.MScrollLeft | mod);
+            }
+            else if (delta > 0)
+            {
+                General.Actions.KeyPressed((int)SpecialKeys.MScrollRight | mod);
+                General.Actions.KeyReleased((int)SpecialKeys.MScrollRight | mod);
+            }
+
+            // base? what base?
+        }
 		
 		// When a key is pressed
 		private void MainForm_KeyDown(object sender, KeyEventArgs e)
@@ -4081,7 +4104,7 @@ namespace CodeImp.DoomBuilder.Windows
 					if((General.Map != null) && (General.Map.Data != null))
 					{
 						ImageData img = General.Map.Data.GetFlatImage(imagename);
-						ImageDataLoaded(img);
+                        ImageDataLoaded(img);
 					}
 					break;
 
@@ -4111,6 +4134,12 @@ namespace CodeImp.DoomBuilder.Windows
 						base.WndProc(ref m);
 					}
 					break;
+
+                case General.WM_MOUSEHWHEEL:
+                    int delta = m.WParam.ToInt32() >> 16;
+                    OnMouseHWheel(delta);
+                    m.Result = new IntPtr(delta);
+                    break;
 					
 				default:
 					// Let the base handle the message
@@ -4177,11 +4206,11 @@ namespace CodeImp.DoomBuilder.Windows
 		// but only when first loaded or when dimensions were changed
 		internal void ImageDataLoaded(ImageData img)
 		{
-			// Image is used in the map?
-			if((img != null) && img.UsedInMap && !img.IsDisposed)
+            // Image is used in the map?
+            if ((img != null) && img.UsedInMap && !img.IsDisposed)
 			{
-				// Go for all setors
-				bool updated = false;
+                // Go for all setors
+                bool updated = false;
 				long imgshorthash = General.Map.Data.GetShortLongFlatName(img.LongName); //mxd. Part of long name support shennanigans
 
 				foreach(Sector s in General.Map.Map.Sectors)
@@ -4196,7 +4225,7 @@ namespace CodeImp.DoomBuilder.Windows
 					// Update ceiling buffer if needed
 					if(s.LongCeilTexture == img.LongName || s.LongCeilTexture == imgshorthash)
 					{
-						s.UpdateCeilingSurface();
+                        s.UpdateCeilingSurface();
 						updated = true;
 					}
 				}
@@ -4204,7 +4233,7 @@ namespace CodeImp.DoomBuilder.Windows
 				// If we made updates, redraw the screen
 				if(updated) DelayedRedraw();
 			}
-		}
+        }
 
 		public void EnableProcessing()
 		{

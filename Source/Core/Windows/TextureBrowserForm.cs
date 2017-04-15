@@ -58,6 +58,9 @@ namespace CodeImp.DoomBuilder.Windows
 
 			TreeNode item; //mxd
 			long longname = Lump.MakeLongName(selecttexture ?? "");
+            // [ZZ] check if this name is even ok.
+            if (browseflats && General.Map.Data.GetFlatImage(longname) == General.Map.Data.UnknownImage)
+                longname = Lump.MakeLongName("");
 			longname = (browseflats ? General.Map.Data.GetFullLongFlatName(longname) : General.Map.Data.GetFullLongTextureName(longname)); //mxd
 			int count; //mxd
 			selectedset = null; //mxd

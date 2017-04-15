@@ -58,6 +58,9 @@ namespace CodeImp.DoomBuilder.ZDoom
         //mxd. Categories
         internal DecorateCategoryInfo catinfo;
 
+        // [ZZ] direct ArgumentInfos (from game configuration), or own ArgumentInfos (from props)
+        internal ArgumentInfo[] args = new ArgumentInfo[5];
+
         // States
         internal Dictionary<string, StateStructure> states;
 		
@@ -214,6 +217,11 @@ namespace CodeImp.DoomBuilder.ZDoom
 		/// </summary>
 		public bool HasState(string statename)
 		{
+            // [ZZ] we should NOT pick up any states from Actor. (except Spawn, as the very default state)
+            //      for the greater good. (otherwise POL5 from GenericCrush is displayed for actors without frames, preferred before TNT1)
+            if (classname.ToLowerInvariant() == "actor" && statename.ToLowerInvariant() != "spawn")
+                return false;
+
 			if(states.ContainsKey(statename)) return true;
 			if(!skipsuper && (baseclass != null)) return baseclass.HasState(statename);
 			return false;
@@ -224,7 +232,12 @@ namespace CodeImp.DoomBuilder.ZDoom
 		/// </summary>
 		public StateStructure GetState(string statename)
 		{
-			if(states.ContainsKey(statename)) return states[statename];
+            // [ZZ] we should NOT pick up any states from Actor. (except Spawn, as the very default state)
+            //      for the greater good. (otherwise POL5 from GenericCrush is displayed for actors without frames, preferred before TNT1)
+            if (classname.ToLowerInvariant() == "actor" && statename.ToLowerInvariant() != "spawn")
+                return null;
+
+            if (states.ContainsKey(statename)) return states[statename];
 			if(!skipsuper && (baseclass != null)) return baseclass.GetState(statename);
 			return null;
 		}
@@ -234,9 +247,19 @@ namespace CodeImp.DoomBuilder.ZDoom
 		/// </summary>
 		public Dictionary<string, StateStructure> GetAllStates()
 		{
-			Dictionary<string, StateStructure> list = new Dictionary<string, StateStructure>(states, StringComparer.OrdinalIgnoreCase);
-			
-			if(!skipsuper && (baseclass != null))
+            // [ZZ] we should NOT pick up any states from Actor. (except Spawn, as the very default state)
+            //      for the greater good. (otherwise POL5 from GenericCrush is displayed for actors without frames, preferred before TNT1)
+            if (classname.ToLowerInvariant() == "actor")
+            {
+                Dictionary<string, StateStructure> list2 = new Dictionary<string, StateStructure>(StringComparer.OrdinalIgnoreCase);
+                if (states.ContainsKey("spawn"))
+                    list2.Add("spawn", states["spawn"]);
+                return list2;
+            }
+
+            Dictionary<string, StateStructure> list = new Dictionary<string, StateStructure>(states, StringComparer.OrdinalIgnoreCase);
+
+            if (!skipsuper && (baseclass != null))
 			{
 				Dictionary<string, StateStructure> baselist = baseclass.GetAllStates();
 				foreach(KeyValuePair<string, StateStructure> s in baselist)
@@ -279,27 +302,74 @@ namespace CodeImp.DoomBuilder.ZDoom
 				General.ErrorLogger.Add(ErrorType.Warning, "DECORATE warning in " + classname + ":" + doomednum + ". The sprite \"" + sprite + "\" assigned by the \"$sprite\" property does not exist.");
 			}
 
-			//mxd. Try to get a suitable sprite from our hardcoded states list
-			foreach(string state in SPRITE_CHECK_STATES)
+            StateStructure.FrameInfo firstNonTntInfo = null;
+            StateStructure.FrameInfo firstInfo = null;
+            // Pick the first we can find (including and not including TNT1)
+            Dictionary<string, StateStructure> list = GetAllStates();
+            foreach (StateStructure s in list.Values)
+            {
+                StateStructure.FrameInfo info = s.GetSprite(0);
+                if (string.IsNullOrEmpty(info.Sprite)) continue;
+
+                if (!info.IsEmpty()) firstNonTntInfo = info;
+                if (firstInfo == null) firstInfo = info;
+
+                if (firstNonTntInfo != null)
+                    break;
+            }
+
+            //mxd. Try to get a suitable sprite from our hardcoded states list
+            StateStructure.FrameInfo lastNonTntInfo = null;
+            StateStructure.FrameInfo lastInfo = null;
+            foreach (string state in SPRITE_CHECK_STATES)
 			{
 				if(!HasState(state)) continue;
 
 				StateStructure s = GetState(state);
 				StateStructure.FrameInfo info = s.GetSprite(0);
-				if(!string.IsNullOrEmpty(info.Sprite)) return info;
+                //if(!string.IsNullOrEmpty(info.Sprite)) return info;
+                if (string.IsNullOrEmpty(info.Sprite)) continue;
+
+                if (!info.IsEmpty()) lastNonTntInfo = info;
+                if (lastInfo == null) lastInfo = info;
+
+                if (lastNonTntInfo != null)
+                    break;
 			}
-			
-			// Still no sprite found? then just pick the first we can find
-			Dictionary<string, StateStructure> list = GetAllStates();
-			foreach(StateStructure s in list.Values)
-			{
-				StateStructure.FrameInfo info = s.GetSprite(0);
-				if(!string.IsNullOrEmpty(info.Sprite)) return info;
-			}
+
+            // [ZZ] return whatever is there by priority. try to pick non-TNT1 frames.
+            StateStructure.FrameInfo[] infos = new StateStructure.FrameInfo[] { lastNonTntInfo, lastInfo, firstNonTntInfo, firstInfo };
+            foreach (StateStructure.FrameInfo info in infos)
+                if (info != null) return info;
 			
 			//mxd. No dice...
 			return null;
 		}
+
+        /// <summary>
+        /// This method parses $argN into argumentinfos.
+        /// </summary>
+        public void ParseCustomArguments()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                if (HasProperty("$arg" + i))
+                    args[i] = new ArgumentInfo(this, i);
+                else args[i] = null;
+            }
+        }
+
+        public ArgumentInfo GetArgumentInfo(int idx)
+        {
+            if (args[idx] != null)
+                return args[idx];
+            // if we have $clearargs, don't inherit anything!
+            if (props.ContainsKey("$clearargs"))
+                return null;
+            if (baseclass != null)
+                return baseclass.GetArgumentInfo(idx);
+            return null;
+        }
 		
 		#endregion
 	}

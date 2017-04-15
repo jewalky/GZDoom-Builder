@@ -191,8 +191,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					this.RenderPass = RenderPass.Mask;
 				else if(extrafloor.RenderAdditive) //mxd
 					this.RenderPass = RenderPass.Additive;
-				else if(level.alpha < 255)
-					this.RenderPass = RenderPass.Alpha;
+                else if ((level.alpha < 255) || Texture.IsTranslucent)
+                    this.RenderPass = RenderPass.Alpha;
 				else
 					this.RenderPass = RenderPass.Mask;
 			}

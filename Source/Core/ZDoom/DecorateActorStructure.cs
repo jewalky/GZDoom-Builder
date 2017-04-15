@@ -1,4 +1,5 @@
 ﻿using CodeImp.DoomBuilder.Config;
+using CodeImp.DoomBuilder.Data;
 using CodeImp.DoomBuilder.Types;
 using System;
 using System.Collections.Generic;
@@ -392,8 +393,11 @@ namespace CodeImp.DoomBuilder.ZDoom
                 previoustoken = token;
             }
 
+            // parsing done, process thing arguments
+            ParseCustomArguments();
+
             //mxd. Check if baseclass is valid
-            if (inheritclass.ToLowerInvariant() != "actor" && doomednum > -1 && baseclass == null)
+            if (inheritclass.ToLowerInvariant() != "actor" && doomednum > -1)
             {
                 //check if this class inherits from a class defined in game configuration
                 Dictionary<int, ThingTypeInfo> things = General.Map.Config.GetThingTypes();
@@ -404,28 +408,48 @@ namespace CodeImp.DoomBuilder.ZDoom
                     if (!string.IsNullOrEmpty(ti.Value.ClassName) && ti.Value.ClassName.ToLowerInvariant() == inheritclasscheck)
                     {
                         //states
+                        // [ZZ] allow internal prefix here. it can inherit MapSpot, light, or other internal stuff.
                         if (states.Count == 0 && !string.IsNullOrEmpty(ti.Value.Sprite))
-                            states.Add("spawn", new StateStructure(ti.Value.Sprite.Substring(0, 5)));
+                            states.Add("spawn", new StateStructure(ti.Value.Sprite.StartsWith(DataManager.INTERNAL_PREFIX) ? ti.Value.Sprite : ti.Value.Sprite.Substring(0, 5)));
 
-                        //flags
-                        if (ti.Value.Hangs && !flags.ContainsKey("spawnceiling"))
-                            flags["spawnceiling"] = true;
+                        if (baseclass == null)
+                        {
+                            //flags
+                            if (ti.Value.Hangs && !flags.ContainsKey("spawnceiling"))
+                                flags["spawnceiling"] = true;
 
-                        if (ti.Value.Blocking > 0 && !flags.ContainsKey("solid"))
-                            flags["solid"] = true;
+                            if (ti.Value.Blocking > 0 && !flags.ContainsKey("solid"))
+                                flags["solid"] = true;
 
-                        //properties
-                        if (!props.ContainsKey("height"))
-                            props["height"] = new List<string> { ti.Value.Height.ToString() };
+                            //properties
+                            if (!props.ContainsKey("height"))
+                                props["height"] = new List<string> { ti.Value.Height.ToString() };
 
-                        if (!props.ContainsKey("radius"))
-                            props["radius"] = new List<string> { ti.Value.Radius.ToString() };
+                            if (!props.ContainsKey("radius"))
+                                props["radius"] = new List<string> { ti.Value.Radius.ToString() };
+                        }
+
+                        // [ZZ] inherit arguments from game configuration
+                        //      
+                        if (!props.ContainsKey("$clearargs"))
+                        {
+                            for (int i = 0; i < 5; i++)
+                            {
+                                if (args[i] != null)
+                                    continue; // don't touch it if we already have overrides
+
+                                ArgumentInfo arg = ti.Value.Args[i];
+                                if (arg != null && arg.Used)
+                                    args[i] = arg;
+                            }
+                        }
 
                         return;
                     }
                 }
 
-                parser.LogWarning("Unable to find \"" + inheritclass + "\" class to inherit from, while parsing \"" + classname + ":" + doomednum + "\"");
+                if (baseclass == null)
+                    parser.LogWarning("Unable to find \"" + inheritclass + "\" class to inherit from, while parsing \"" + classname + ":" + doomednum + "\"");
             }
         }
 

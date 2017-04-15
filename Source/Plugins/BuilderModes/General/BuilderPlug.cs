@@ -66,13 +66,17 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			public readonly string TrackTexture;
 			public readonly string CeilingTexture;
 			public readonly bool ResetOffsets;
+			public readonly bool ApplyActionSpecials;
+			public readonly bool ApplyTag;
 
-			public MakeDoorSettings(string doortexture, string tracktexture, string ceilingtexture, bool resetoffsets)
+			public MakeDoorSettings(string doortexture, string tracktexture, string ceilingtexture, bool resetoffsets, bool applyactionspecials, bool applytag)
 			{
 				DoorTexture = doortexture;
 				TrackTexture = tracktexture;
 				CeilingTexture = ceilingtexture;
 				ResetOffsets = resetoffsets;
+				ApplyActionSpecials = applyactionspecials;
+				ApplyTag = applytag;
 			}
 		}
 
@@ -370,6 +374,14 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					}
 				}
 			}
+            else // [ZZ] proper fallback please.
+            {
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    vertices[i].u = vertices[i].u / 64;
+                    vertices[i].v = -vertices[i].v / 64;
+                }
+            }
 		}
 
 		// When ceiling surface geometry is created for classic modes
@@ -422,7 +434,15 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					}
 				}
 			}
-		}
+            else // [ZZ] proper fallback please.
+            {
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    vertices[i].u = vertices[i].u / 64;
+                    vertices[i].v = -vertices[i].v / 64;
+                }
+            }
+        }
 
 		// When the editing mode changes
 		public override bool OnModeChange(EditMode oldmode, EditMode newmode)
@@ -466,7 +486,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			//mxd
 			General.Interface.AddDocker(drawingOverridesDocker);
 			drawingOverridesPanel.Setup();
-			MakeDoor = new MakeDoorSettings(General.Map.Config.MakeDoorDoor, General.Map.Config.MakeDoorTrack, General.Map.Config.MakeDoorCeiling, MakeDoor.ResetOffsets);
+			MakeDoor = new MakeDoorSettings(General.Map.Config.MakeDoorDoor, General.Map.Config.MakeDoorTrack, General.Map.Config.MakeDoorCeiling, MakeDoor.ResetOffsets, MakeDoor.ApplyActionSpecials, MakeDoor.ApplyTag);
 			ResetCopyProperties();
 		}
 		
@@ -481,7 +501,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			General.Interface.AddDocker(drawingOverridesDocker);
 			drawingOverridesPanel.Setup();
 			General.Map.Renderer2D.UpdateExtraFloorFlag();
-			MakeDoor = new MakeDoorSettings(General.Map.Config.MakeDoorDoor, General.Map.Config.MakeDoorTrack, General.Map.Config.MakeDoorCeiling, MakeDoor.ResetOffsets);
+			MakeDoor = new MakeDoorSettings(General.Map.Config.MakeDoorDoor, General.Map.Config.MakeDoorTrack, General.Map.Config.MakeDoorCeiling, MakeDoor.ResetOffsets, MakeDoor.ApplyActionSpecials, MakeDoor.ApplyTag);
 			ResetCopyProperties();
 		}
 
@@ -742,10 +762,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					if(ti != null && asso.DirectLinkType >= 0 && Math.Abs(asso.DirectLinkType) != t.Type)
 					{
 						if(  ((ti.Args[0].Type == (int)asso.Type) && (asso.Tags.Contains(t.Args[0]))) ||
-						     ((ti.Args[1].Type == (int)asso.Type) && (asso.Tags.Contains(t.Args[1]))) ||
-						     ((ti.Args[2].Type == (int)asso.Type) && (asso.Tags.Contains(t.Args[2]))) ||
-						     ((ti.Args[3].Type == (int)asso.Type) && (asso.Tags.Contains(t.Args[3]))) ||
-						     ((ti.Args[4].Type == (int)asso.Type) && (asso.Tags.Contains(t.Args[4]))))
+							 ((ti.Args[1].Type == (int)asso.Type) && (asso.Tags.Contains(t.Args[1]))) ||
+							 ((ti.Args[2].Type == (int)asso.Type) && (asso.Tags.Contains(t.Args[2]))) ||
+							 ((ti.Args[3].Type == (int)asso.Type) && (asso.Tags.Contains(t.Args[3]))) ||
+							 ((ti.Args[4].Type == (int)asso.Type) && (asso.Tags.Contains(t.Args[4]))))
 						{
 							renderer.RenderThing(t, General.Colors.Indication, General.Settings.ActiveThingsAlpha);
 							if(General.Settings.GZShowEventLines) eventlines.Add(new Line3D(t.Position, asso.Center));

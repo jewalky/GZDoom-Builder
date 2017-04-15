@@ -33,6 +33,12 @@ namespace CodeImp.DoomBuilder.ZDoom
 			public string Sprite;
 			public string LightName;
 			public bool Bright;
+            public int Duration; // this is used for TrimLeft
+
+            public bool IsEmpty()
+            {
+                return (Sprite.StartsWith("TNT1") || Duration == 0);
+            }
 		}
 		
 		#endregion
@@ -78,7 +84,7 @@ namespace CodeImp.DoomBuilder.ZDoom
             int firstNonEmpty = -1;
             for (int i = 0; i < sprites.Count; i++)
             {
-                if (!sprites[i].Sprite.StartsWith("TNT1"))
+                if (!sprites[i].IsEmpty())
                 {
                     firstNonEmpty = i;
                     break;

@@ -40,7 +40,6 @@ using CodeImp.DoomBuilder.Plugins;
 using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.Types;
 using CodeImp.DoomBuilder.Windows;
-using Microsoft.Win32;
 using SlimDX.Direct3D9;
 
 #endregion
@@ -102,7 +101,8 @@ namespace CodeImp.DoomBuilder
 		// SendMessage API
 		internal const int WM_USER = 0x400;
 		internal const int WM_SYSCOMMAND = 0x112;
-		internal const int SC_KEYMENU = 0xF100;
+        internal const int WM_MOUSEHWHEEL = 0x020E; // [ZZ]
+        internal const int SC_KEYMENU = 0xF100;
 		internal const int CB_SETITEMHEIGHT = 0x153;
 		//internal const int CB_SHOWDROPDOWN = 0x14F;
 		//internal const int EM_GETSCROLLPOS = WM_USER + 221;
@@ -2135,31 +2135,21 @@ namespace CodeImp.DoomBuilder
 		//mxd
 		public static bool CheckWritePremissions(string path)
 		{
-			try
-			{
-				DirectoryInfo di = new DirectoryInfo(path);
-				DirectorySecurity ds = di.GetAccessControl();
-				AuthorizationRuleCollection rules = ds.GetAccessRules(true, true, typeof(NTAccount));
-				WindowsIdentity currentuser = WindowsIdentity.GetCurrent();
-
-				if(currentuser != null)
-				{
-					WindowsPrincipal principal = new WindowsPrincipal(currentuser);
-					foreach(AuthorizationRule rule in rules)
-					{
-						FileSystemAccessRule fsar = rule as FileSystemAccessRule;
-						if(fsar != null && (fsar.FileSystemRights & FileSystemRights.WriteData) > 0)
-						{
-							NTAccount account = rule.IdentityReference as NTAccount;
-							if(account != null && principal.IsInRole(account.Value)) return true;
-						}
-					}
-				}
-			}
-			catch(UnauthorizedAccessException) { }
-
-			return false;
-		}
+            try
+            {
+                string testFile = path + "/GZDBWriteTest.tmp";
+                if (File.Exists(testFile))
+                    File.Delete(testFile);
+                FileStream fs = File.OpenWrite(testFile);
+                fs.Close();
+                File.Delete(testFile);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 		
 		#endregion
 

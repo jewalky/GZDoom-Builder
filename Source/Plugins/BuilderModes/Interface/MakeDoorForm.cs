@@ -33,6 +33,8 @@ namespace CodeImp.DoomBuilder.BuilderModes.Interface
 		public string CeilingTexture { get { return ceilingtexture.TextureName; } }
 		public string FloorTexture { get { return floortexture.TextureName; } }
 		public bool ResetOffsets { get { return resetoffsets.Checked; } }
+		public bool ApplyActionSpecials {  get { return applyactionspecials.Checked; } }
+		public bool ApplyTag { get { return applytag.Checked; } }
 
 		#endregion
 		
@@ -45,13 +47,15 @@ namespace CodeImp.DoomBuilder.BuilderModes.Interface
 		}
 
 		// This sets the properties and shows the form
-		public DialogResult Show(IWin32Window owner, string doortex, string tracktex, string ceilingtex, string floortex, bool roffsets)
+		public DialogResult Show(IWin32Window owner, string doortex, string tracktex, string ceilingtex, string floortex, bool roffsets, bool applyactionspecials, bool applytag)
 		{
 			this.doortexture.TextureName = doortex;
 			this.tracktexture.TextureName = tracktex;
 			this.ceilingtexture.TextureName = ceilingtex;
 			this.floortexture.TextureName = floortex;
 			this.resetoffsets.Checked = roffsets;
+			this.applyactionspecials.Checked = applyactionspecials;
+			this.applytag.Checked = applytag;
 			return this.ShowDialog(owner);
 		}
 		

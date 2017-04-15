@@ -46,9 +46,9 @@ namespace CodeImp.DoomBuilder.Controls
         public ImageData Icon { get { return icon; } }
 		public ImageBrowserItemType ItemType { get { return itemtype; } }
 		public virtual bool IsPreviewLoaded { get { return icon.IsPreviewLoaded; } }
-		public bool ShowFullName { set { showfullname = value; } }
-		public virtual string TextureName { get { return (showfullname ? icon.Name : icon.ShortName); } }
-		public virtual int TextureNameWidth { get { return (showfullname ? namewidth : shortnamewidth); } }
+		public bool ShowFullName { set { showfullname = value; } get { return showfullname && (!(icon is PK3FileImage) || !((PK3FileImage)icon).IsBadForLongTextureNames); } }
+		public virtual string TextureName { get { return (ShowFullName ? icon.Name : icon.ShortName); } }
+		public virtual int TextureNameWidth { get { return (ShowFullName ? namewidth : shortnamewidth); } }
 		public string ToolTip { get { return tooltip; } }
 
 		#endregion

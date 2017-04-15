@@ -39,6 +39,8 @@ namespace CodeImp.DoomBuilder.BuilderModes.Interface
 			this.resetoffsets = new System.Windows.Forms.CheckBox();
 			this.tracktexture = new CodeImp.DoomBuilder.Controls.TextureSelectorControl();
 			this.label4 = new System.Windows.Forms.Label();
+			this.applyactionspecials = new System.Windows.Forms.CheckBox();
+			this.applytag = new System.Windows.Forms.CheckBox();
 			this.SuspendLayout();
 			// 
 			// doortexture
@@ -102,7 +104,7 @@ namespace CodeImp.DoomBuilder.BuilderModes.Interface
 			// cancel
 			// 
 			this.cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.cancel.Location = new System.Drawing.Point(279, 140);
+			this.cancel.Location = new System.Drawing.Point(279, 163);
 			this.cancel.Name = "cancel";
 			this.cancel.Size = new System.Drawing.Size(83, 25);
 			this.cancel.TabIndex = 4;
@@ -112,7 +114,7 @@ namespace CodeImp.DoomBuilder.BuilderModes.Interface
 			// 
 			// apply
 			// 
-			this.apply.Location = new System.Drawing.Point(190, 140);
+			this.apply.Location = new System.Drawing.Point(190, 163);
 			this.apply.Name = "apply";
 			this.apply.Size = new System.Drawing.Size(83, 25);
 			this.apply.TabIndex = 3;
@@ -152,13 +154,39 @@ namespace CodeImp.DoomBuilder.BuilderModes.Interface
 			this.label4.Text = "Track";
 			this.label4.TextAlign = System.Drawing.ContentAlignment.TopCenter;
 			// 
+			// applyactionspecials
+			// 
+			this.applyactionspecials.AutoSize = true;
+			this.applyactionspecials.Checked = true;
+			this.applyactionspecials.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.applyactionspecials.Location = new System.Drawing.Point(148, 140);
+			this.applyactionspecials.Name = "applyactionspecials";
+			this.applyactionspecials.Size = new System.Drawing.Size(125, 17);
+			this.applyactionspecials.TabIndex = 8;
+			this.applyactionspecials.Text = "Apply action specials";
+			this.applyactionspecials.UseVisualStyleBackColor = true;
+			// 
+			// applytag
+			// 
+			this.applytag.AutoSize = true;
+			this.applytag.Checked = true;
+			this.applytag.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.applytag.Location = new System.Drawing.Point(292, 140);
+			this.applytag.Name = "applytag";
+			this.applytag.Size = new System.Drawing.Size(70, 17);
+			this.applytag.TabIndex = 9;
+			this.applytag.Text = "Apply tag";
+			this.applytag.UseVisualStyleBackColor = true;
+			// 
 			// MakeDoorForm
 			// 
 			this.AcceptButton = this.apply;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.CancelButton = this.cancel;
-			this.ClientSize = new System.Drawing.Size(372, 170);
+			this.ClientSize = new System.Drawing.Size(372, 197);
+			this.Controls.Add(this.applytag);
+			this.Controls.Add(this.applyactionspecials);
 			this.Controls.Add(this.tracktexture);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.resetoffsets);
@@ -198,5 +226,7 @@ namespace CodeImp.DoomBuilder.BuilderModes.Interface
 		private System.Windows.Forms.CheckBox resetoffsets;
 		private CodeImp.DoomBuilder.Controls.TextureSelectorControl tracktexture;
 		private System.Windows.Forms.Label label4;
+		private System.Windows.Forms.CheckBox applyactionspecials;
+		private System.Windows.Forms.CheckBox applytag;
 	}
 }

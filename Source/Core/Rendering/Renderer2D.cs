@@ -542,11 +542,11 @@ namespace CodeImp.DoomBuilder.Rendering
 			if(t.Selected) return General.Colors.Selection;
 			
 			//mxd. If thing is light, set it's color to light color:
-			if(Array.IndexOf(GZBuilder.GZGeneral.GZ_LIGHTS, t.Type) != -1)
+			if(GZBuilder.GZGeneral.GetGZLightTypeByThing(t) != -1)
 			{
-				if(t.Type == 1502) //vavoom light
+				if(t.DynamicLightType == 1502) //vavoom light
 					return new PixelColor(255, 255, 255, 255);
-				if(t.Type == 1503) //vavoom colored light
+				if(t.DynamicLightType == 1503) //vavoom colored light
 					return new PixelColor(255, (byte)t.Args[1], (byte)t.Args[2], (byte)t.Args[3]);
 				return new PixelColor(255, (byte)t.Args[0], (byte)t.Args[1], (byte)t.Args[2]);
 			}

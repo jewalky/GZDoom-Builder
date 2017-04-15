@@ -295,6 +295,16 @@
 #define APROP_MaxDropOffHeight 45
 #define APROP_DamageType	46
 
+// New to Eternity
+#define APROP_Counter0      100
+#define APROP_Counter1      101
+#define APROP_Counter2      102
+#define APROP_Counter3      103
+#define APROP_Counter4      104
+#define APROP_Counter5      105
+#define APROP_Counter6      106
+#define APROP_Counter7      107
+
 // Render Styles ------------------------------------------------------------
 
 #define STYLE_None			0	// Do not draw
@@ -353,6 +363,7 @@
 #define DAMAGE_NONPLAYERS			2
 #define DAMAGE_IN_AIR				4
 #define DAMAGE_SUBCLASSES_PROTECT	8
+#define DAMAGE_NO_ARMOR			16
 
 // Flags for MorphActor -----------------------------------------------------
 
@@ -990,6 +1001,8 @@
 #define PRINTNAME_LEVELNAME -1
 #define PRINTNAME_LEVEL -2
 #define PRINTNAME_SKILL -3
+#define PRINTNAME_NEXTLEVEL -4
+#define PRINTNAME_NEXTSECRET -5
 
 #define CSF_NOFAKEFLOORS 1
 #define CSF_NOBLOCKALL 2

@@ -51,6 +51,8 @@ const float4x4 worldviewproj;
 //mxd
 float4x4 world;
 float4 vertexColor;
+// [ZZ]
+float4 stencilColor;
 
 //light
 float4 lightPosAndRadius;
@@ -154,6 +156,7 @@ LitPixelData vs_lightpass(VertexData vd)
 float4 ps_main(PixelData pd) : COLOR
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	return tcolor * pd.color;
 }
 
@@ -161,6 +164,7 @@ float4 ps_main(PixelData pd) : COLOR
 float4 ps_fullbright(PixelData pd) : COLOR
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	tcolor.a *= pd.color.a;
 	return tcolor;
 }
@@ -169,6 +173,7 @@ float4 ps_fullbright(PixelData pd) : COLOR
 float4 ps_main_highlight(PixelData pd) : COLOR
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0) return tcolor;
 	
 	// Blend texture color and vertex color
@@ -181,6 +186,7 @@ float4 ps_main_highlight(PixelData pd) : COLOR
 float4 ps_fullbright_highlight(PixelData pd) : COLOR
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0) return tcolor;
 	
 	// Blend texture color and vertex color
@@ -204,6 +210,7 @@ float4 getFogColor(LitPixelData pd, float4 color)
 float4 ps_main_fog(LitPixelData pd) : COLOR 
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0) return tcolor;
 	
 	return getFogColor(pd, tcolor * pd.color);
@@ -213,6 +220,7 @@ float4 ps_main_fog(LitPixelData pd) : COLOR
 float4 ps_main_highlight_fog(LitPixelData pd) : COLOR 
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0) return tcolor;
 	
 	// Blend texture color and vertex color
@@ -251,6 +259,7 @@ float4 ps_lightpass(LitPixelData pd) : COLOR
 	
 	//is pixel tranparent?
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0.0f)
 		clip(-1);
 

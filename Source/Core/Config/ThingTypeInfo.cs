@@ -27,6 +27,7 @@ using CodeImp.DoomBuilder.IO;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.ZDoom;
+using CodeImp.DoomBuilder.GZBuilder;
 
 #endregion
 
@@ -96,6 +97,12 @@ namespace CodeImp.DoomBuilder.Config
 
 		//mxd. Ambinent sound info
 		private AmbientSoundInfo ambientsound;
+
+        // [ZZ] GZDoom inheritance data (DECORATE and ZScript). used for dynamic lighting.
+        private int dynamiclighttype = -1;
+
+        // [ZZ] optional thing is a thing that can have nonexistent sprite. this is currently only used for Skulltag things.
+        private bool optional;
 		
 		#endregion
 
@@ -143,12 +150,18 @@ namespace CodeImp.DoomBuilder.Config
 		//mxd. Ambinent sound info
 		public AmbientSoundInfo AmbientSound { get { return ambientsound; } internal set { ambientsound = value; } }
 
-		#endregion
+        // [ZZ] GZDoom inheritance data
+        public int DynamicLightType { get { return dynamiclighttype; } set { if (dynamiclighttype < 0) dynamiclighttype = value; } }
+        
+        // [ZZ]
+        public bool Optional {  get { return optional; } }
 
-		#region ================== Constructor / Disposer
+        #endregion
 
-		// Constructor
-		internal ThingTypeInfo(int index)
+        #region ================== Constructor / Disposer
+
+        // Constructor
+        internal ThingTypeInfo(int index)
 		{
 			// Initialize
 			this.index = index;
@@ -180,6 +193,7 @@ namespace CodeImp.DoomBuilder.Config
 			this.locksprite = false; //mxd
 			this.flagsrename = new Dictionary<string, Dictionary<string, string>>(StringComparer.OrdinalIgnoreCase); //mxd
 			this.thinglink = 0;
+            this.optional = false; // [ZZ]
 			
 			// We have no destructor
 			GC.SuppressFinalize(this);
@@ -253,9 +267,12 @@ namespace CodeImp.DoomBuilder.Config
 
 			//mxd. Create sprite frame
 			this.spriteframe = new[] { new SpriteFrameInfo { Sprite = sprite, SpriteLongName = Lump.MakeLongName(sprite, true) } };
-			
-			// We have no destructor
-			GC.SuppressFinalize(this);
+
+            // [ZZ] optional thing sprite.
+            this.optional = cfg.ReadSetting("thingtypes." + cat.Name + "." + key + ".optional", cat.Optional);
+
+            // We have no destructor
+            GC.SuppressFinalize(this);
 		}
 
 		// Constructor
@@ -299,8 +316,10 @@ namespace CodeImp.DoomBuilder.Config
 			//mxd. Create sprite frame
 			this.spriteframe = new[] { new SpriteFrameInfo { Sprite = sprite, SpriteLongName = Lump.MakeLongName(sprite, true) } };
 
-			// We have no destructor
-			GC.SuppressFinalize(this);
+            this.optional = false; // [ZZ]
+
+            // We have no destructor
+            GC.SuppressFinalize(this);
 		}
 
 		// Constructor
@@ -344,9 +363,12 @@ namespace CodeImp.DoomBuilder.Config
 
 			//mxd. Create sprite frame
 			this.spriteframe = new[] { new SpriteFrameInfo { Sprite = sprite, SpriteLongName = Lump.MakeLongName(sprite, true) } };
-			
-			// We have no destructor
-			GC.SuppressFinalize(this);
+
+            //
+            this.optional = false; // [ZZ]
+
+            // We have no destructor
+            GC.SuppressFinalize(this);
 		}
 
 		//mxd. Constructor
@@ -392,8 +414,11 @@ namespace CodeImp.DoomBuilder.Config
 			//mxd. Create sprite frame
 			this.spriteframe = new[] { new SpriteFrameInfo { Sprite = sprite, SpriteLongName = Lump.MakeLongName(sprite, true) } };
 
-			// We have no destructor
-			GC.SuppressFinalize(this);
+            //
+            this.optional = false; // [ZZ]
+
+            // We have no destructor
+            GC.SuppressFinalize(this);
 		}
 
 		// Constructor
@@ -438,8 +463,14 @@ namespace CodeImp.DoomBuilder.Config
 			this.rollsprite = other.rollsprite;
 			this.rollcenter = other.rollcenter;
 
-			// We have no destructor
-			GC.SuppressFinalize(this);
+            //
+            this.dynamiclighttype = other.dynamiclighttype;
+
+            //
+            this.optional = other.optional;
+
+            // We have no destructor
+            GC.SuppressFinalize(this);
 		}
 
 		#endregion
@@ -475,34 +506,9 @@ namespace CodeImp.DoomBuilder.Config
 			//mxd. Custom argument titles?
 			for(int i = 0; i < args.Length; i++)
 			{
-				if(!actor.HasPropertyWithValue("$arg" + i)) continue;
-				string argtitle = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i));
-				string argtooltip = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "tooltip").Replace("\\n", Environment.NewLine));
-				int argtype = actor.GetPropertyValueInt("$arg" + i + "type", 0);
-				string targetclasses = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "targetclasses"));
-				int defaultvalue = actor.GetPropertyValueInt("$arg" + i + "default", 0);
-				string argenum = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "enum"));
-				string argrenderstyle = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "renderstyle"));
-				string argrendercolor, minrange, maxrange, minrangecolor, maxrangecolor;
-                bool argstr = (actor.HasProperty("$arg" + i + "str"));
-                string argtitlestr = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "str"));
-                if (string.IsNullOrEmpty(argtitlestr)) argtitlestr = argtitle;
-				if (!string.IsNullOrEmpty(argrenderstyle))
-				{
-					argrendercolor = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "rendercolor"));
-					minrange = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "minrange"));
-					minrangecolor = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "minrangecolor"));
-					maxrange = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "maxrange"));
-					maxrangecolor = ZDTextParser.StripQuotes(actor.GetPropertyAllValues("$arg" + i + "maxrangecolor"));
-				}
-				else
-				{
-					argrendercolor = string.Empty; minrange = string.Empty; maxrange = string.Empty; minrangecolor = string.Empty; maxrangecolor = string.Empty;
-				}
-				
-				args[i] = new ArgumentInfo(title, argtitle, argtooltip, argrenderstyle, argrendercolor, 
-					minrange, minrangecolor, maxrange, maxrangecolor, targetclasses,
-					argtype, defaultvalue, argenum, General.Map.Config.Enums, argstr, argtitlestr);
+                ArgumentInfo arg = actor.GetArgumentInfo(i);
+                if (arg != null)
+                    args[i] = arg;
 			}
 
 			//mxd. Some SLADE compatibility
@@ -605,10 +611,13 @@ namespace CodeImp.DoomBuilder.Config
 
 			//mxd
 			if(blocking > THING_BLOCKING_NONE) errorcheck = THING_ERROR_INSIDE_STUCK;
-		}
 
-		//mxd. This tries to find all possible sprite rotations. Returns true when voxel substitute exists
-		internal bool SetupSpriteFrame(HashSet<string> allspritenames, HashSet<string> allvoxelnames)
+            // [ZZ]
+            dynamiclighttype = GZGeneral.GetGZLightTypeByClass(actor);
+        }
+
+        //mxd. This tries to find all possible sprite rotations. Returns true when voxel substitute exists
+        internal bool SetupSpriteFrame(HashSet<string> allspritenames, HashSet<string> allvoxelnames)
 		{
 			// Empty, invalid or internal sprites don't have rotations
 			// Info: we can have either partial 5-char sprite name from DECORATE parser,
@@ -669,7 +678,8 @@ namespace CodeImp.DoomBuilder.Config
 			HashSet<string> spritenames = new HashSet<string>();
 			foreach(string s in allspritenames)
 			{
-				if(s.StartsWith(sourcename)) spritenames.Add(s);
+                if (s.StartsWith(sourcename))
+                    spritenames.Add(s);
 			}
 
 			// Find a sprite, which matches baseframe
