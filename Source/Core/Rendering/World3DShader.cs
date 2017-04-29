@@ -259,7 +259,7 @@ namespace CodeImp.DoomBuilder.Rendering
 			TextureFilter magminfilter = (bilinear ? TextureFilter.Linear : TextureFilter.Point);
 			effect.SetValue(magfiltersettings, magminfilter);
 			effect.SetValue(minfiltersettings, (maxanisotropy > 1.0f ? TextureFilter.Anisotropic : magminfilter));
-			effect.SetValue(mipfiltersettings, TextureFilter.Linear);
+			effect.SetValue(mipfiltersettings, (bilinear ? TextureFilter.Linear : TextureFilter.None)); // [SB] use None, otherwise textures are still filtered
 			effect.SetValue(maxanisotropysetting, maxanisotropy);
 
 			settingschanged = true; //mxd
