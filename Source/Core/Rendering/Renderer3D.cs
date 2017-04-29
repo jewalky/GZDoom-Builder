@@ -391,7 +391,7 @@ namespace CodeImp.DoomBuilder.Rendering
 			//mxd. Sort lights
 			if(General.Settings.GZDrawLightsMode != LightRenderMode.NONE && !fullbrightness && lightthings.Count > 0)
 				UpdateLights();
-			
+
 			// Initial renderstates
 			graphics.Device.SetRenderState(RenderState.CullMode, Cull.Counterclockwise);
 			graphics.Device.SetRenderState(RenderState.ZEnable, true);
@@ -412,7 +412,7 @@ namespace CodeImp.DoomBuilder.Rendering
 			// SOLID PASS
 			world = Matrix.Identity;
 			ApplyMatrices3D();
-			RenderSinglePass(solidgeo, solidthings);
+            RenderSinglePass(solidgeo, solidthings);
 
 			//mxd. Render models, without backface culling
 			if(maskedmodelthings.Count > 0)
@@ -467,7 +467,6 @@ namespace CodeImp.DoomBuilder.Rendering
                 graphics.Device.SetRenderState(RenderState.AlphaTestEnable, false);
                 graphics.Device.SetRenderState(RenderState.ZWriteEnable, false);
                 graphics.Device.SetRenderState(RenderState.DestinationBlend, Blend.One);
-
                 RenderTranslucentLights(translucentgeo, lightthings);
             }
 
@@ -972,46 +971,38 @@ namespace CodeImp.DoomBuilder.Rendering
 			int highshaderpass = shaderpass + 2;
 
 			// Sort geometry by camera distance. First vertex of the BoundingBox is it's center
-			if(General.Map.VisualCamera.Sector != null)
+            geopass.Sort(delegate(VisualGeometry vg1, VisualGeometry vg2)
 			{
-				// If the camera is inside a sector, compare z coordinates
-				geopass.Sort(delegate(VisualGeometry vg1, VisualGeometry vg2)
-				{
-					if(vg1 == vg2) return 0;
-					float camdist1, camdist2;
+                /*if(vg1 == vg2) return 0;
+				return (int)((General.Map.VisualCamera.Position - vg2.BoundingBox[0]).GetLengthSq()
+					        -(General.Map.VisualCamera.Position - vg1.BoundingBox[0]).GetLengthSq());*/
 
-					if((vg1.GeometryType == VisualGeometryType.FLOOR || vg1.GeometryType == VisualGeometryType.CEILING)
-						&& General.Map.VisualCamera.Sector.Index == vg1.Sector.Sector.Index)
-					{
-						camdist1 = Math.Abs(General.Map.VisualCamera.Position.z - vg1.BoundingBox[0].z);
-					}
-					else
-					{
-						camdist1 = (General.Map.VisualCamera.Position - vg1.BoundingBox[0]).GetLengthSq();
-					}
+                // This does not work when you have huge translucent 3D floor combined with small translucent something over it.
+                // The huge translucent 3D floor may easily have it's center CLOSER and thus get drawn over everything, which is certainly not expected behavior.
 
-					if((vg2.GeometryType == VisualGeometryType.FLOOR || vg2.GeometryType == VisualGeometryType.CEILING)
-						&& General.Map.VisualCamera.Sector.Index == vg2.Sector.Sector.Index)
-					{
-						camdist2 = Math.Abs(General.Map.VisualCamera.Position.z - vg2.BoundingBox[0].z);
-					}
-					else
-					{
-						camdist2 = (General.Map.VisualCamera.Position - vg2.BoundingBox[0]).GetLengthSq();
-					}
+                if (vg1 == vg2)
+                    return 0;
 
-					return (int)(camdist2 - camdist1);
-				});
-			}
-			else
-			{
-                geopass.Sort(delegate(VisualGeometry vg1, VisualGeometry vg2)
-				{
-					if(vg1 == vg2) return 0;
-					return (int)((General.Map.VisualCamera.Position - vg2.BoundingBox[0]).GetLengthSq()
-					           - (General.Map.VisualCamera.Position - vg1.BoundingBox[0]).GetLengthSq());
-				});
-			}
+                double dist1, dist2;
+                Vector3D cameraPos = General.Map.VisualCamera.Position;
+                Vector2D cameraPos2 = new Vector2D(cameraPos);
+
+                // if one of the things being compared is a plane, use easier formula. (3d floor compatibility)
+                if (vg1.GeometryType == VisualGeometryType.FLOOR || vg1.GeometryType == VisualGeometryType.CEILING ||
+                    vg2.GeometryType == VisualGeometryType.FLOOR || vg2.GeometryType == VisualGeometryType.CEILING)
+                {
+                    // more magic
+                    dist1 = Math.Abs(vg1.BoundingBox[0].z - cameraPos.z);
+                    dist2 = Math.Abs(vg2.BoundingBox[0].z - cameraPos.z);
+                }
+                else
+                {
+                    dist1 = (General.Map.VisualCamera.Position - vg1.BoundingBox[0]).GetLengthSq();
+                    dist2 = (General.Map.VisualCamera.Position - vg2.BoundingBox[0]).GetLengthSq();
+                }
+
+                return (int)(dist2 - dist1);
+			});
 
 			ImageData curtexture;
 			VisualSector sector = null;
