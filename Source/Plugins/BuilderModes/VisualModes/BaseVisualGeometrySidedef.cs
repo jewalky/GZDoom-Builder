@@ -678,16 +678,41 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				float scalex, offsetx;
 				float linelength = (float)Math.Round(Sidedef.Line.Length); // Let's use ZDoom-compatible line length here
+				float patternwidth = (options.AutoWidth && options.PatternWidth > 0) ? options.PatternWidth : Texture.Width;
+				float horizontalrepeat = options.HorizontalRepeat;
 
-				if(options.FitAcrossSurfaces) 
+				if (options.FitAcrossSurfaces)
 				{
-					scalex = Texture.ScaledWidth / (linelength * (options.GlobalBounds.Width / linelength)) * options.HorizontalRepeat;
+					if (options.AutoWidth)
+					{
+						horizontalrepeat = (float)Math.Round((float)options.GlobalBounds.Width / patternwidth);
+
+						if (horizontalrepeat == 0)
+							horizontalrepeat = 1.0f;
+
+						if (options.PatternWidth > 0)
+							horizontalrepeat /= Texture.Width / patternwidth;
+					}
+
+					scalex = Texture.ScaledWidth / (linelength * (options.GlobalBounds.Width / linelength)) * horizontalrepeat;
 					offsetx = (float)Math.Round((options.Bounds.X * scalex - Sidedef.OffsetX - options.ControlSideOffsetX), General.Map.FormatInterface.VertexDecimals);
 					if(Texture.IsImageLoaded) offsetx %= Texture.Width;
 				} 
 				else 
 				{
-					scalex = Texture.ScaledWidth / linelength * options.HorizontalRepeat;
+					if (options.AutoWidth)
+					{
+						horizontalrepeat = (float)Math.Round(linelength / patternwidth);
+
+						if (horizontalrepeat == 0)
+							horizontalrepeat = 1.0f;
+
+						if (options.PatternWidth > 0)
+							horizontalrepeat /= Texture.Width / patternwidth;
+					}
+
+
+					scalex = Texture.ScaledWidth / linelength * horizontalrepeat;
 					offsetx = -Sidedef.OffsetX - options.ControlSideOffsetX;
 				}
 
@@ -707,10 +732,23 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				if(Sidedef.Sector != null) 
 				{
 					float scaley, offsety;
+					float patternheight = (options.AutoHeight && options.PatternHeight > 0) ? options.PatternHeight : Texture.Height;
+					float verticalrepeat = options.VerticalRepeat;
 
-					if(options.FitAcrossSurfaces) 
+					if (options.FitAcrossSurfaces) 
 					{
-						scaley = Texture.ScaledHeight / (options.Bounds.Height * ((float)options.GlobalBounds.Height / options.Bounds.Height)) * options.VerticalRepeat;
+						if (options.AutoHeight)
+						{
+							verticalrepeat = (float)Math.Round((float)options.GlobalBounds.Height / patternheight);
+
+							if (verticalrepeat == 0)
+								verticalrepeat = 1.0f;
+
+							if (options.PatternHeight > 0)
+								verticalrepeat /= Texture.Height / patternheight;
+						}
+
+						scaley = Texture.ScaledHeight / (options.Bounds.Height * ((float)options.GlobalBounds.Height / options.Bounds.Height)) * verticalrepeat;
 
 						if(this is VisualLower) // Special cases, special cases...
 						{ 
@@ -731,7 +769,18 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					} 
 					else 
 					{
-						scaley = Texture.ScaledHeight / options.Bounds.Height * options.VerticalRepeat;
+						if (options.AutoHeight)
+						{
+							verticalrepeat = (float)Math.Round((float)options.Bounds.Height / patternheight);
+
+							if (verticalrepeat == 0)
+								verticalrepeat = 1.0f;
+
+							if (options.PatternHeight > 0)
+								verticalrepeat /= Texture.Height / patternheight;
+						}
+
+						scaley = Texture.ScaledHeight / options.Bounds.Height * verticalrepeat;
 
 						// Special cases, special cases...
 						if(this is VisualLower)
