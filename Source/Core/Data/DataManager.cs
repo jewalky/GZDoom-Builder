@@ -1168,7 +1168,10 @@ namespace CodeImp.DoomBuilder.Data
 				{
 					// HiResImage will not give us it's actual scale
 					Bitmap texture = img.GetBitmap();
-					scale = new Vector2D((float)img.Width / texture.Width, (float)img.Height / texture.Height);
+                    lock (texture)
+                    {
+                        scale = new Vector2D((float)img.Width / texture.Width, (float)img.Height / texture.Height);
+                    }
 					return texture;
 				}
 			}
@@ -3273,7 +3276,12 @@ namespace CodeImp.DoomBuilder.Data
 				{
 					ImageData tex = LoadInternalTexture("MissingSky3D.png");
 					tex.CreateTexture();
-					Bitmap sky = new Bitmap(tex.GetBitmap());
+                    Bitmap bmp = tex.GetBitmap();
+                    Bitmap sky;
+                    lock (bmp)
+                    {
+                        sky = new Bitmap(bmp);
+                    }
 					sky.RotateFlip(RotateFlipType.RotateNoneFlipX); // We don't want our built-in image mirrored...
 					skybox = MakeClassicSkyBox(sky);
 					tex.Dispose();

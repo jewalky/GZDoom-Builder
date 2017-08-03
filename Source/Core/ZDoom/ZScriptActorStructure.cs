@@ -232,9 +232,11 @@ namespace CodeImp.DoomBuilder.ZDoom
             token = tokenizer.ReadToken();
             if (token != null && token.Type == ZScriptTokenType.OpLessThan) // <
             {
+                tokenizer.SkipWhitespace();
                 string internal_type = ParseTypeName();
                 if (internal_type == null)
                     return null;
+                tokenizer.SkipWhitespace();
                 token = tokenizer.ExpectToken(ZScriptTokenType.OpGreaterThan);
                 if (token == null || !token.IsValid)
                 {

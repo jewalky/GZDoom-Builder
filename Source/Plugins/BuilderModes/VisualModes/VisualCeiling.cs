@@ -521,31 +521,34 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 				// Some textures (e.g. HiResImage) may lie about their size, so use bitmap size instead
 				Bitmap image = Texture.GetBitmap();
-				
-				// Fetch ZDoom fields
-				float rotate = Angle2D.DegToRad(level.sector.Fields.GetValue("rotationceiling", 0.0f));
-				Vector2D offset = new Vector2D(level.sector.Fields.GetValue("xpanningceiling", 0.0f), level.sector.Fields.GetValue("ypanningceiling", 0.0f));
-				Vector2D scale = new Vector2D(level.sector.Fields.GetValue("xscaleceiling", 1.0f), level.sector.Fields.GetValue("yscaleceiling", 1.0f));
-				Vector2D texscale = new Vector2D(1.0f / Texture.ScaledWidth, 1.0f / Texture.ScaledHeight);
 
-				// Texture coordinates
-				Vector2D o = pickintersect;
-				o = o.GetRotated(rotate);
-				o.y = -o.y;
-				o = (o + offset) * scale * texscale;
-				o.x = (o.x * image.Width) % image.Width;
-				o.y = (o.y * image.Height) % image.Height;
+                lock (image)
+                {
+                    // Fetch ZDoom fields
+                    float rotate = Angle2D.DegToRad(level.sector.Fields.GetValue("rotationceiling", 0.0f));
+                    Vector2D offset = new Vector2D(level.sector.Fields.GetValue("xpanningceiling", 0.0f), level.sector.Fields.GetValue("ypanningceiling", 0.0f));
+                    Vector2D scale = new Vector2D(level.sector.Fields.GetValue("xscaleceiling", 1.0f), level.sector.Fields.GetValue("yscaleceiling", 1.0f));
+                    Vector2D texscale = new Vector2D(1.0f / Texture.ScaledWidth, 1.0f / Texture.ScaledHeight);
 
-				// Make sure coordinates are inside of texture dimensions...
-				if(o.x < 0) o.x += image.Width;
-				if(o.y < 0) o.y += image.Height;
+                    // Texture coordinates
+                    Vector2D o = pickintersect;
+                    o = o.GetRotated(rotate);
+                    o.y = -o.y;
+                    o = (o + offset) * scale * texscale;
+                    o.x = (o.x * image.Width) % image.Width;
+                    o.y = (o.y * image.Height) % image.Height;
 
-				// Make final texture coordinates...
-				int ox = General.Clamp((int)Math.Floor(o.x), 0, image.Width - 1);
-				int oy = General.Clamp((int)Math.Floor(o.y), 0, image.Height - 1);
+                    // Make sure coordinates are inside of texture dimensions...
+                    if (o.x < 0) o.x += image.Width;
+                    if (o.y < 0) o.y += image.Height;
 
-				// Check pixel alpha
-				return (image.GetPixel(ox, oy).A > 0);
+                    // Make final texture coordinates...
+                    int ox = General.Clamp((int)Math.Floor(o.x), 0, image.Width - 1);
+                    int oy = General.Clamp((int)Math.Floor(o.y), 0, image.Height - 1);
+
+                    // Check pixel alpha
+                    return (image.GetPixel(ox, oy).A > 0);
+                }
 			}
 
 			return false;

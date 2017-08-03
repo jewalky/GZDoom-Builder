@@ -109,61 +109,64 @@ namespace CodeImp.DoomBuilder.Data
 				if(!img.IsImageLoaded) img.LoadImage();
 				int imagewidth, imageheight;
 				Bitmap image = img.GetBitmap(); //mxd
-				if(!img.LoadFailed)
-				{
-					imagewidth = img.Width;
-					imageheight = img.Height;
-				}
-				else
-				{
-					Size size = image.Size; //mxd
-					imagewidth = size.Width;
-					imageheight = size.Height;
-				}
-				
-				// Determine preview size
-				float scalex = (img.Width > MAX_PREVIEW_SIZE) ? (MAX_PREVIEW_SIZE / (float)imagewidth) : 1.0f;
-				float scaley = (img.Height > MAX_PREVIEW_SIZE) ? (MAX_PREVIEW_SIZE / (float)imageheight) : 1.0f;
-				float scale = Math.Min(scalex, scaley);
-				int previewwidth = (int)(imagewidth * scale);
-				int previewheight = (int)(imageheight * scale);
-				if(previewwidth < 1) previewwidth = 1;
-				if(previewheight < 1) previewheight = 1;
+                Bitmap preview;
+                lock (image)
+                {
+                    if (!img.LoadFailed)
+                    {
+                        imagewidth = img.Width;
+                        imageheight = img.Height;
+                    }
+                    else
+                    {
+                        Size size = image.Size; //mxd
+                        imagewidth = size.Width;
+                        imageheight = size.Height;
+                    }
 
-				//mxd. Expected and actual image sizes and format match?
-				Bitmap preview;
-				if(previewwidth == imagewidth && previewheight == imageheight && image.PixelFormat == IMAGE_FORMAT)
-				{
-					preview = new Bitmap(image);
-				}
-				else
-				{
-					// Make new image
-					preview = new Bitmap(previewwidth, previewheight, IMAGE_FORMAT);
-					Graphics g = Graphics.FromImage(preview);
-					g.PageUnit = GraphicsUnit.Pixel;
-					//g.CompositingQuality = CompositingQuality.HighQuality; //mxd
-					g.InterpolationMode = InterpolationMode.NearestNeighbor;
-					//g.SmoothingMode = SmoothingMode.HighQuality; //mxd
-					g.PixelOffsetMode = PixelOffsetMode.None;
-					//g.Clear(Color.Transparent); //mxd
+                    // Determine preview size
+                    float scalex = (img.Width > MAX_PREVIEW_SIZE) ? (MAX_PREVIEW_SIZE / (float)imagewidth) : 1.0f;
+                    float scaley = (img.Height > MAX_PREVIEW_SIZE) ? (MAX_PREVIEW_SIZE / (float)imageheight) : 1.0f;
+                    float scale = Math.Min(scalex, scaley);
+                    int previewwidth = (int)(imagewidth * scale);
+                    int previewheight = (int)(imageheight * scale);
+                    if (previewwidth < 1) previewwidth = 1;
+                    if (previewheight < 1) previewheight = 1;
 
-					// Draw image onto atlas
-					Rectangle atlasrect = new Rectangle(0, 0, previewwidth, previewheight);
-					RectangleF imgrect = General.MakeZoomedRect(new Size(imagewidth, imageheight), atlasrect);
-					if(imgrect.Width < 1.0f)
-					{
-						imgrect.X -= 0.5f - imgrect.Width * 0.5f;
-						imgrect.Width = 1.0f;
-					}
-					if(imgrect.Height < 1.0f)
-					{
-						imgrect.Y -= 0.5f - imgrect.Height * 0.5f;
-						imgrect.Height = 1.0f;
-					}
-					g.DrawImage(image, imgrect);
-					g.Dispose();
-				}
+                    //mxd. Expected and actual image sizes and format match?
+                    if (previewwidth == imagewidth && previewheight == imageheight && image.PixelFormat == IMAGE_FORMAT)
+                    {
+                        preview = new Bitmap(image);
+                    }
+                    else
+                    {
+                        // Make new image
+                        preview = new Bitmap(previewwidth, previewheight, IMAGE_FORMAT);
+                        Graphics g = Graphics.FromImage(preview);
+                        g.PageUnit = GraphicsUnit.Pixel;
+                        //g.CompositingQuality = CompositingQuality.HighQuality; //mxd
+                        g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                        //g.SmoothingMode = SmoothingMode.HighQuality; //mxd
+                        g.PixelOffsetMode = PixelOffsetMode.None;
+                        //g.Clear(Color.Transparent); //mxd
+
+                        // Draw image onto atlas
+                        Rectangle atlasrect = new Rectangle(0, 0, previewwidth, previewheight);
+                        RectangleF imgrect = General.MakeZoomedRect(new Size(imagewidth, imageheight), atlasrect);
+                        if (imgrect.Width < 1.0f)
+                        {
+                            imgrect.X -= 0.5f - imgrect.Width * 0.5f;
+                            imgrect.Width = 1.0f;
+                        }
+                        if (imgrect.Height < 1.0f)
+                        {
+                            imgrect.Y -= 0.5f - imgrect.Height * 0.5f;
+                            imgrect.Height = 1.0f;
+                        }
+                        g.DrawImage(image, imgrect);
+                        g.Dispose();
+                    }
+                }
 				
 				// Unload image if no longer needed
 				if(!img.IsReferenced) img.UnloadImage();

@@ -218,8 +218,13 @@ namespace CodeImp.DoomBuilder.Data
 								{
 									if(!img.IsImageLoaded) img.LoadImage();
 
-									//mxd. Apply transformations from TexturePatch. We don't want to modify the original bitmap here, so make a copy
-									Bitmap patchbmp = TransformPatch(p, new Bitmap(img.GetBitmap()));
+                                    //mxd. Apply transformations from TexturePatch. We don't want to modify the original bitmap here, so make a copy
+                                    Bitmap bmp = img.GetBitmap();
+                                    Bitmap patchbmp;
+                                    lock (bmp)
+                                    {
+                                        patchbmp = TransformPatch(p, new Bitmap(bmp));
+                                    }
 
 									// Draw the patch on the texture image
 									Rectangle tgtrect = new Rectangle(p.X, p.Y, patchbmp.Size.Width, patchbmp.Size.Height);

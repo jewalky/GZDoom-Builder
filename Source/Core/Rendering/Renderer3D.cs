@@ -391,7 +391,7 @@ namespace CodeImp.DoomBuilder.Rendering
 			//mxd. Sort lights
 			if(General.Settings.GZDrawLightsMode != LightRenderMode.NONE && !fullbrightness && lightthings.Count > 0)
 				UpdateLights();
-			
+
 			// Initial renderstates
 			graphics.Device.SetRenderState(RenderState.CullMode, Cull.Counterclockwise);
 			graphics.Device.SetRenderState(RenderState.ZEnable, true);
@@ -412,15 +412,15 @@ namespace CodeImp.DoomBuilder.Rendering
 			// SOLID PASS
 			world = Matrix.Identity;
 			ApplyMatrices3D();
-			RenderSinglePass(solidgeo, solidthings);
+            RenderSinglePass(solidgeo, solidthings);
 
 			//mxd. Render models, without backface culling
 			if(maskedmodelthings.Count > 0)
 			{
 				graphics.Device.SetRenderState(RenderState.AlphaTestEnable, true);
 				graphics.Device.SetRenderState(RenderState.CullMode, Cull.None);
-				RenderModels();
-				graphics.Device.SetRenderState(RenderState.CullMode, Cull.Counterclockwise);
+				RenderModels(false, false);
+                graphics.Device.SetRenderState(RenderState.CullMode, Cull.Counterclockwise);
 			}
 
 			// MASK PASS
@@ -444,7 +444,17 @@ namespace CodeImp.DoomBuilder.Rendering
 				
 				RenderLights(solidgeo, lightthings);
 				RenderLights(maskedgeo, lightthings);
-			}
+
+                if (maskedmodelthings.Count > 0)
+                {
+                    graphics.Device.SetRenderState(RenderState.AlphaTestEnable, true);
+                    graphics.Device.SetRenderState(RenderState.CullMode, Cull.None);
+                    graphics.Shaders.World3D.IgnoreNormals = true;
+                    RenderModels(true, false);
+                    graphics.Shaders.World3D.IgnoreNormals = false;
+                    graphics.Device.SetRenderState(RenderState.CullMode, Cull.Counterclockwise);
+                }
+            }
 
 			// ALPHA AND ADDITIVE PASS
 			if(translucentgeo.Count > 0 || translucentthings.Count > 0)
@@ -467,7 +477,6 @@ namespace CodeImp.DoomBuilder.Rendering
                 graphics.Device.SetRenderState(RenderState.AlphaTestEnable, false);
                 graphics.Device.SetRenderState(RenderState.ZWriteEnable, false);
                 graphics.Device.SetRenderState(RenderState.DestinationBlend, Blend.One);
-
                 RenderTranslucentLights(translucentgeo, lightthings);
             }
 
@@ -478,11 +487,20 @@ namespace CodeImp.DoomBuilder.Rendering
 				graphics.Device.SetRenderState(RenderState.AlphaTestEnable, false);
 				graphics.Device.SetRenderState(RenderState.ZWriteEnable, false);
 				graphics.Device.SetRenderState(RenderState.SourceBlend, Blend.SourceAlpha);
-				RenderTranslucentModels();
-			}
+                RenderModels(false, true);
+            }
 
-			// THING CAGES
-			if(renderthingcages)
+            // [ZZ] light pass on alpha models
+            if (General.Settings.GZDrawLightsMode != LightRenderMode.NONE && !fullbrightness && lightthings.Count > 0 && translucentmodelthings.Count > 0)
+            {
+                graphics.Device.SetRenderState(RenderState.AlphaTestEnable, true);
+                graphics.Shaders.World3D.IgnoreNormals = true;
+                RenderModels(true, true);
+                graphics.Shaders.World3D.IgnoreNormals = false;
+            }
+
+            // THING CAGES
+            if (renderthingcages)
 			{
 				world = Matrix.Identity;
 				ApplyMatrices3D();
@@ -972,46 +990,38 @@ namespace CodeImp.DoomBuilder.Rendering
 			int highshaderpass = shaderpass + 2;
 
 			// Sort geometry by camera distance. First vertex of the BoundingBox is it's center
-			if(General.Map.VisualCamera.Sector != null)
+            geopass.Sort(delegate(VisualGeometry vg1, VisualGeometry vg2)
 			{
-				// If the camera is inside a sector, compare z coordinates
-				geopass.Sort(delegate(VisualGeometry vg1, VisualGeometry vg2)
-				{
-					if(vg1 == vg2) return 0;
-					float camdist1, camdist2;
+                /*if(vg1 == vg2) return 0;
+				return (int)((General.Map.VisualCamera.Position - vg2.BoundingBox[0]).GetLengthSq()
+					        -(General.Map.VisualCamera.Position - vg1.BoundingBox[0]).GetLengthSq());*/
 
-					if((vg1.GeometryType == VisualGeometryType.FLOOR || vg1.GeometryType == VisualGeometryType.CEILING)
-						&& General.Map.VisualCamera.Sector.Index == vg1.Sector.Sector.Index)
-					{
-						camdist1 = Math.Abs(General.Map.VisualCamera.Position.z - vg1.BoundingBox[0].z);
-					}
-					else
-					{
-						camdist1 = (General.Map.VisualCamera.Position - vg1.BoundingBox[0]).GetLengthSq();
-					}
+                // This does not work when you have huge translucent 3D floor combined with small translucent something over it.
+                // The huge translucent 3D floor may easily have it's center CLOSER and thus get drawn over everything, which is certainly not expected behavior.
 
-					if((vg2.GeometryType == VisualGeometryType.FLOOR || vg2.GeometryType == VisualGeometryType.CEILING)
-						&& General.Map.VisualCamera.Sector.Index == vg2.Sector.Sector.Index)
-					{
-						camdist2 = Math.Abs(General.Map.VisualCamera.Position.z - vg2.BoundingBox[0].z);
-					}
-					else
-					{
-						camdist2 = (General.Map.VisualCamera.Position - vg2.BoundingBox[0]).GetLengthSq();
-					}
+                if (vg1 == vg2)
+                    return 0;
 
-					return (int)(camdist2 - camdist1);
-				});
-			}
-			else
-			{
-                geopass.Sort(delegate(VisualGeometry vg1, VisualGeometry vg2)
-				{
-					if(vg1 == vg2) return 0;
-					return (int)((General.Map.VisualCamera.Position - vg2.BoundingBox[0]).GetLengthSq()
-					           - (General.Map.VisualCamera.Position - vg1.BoundingBox[0]).GetLengthSq());
-				});
-			}
+                double dist1, dist2;
+                Vector3D cameraPos = General.Map.VisualCamera.Position;
+                Vector2D cameraPos2 = new Vector2D(cameraPos);
+
+                // if one of the things being compared is a plane, use easier formula. (3d floor compatibility)
+                if (vg1.GeometryType == VisualGeometryType.FLOOR || vg1.GeometryType == VisualGeometryType.CEILING ||
+                    vg2.GeometryType == VisualGeometryType.FLOOR || vg2.GeometryType == VisualGeometryType.CEILING)
+                {
+                    // more magic
+                    dist1 = Math.Abs(vg1.BoundingBox[0].z - cameraPos.z);
+                    dist2 = Math.Abs(vg2.BoundingBox[0].z - cameraPos.z);
+                }
+                else
+                {
+                    dist1 = (General.Map.VisualCamera.Position - vg1.BoundingBox[0]).GetLengthSq();
+                    dist2 = (General.Map.VisualCamera.Position - vg2.BoundingBox[0]).GetLengthSq();
+                }
+
+                return (int)(dist2 - dist1);
+			});
 
 			ImageData curtexture;
 			VisualSector sector = null;
@@ -1487,142 +1497,83 @@ namespace CodeImp.DoomBuilder.Rendering
         }
 
         //mxd. Render models
-        private void RenderModels() 
+        private void RenderModels(bool lightpass, bool trans) 
 		{
 			int shaderpass = (fullbrightness ? 1 : 4);
 			int currentshaderpass = shaderpass;
 			int highshaderpass = shaderpass + 2;
 
-			// Begin rendering with this shader
-			graphics.Shaders.World3D.BeginPass(currentshaderpass);
+            RenderPass currentpass = RenderPass.Solid;
 
-			foreach(KeyValuePair<ModelData, List<VisualThing>> group in maskedmodelthings) 
+            // Begin rendering with this shader
+            if (!lightpass)
+            {
+                graphics.Shaders.World3D.BeginPass(currentshaderpass);
+            }
+            else
+            {
+                graphics.Shaders.World3D.BeginPass(SHADERPASS_LIGHT);
+            }
+
+            List<VisualThing> things;
+            if (trans)
+            {
+                // Sort models by camera distance. First vertex of the BoundingBox is it's center
+                translucentmodelthings.Sort((vt1, vt2) => (int)((General.Map.VisualCamera.Position - vt2.BoundingBox[0]).GetLengthSq()
+                                              - (General.Map.VisualCamera.Position - vt1.BoundingBox[0]).GetLengthSq()));
+                things = translucentmodelthings;
+            }
+            else
+            {
+                things = new List<VisualThing>();
+                foreach (KeyValuePair<ModelData, List<VisualThing>> group in maskedmodelthings)
+                    foreach (VisualThing t in group.Value)
+                        things.Add(t);
+            }
+            
+			foreach(VisualThing t in things) 
 			{
-				foreach(VisualThing t in group.Value) 
-				{
-					// Update buffer if needed
-					t.Update();
+                if (trans)
+                {
+                    // Change blend mode?
+                    if (t.RenderPass != currentpass)
+                    {
+                        switch (t.RenderPass)
+                        {
+                            case RenderPass.Additive:
+                                graphics.Device.SetRenderState(RenderState.DestinationBlend, Blend.One);
+                                break;
 
-					// Check 3D distance
-					if(t.Info.DistanceCheckSq < int.MaxValue && (t.Thing.Position - cameraposition).GetLengthSq() > t.Info.DistanceCheckSq)
-						continue;
-					
-					Color4 vertexcolor = new Color4(t.VertexColor);
+                            case RenderPass.Alpha:
+                                graphics.Device.SetRenderState(RenderState.DestinationBlend, Blend.InverseSourceAlpha);
+                                break;
+                        }
 
-					// Check if model is affected by dynamic lights and set color accordingly
-					if(General.Settings.GZDrawLightsMode != LightRenderMode.NONE && !fullbrightness && lightthings.Count > 0) 
-						graphics.Shaders.World3D.VertexColor = vertexcolor + GetLitColorForThing(t);
-					else 
-						graphics.Shaders.World3D.VertexColor = vertexcolor;
+                        currentpass = t.RenderPass;
+                    }
+                }
 
-					// Determine the shader pass we want to use for this object
-					int wantedshaderpass = ((((t == highlighted) && showhighlight) || (t.Selected && showselection)) ? highshaderpass : shaderpass);
-
-					// If fog is enagled, switch to shader, which calculates it
-					if(General.Settings.GZDrawFog && !fullbrightness && t.Thing.Sector != null && t.Thing.Sector.FogMode != SectorFogMode.NONE)
-						wantedshaderpass += 8;
-
-					// Switch shader pass?
-					if(currentshaderpass != wantedshaderpass) 
-					{
-						graphics.Shaders.World3D.EndPass();
-						graphics.Shaders.World3D.BeginPass(wantedshaderpass);
-						currentshaderpass = wantedshaderpass;
-					}
-
-					// Set the colors to use
-					graphics.Shaders.World3D.HighlightColor = CalculateHighlightColor((t == highlighted) && showhighlight, (t.Selected && showselection));
-
-					// Create the matrix for positioning / rotation
-					float sx = t.Thing.ScaleX * t.Thing.ActorScale.Width;
-					float sy = t.Thing.ScaleY * t.Thing.ActorScale.Height;
-
-					Matrix modelscale = Matrix.Scaling(sx, sx, sy);
-					Matrix modelrotation = Matrix.RotationY(-t.Thing.RollRad) * Matrix.RotationX(-t.Thing.PitchRad) * Matrix.RotationZ(t.Thing.Angle);
-
-					world = General.Map.Data.ModeldefEntries[t.Thing.Type].Transform * modelscale * modelrotation * t.Position;
-					ApplyMatrices3D();
-
-					// Set variables for fog rendering
-					if(wantedshaderpass > 7)
-					{
-						graphics.Shaders.World3D.World = world;
-						if(t.Thing.Sector != null) graphics.Shaders.World3D.LightColor = t.Thing.Sector.FogColor;
-						graphics.Shaders.World3D.CameraPosition = new Vector4(cameraposition.x, cameraposition.y, cameraposition.z, t.FogFactor);
-					}
-
-					for(int i = 0; i < group.Key.Model.Meshes.Count; i++) 
-					{
-						graphics.Shaders.World3D.Texture1 = group.Key.Model.Textures[i];
-						graphics.Shaders.World3D.ApplySettings();
-
-						// Render!
-						group.Key.Model.Meshes[i].DrawSubset(0);
-					}
-				}
-			}
-
-			graphics.Shaders.World3D.EndPass();
-		}
-
-		//mxd. Render additive/translucent models
-		private void RenderTranslucentModels()
-		{
-			int shaderpass = (fullbrightness ? 1 : 4);
-			int currentshaderpass = shaderpass;
-			int highshaderpass = shaderpass + 2;
-			RenderPass currentpass = RenderPass.Solid;
-
-			// Sort models by camera distance. First vertex of the BoundingBox is it's center
-			translucentmodelthings.Sort((vt1, vt2) => (int)((General.Map.VisualCamera.Position - vt2.BoundingBox[0]).GetLengthSq()
-										  - (General.Map.VisualCamera.Position - vt1.BoundingBox[0]).GetLengthSq()));
-
-			// Begin rendering with this shader
-			graphics.Shaders.World3D.BeginPass(currentshaderpass);
-
-			foreach(VisualThing t in translucentmodelthings)
-			{
-				// Change blend mode?
-				if(t.RenderPass != currentpass)
-				{
-					switch(t.RenderPass)
-					{
-						case RenderPass.Additive:
-							graphics.Device.SetRenderState(RenderState.DestinationBlend, Blend.One);
-							break;
-
-						case RenderPass.Alpha:
-							graphics.Device.SetRenderState(RenderState.DestinationBlend, Blend.InverseSourceAlpha);
-							break;
-					}
-
-					currentpass = t.RenderPass;
-				}
-				
 				// Update buffer if needed
 				t.Update();
 
 				// Check 3D distance
 				if(t.Info.DistanceCheckSq < int.MaxValue && (t.Thing.Position - cameraposition).GetLengthSq() > t.Info.DistanceCheckSq)
 					continue;
-
+					
 				Color4 vertexcolor = new Color4(t.VertexColor);
 
-				// Check if model is affected by dynamic lights and set color accordingly
-				if(General.Settings.GZDrawLightsMode != LightRenderMode.NONE && !fullbrightness && lightthings.Count > 0)
-					graphics.Shaders.World3D.VertexColor = vertexcolor + GetLitColorForThing(t);
-				else
-					graphics.Shaders.World3D.VertexColor = vertexcolor;
+                // Check if model is affected by dynamic lights and set color accordingly
+                graphics.Shaders.World3D.VertexColor = vertexcolor;
 
 				// Determine the shader pass we want to use for this object
 				int wantedshaderpass = ((((t == highlighted) && showhighlight) || (t.Selected && showselection)) ? highshaderpass : shaderpass);
 
 				// If fog is enagled, switch to shader, which calculates it
-				if(General.Settings.GZDrawFog && !fullbrightness && t.Thing.Sector != null && t.Thing.Sector.FogMode != SectorFogMode.NONE)
+				if (General.Settings.GZDrawFog && !fullbrightness && t.Thing.Sector != null && t.Thing.Sector.FogMode != SectorFogMode.NONE)
 					wantedshaderpass += 8;
 
 				// Switch shader pass?
-				if(currentshaderpass != wantedshaderpass)
+				if (!lightpass && currentshaderpass != wantedshaderpass)
 				{
 					graphics.Shaders.World3D.EndPass();
 					graphics.Shaders.World3D.BeginPass(wantedshaderpass);
@@ -1650,15 +1601,105 @@ namespace CodeImp.DoomBuilder.Rendering
 					graphics.Shaders.World3D.CameraPosition = new Vector4(cameraposition.x, cameraposition.y, cameraposition.z, t.FogFactor);
 				}
 
-				GZModel model = General.Map.Data.ModeldefEntries[t.Thing.Type].Model;
-				for(int i = 0; i < model.Meshes.Count; i++)
-				{
-					graphics.Shaders.World3D.Texture1 = model.Textures[i];
-					graphics.Shaders.World3D.ApplySettings();
+                GZModel model = General.Map.Data.ModeldefEntries[t.Thing.Type].Model;
+                for (int j = 0; j < model.Meshes.Count; j++)
+                {
+                    graphics.Shaders.World3D.Texture1 = model.Textures[j];
+                    graphics.Shaders.World3D.ApplySettings();
 
-					// Render!
-					model.Meshes[i].DrawSubset(0);
-				}
+                    if (!lightpass)
+                    {
+                        // Render!
+                        model.Meshes[j].DrawSubset(0);
+                    }
+                    else if (lightpass && t.RenderPass != RenderPass.Additive) // additive stuff does not get any lighting
+                    {
+                        List<VisualThing> lights = lightthings;
+                        //
+                        int count = lightOffsets[0];
+                        Vector4 lpr;
+
+                        // normal lights
+                        if (lightOffsets[0] > 0)
+                        {
+                            graphics.Device.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
+
+                            for (int i = 0; i < count; i++)
+                            {
+                                if (BoundingBoxesIntersect(t.BoundingBox, lights[i].BoundingBox))
+                                {
+                                    lpr = new Vector4(lights[i].Center, lights[i].LightRadius);
+                                    if (lpr.W == 0) continue;
+                                    graphics.Shaders.World3D.LightColor = lights[i].LightColor;
+                                    graphics.Shaders.World3D.LightPositionAndRadius = lpr;
+                                    graphics.Shaders.World3D.ApplySettings();
+                                    model.Meshes[j].DrawSubset(0);
+                                }
+                            }
+                        }
+
+                        //attenuated lights
+                        if (lightOffsets[1] > 0)
+                        {
+                            count += lightOffsets[1];
+                            graphics.Device.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
+
+                            for (int i = lightOffsets[0]; i < count; i++)
+                            {
+                                if (BoundingBoxesIntersect(t.BoundingBox, lights[i].BoundingBox))
+                                {
+                                    lpr = new Vector4(lights[i].Center, lights[i].LightRadius);
+                                    if (lpr.W == 0) continue;
+                                    graphics.Shaders.World3D.LightColor = lights[i].LightColor;
+                                    graphics.Shaders.World3D.LightPositionAndRadius = lpr;
+                                    graphics.Shaders.World3D.ApplySettings();
+                                    model.Meshes[j].DrawSubset(0);
+                                }
+                            }
+                        }
+
+                        //additive lights
+                        if (lightOffsets[2] > 0)
+                        {
+                            count += lightOffsets[2];
+                            graphics.Device.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
+
+                            for (int i = lightOffsets[0] + lightOffsets[1]; i < count; i++)
+                            {
+                                if (BoundingBoxesIntersect(t.BoundingBox, lights[i].BoundingBox))
+                                {
+                                    lpr = new Vector4(lights[i].Center, lights[i].LightRadius);
+                                    if (lpr.W == 0) continue;
+                                    graphics.Shaders.World3D.LightColor = lights[i].LightColor;
+                                    graphics.Shaders.World3D.LightPositionAndRadius = lpr;
+                                    graphics.Shaders.World3D.ApplySettings();
+                                    model.Meshes[j].DrawSubset(0);
+                                }
+                            }
+                        }
+
+                        //negative lights
+                        if (lightOffsets[3] > 0)
+                        {
+                            count += lightOffsets[3];
+                            graphics.Device.SetRenderState(RenderState.BlendOperation, BlendOperation.ReverseSubtract);
+
+                            for (int i = lightOffsets[0] + lightOffsets[1] + lightOffsets[2]; i < count; i++)
+                            {
+                                if (BoundingBoxesIntersect(t.BoundingBox, lights[i].BoundingBox))
+                                {
+                                    lpr = new Vector4(lights[i].Center, lights[i].LightRadius);
+                                    if (lpr.W == 0) continue;
+                                    Color4 lc = lights[i].LightColor;
+                                    graphics.Shaders.World3D.LightColor = new Color4(lc.Alpha, (lc.Green + lc.Blue) / 2, (lc.Red + lc.Blue) / 2, (lc.Green + lc.Red) / 2);
+                                    graphics.Shaders.World3D.LightPositionAndRadius = lpr;
+                                    graphics.Shaders.World3D.ApplySettings();
+                                    model.Meshes[j].DrawSubset(0);
+                                }
+                            }
+                        }
+                    }
+                }
 			}
 
 			graphics.Shaders.World3D.EndPass();
@@ -1831,23 +1872,22 @@ namespace CodeImp.DoomBuilder.Rendering
 				 General.Settings.GZDrawModelsMode == ModelRenderMode.ACTIVE_THINGS_FILTER ||
 				(General.Settings.GZDrawModelsMode == ModelRenderMode.SELECTION && t.Selected))) 
 			{
-				switch(t.RenderPass)
-				{
-					case RenderPass.Mask:
-					case RenderPass.Solid:
-						ModelData mde = General.Map.Data.ModeldefEntries[t.Thing.Type];
-						if(!maskedmodelthings.ContainsKey(mde)) maskedmodelthings.Add(mde, new List<VisualThing>());
-						maskedmodelthings[mde].Add(t);
-						break;
-
-					case RenderPass.Additive:
-					case RenderPass.Alpha:
-						translucentmodelthings.Add(t);
-						break;
-
-					default:
-						throw new NotImplementedException("Thing model rendering of " + t.RenderPass + " render pass is not implemented!");
-				}
+                if (t.RenderPass == RenderPass.Mask ||
+                    t.RenderPass == RenderPass.Solid ||
+                    (t.RenderPass == RenderPass.Alpha && (t.VertexColor & 0xFF000000) == 0xFF000000))
+                {
+                    ModelData mde = General.Map.Data.ModeldefEntries[t.Thing.Type];
+                    if (!maskedmodelthings.ContainsKey(mde)) maskedmodelthings.Add(mde, new List<VisualThing>());
+                    maskedmodelthings[mde].Add(t);
+                }
+                else if (t.RenderPass == RenderPass.Alpha || t.RenderPass == RenderPass.Additive)
+                {
+                    translucentmodelthings.Add(t);
+                }
+                else
+                {
+                    throw new NotImplementedException("Thing model rendering of " + t.RenderPass + " render pass is not implemented!");
+                }
 			}
 			// Gather regular things
 			else 

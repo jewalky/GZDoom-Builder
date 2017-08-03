@@ -57,6 +57,7 @@ float4 stencilColor;
 //light
 float4 lightPosAndRadius;
 float4 lightColor; //also used as fog color
+float ignoreNormals; // ignore normals in lighting equation. used for non-attenuated lights on models.
 
 //fog
 const float4 campos;  //w is set to fade factor (distance, at wich fog color completely overrides pixel color)
@@ -248,7 +249,7 @@ float4 ps_lightpass(LitPixelData pd) : COLOR
 	// [ZZ] oddly enough pd.normal is not a proper normal, so using dot on it returns rather unexpected results. wrapped in normalize().
 	//      update 01.02.2017: offset the equation by 3px back to try to emulate GZDoom's broken visibility check.
 	float diffuseContribution = dot(normalize(pd.normal), normalize(lightPosAndRadius.xyz - pd.pos_w + normalize(pd.normal)*3));
-	if (diffuseContribution < 0)
+	if (diffuseContribution < 0 && ignoreNormals < 0.5)
 		clip(-1);
 	diffuseContribution = max(diffuseContribution, 0); // to make sure
 
@@ -256,7 +257,7 @@ float4 ps_lightpass(LitPixelData pd) : COLOR
 	float dist = distance(pd.pos_w, lightPosAndRadius.xyz);
 	if(dist > lightPosAndRadius.w)
 		clip(-1);
-	
+
 	//is pixel tranparent?
 	float4 tcolor = tex2D(texturesamp, pd.uv);
 	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
@@ -264,12 +265,13 @@ float4 ps_lightpass(LitPixelData pd) : COLOR
 		clip(-1);
 
 	//if it is - calculate color at current pixel
-	float4 lightColorMod = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 lightColorMod = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
-	lightColorMod.rgb = lightColor.rgb * tcolor.a * max(lightPosAndRadius.w - dist, 0.0f) / lightPosAndRadius.w;
+	lightColorMod.rgb = lightColor.rgb * max(lightPosAndRadius.w - dist, 0.0f) / lightPosAndRadius.w;
+
 	if (lightColor.a > 0.979f && lightColor.a < 0.981f) // attenuated light 98%
 		lightColorMod.rgb *= diffuseContribution;
-	if(lightColorMod.r > 0.0f || lightColorMod.g > 0.0f || lightColorMod.b > 0.0f)
+	if (lightColorMod.r > 0.0f || lightColorMod.g > 0.0f || lightColorMod.b > 0.0f)
 	{
 		lightColorMod.rgb *= lightColor.a;
 		if (lightColor.a > 0.4f) //Normal, vavoom or negative light (or attenuated)

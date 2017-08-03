@@ -13,11 +13,15 @@ namespace CodeImp.DoomBuilder.BuilderModes
 {
 	internal struct FitTextureOptions
 	{
-		public int HorizontalRepeat;
-		public int VerticalRepeat;
+		public float HorizontalRepeat;
+		public float VerticalRepeat;
+		public int PatternWidth;
+		public int PatternHeight;
 		public bool FitWidth;
 		public bool FitHeight;
 		public bool FitAcrossSurfaces;
+		public bool AutoWidth;
+		public bool AutoHeight;
 		public Rectangle GlobalBounds;
 		public Rectangle Bounds;
 
@@ -94,8 +98,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// Restore settings
 			blockupdate = true;
 
-			horizrepeat.Value = horizontalrepeat;
-			vertrepeat.Value = verticalrepeat;
+			horizrepeat.Text = horizontalrepeat.ToString();
+			vertrepeat.Text = verticalrepeat.ToString();
 			prevhorizrepeat = horizontalrepeat;
 			prevvertrepeat = verticalrepeat;
 			cbfitconnected.Checked = fitacrosssurfaces;
@@ -120,8 +124,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 											FitAcrossSurfaces = (cbfitconnected.Enabled && cbfitconnected.Checked),
 											FitWidth = cbfitwidth.Checked,
 											FitHeight = cbfitheight.Checked,
-											HorizontalRepeat = (int)horizrepeat.Value,
-											VerticalRepeat = (int)vertrepeat.Value
+											PatternWidth = (int)patternwidth.GetResultFloat(0),
+											PatternHeight = (int)patternheight.GetResultFloat(0),
+											AutoWidth = cbautowidth.Checked,
+											AutoHeight = cbautoheight.Checked,
+											HorizontalRepeat = (float)horizrepeat.GetResultFloat(0),
+											VerticalRepeat = (float)vertrepeat.GetResultFloat(0)
 			                            };
 
 			foreach(SortedVisualSide side in strips) side.OnTextureFit(options);
@@ -134,13 +142,21 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			if(!repeatgroup.Enabled) return;
 
 			// Update control status
+			cbautowidth.Enabled = cbfitwidth.Checked;
+			patternwidth.Enabled = cbfitwidth.Checked && (cbautowidth.Enabled && cbautowidth.Checked);
+			labelpatternwidth.Enabled = patternwidth.Enabled;
 			labelhorizrepeat.Enabled = cbfitwidth.Checked;
-			horizrepeat.Enabled = cbfitwidth.Checked;
-			resethoriz.Enabled = cbfitwidth.Checked;
+			horizrepeat.Enabled = cbfitwidth.Checked && !cbautowidth.Checked;
+			resethoriz.Enabled = cbfitwidth.Checked && !cbautowidth.Checked;
 
+			cbautoheight.Enabled = cbfitheight.Checked;
+			patternheight.Enabled = cbfitheight.Checked && (cbautoheight.Enabled && cbautoheight.Checked);
+			labelpatternheight.Enabled = patternheight.Enabled;
 			labelvertrepeat.Enabled = cbfitheight.Checked;
-			vertrepeat.Enabled = cbfitheight.Checked;
-			resetvert.Enabled = cbfitheight.Checked;
+			vertrepeat.Enabled = cbfitheight.Checked && !cbautoheight.Checked;
+			resetvert.Enabled = cbfitheight.Checked && !cbautoheight.Checked;
+			
+			
 		}
 
 		#endregion
@@ -154,8 +170,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// Store settings
 			if(this.DialogResult == DialogResult.OK)
 			{
-				horizontalrepeat = (int)horizrepeat.Value;
-				verticalrepeat = (int)vertrepeat.Value;
+				horizontalrepeat = (int)horizrepeat.GetResultFloat(0);
+				verticalrepeat = (int)vertrepeat.GetResultFloat(0);
 				fitacrosssurfaces = cbfitwidth.Checked;
 				fitwidth = cbfitwidth.Checked;
 				fitheight = cbfitheight.Checked;
@@ -165,26 +181,26 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private void resethoriz_Click(object sender, EventArgs e)
 		{
 			prevhorizrepeat = 1;
-			horizrepeat.Value = 1;
+			horizrepeat.Text = "1";
 		}
 
 		private void resetvert_Click(object sender, EventArgs e)
 		{
 			prevvertrepeat = 1;
-			vertrepeat.Value = 1;
+			vertrepeat.Text = "1";
 		}
 
 		private void horizrepeat_ValueChanged(object sender, EventArgs e) 
 		{
 			if(blockupdate) return;
 
-			if(horizrepeat.Value == 0)
+			if(horizrepeat.GetResultFloat(0) == 0)
 			{
-				horizrepeat.Value = prevhorizrepeat > 0 ? -1 : 1;
+				horizrepeat.Text = prevhorizrepeat > 0 ? "-1" : "1";
 				return;
 			}
 
-			prevhorizrepeat = (int)horizrepeat.Value;
+			prevhorizrepeat = (int)horizrepeat.GetResultFloat(0);
 			UpdateChanges();
 		}
 
@@ -192,17 +208,17 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			if(blockupdate) return;
 
-			if(vertrepeat.Value == 0) 
+			if(vertrepeat.GetResultFloat(0) == 0) 
 			{
-				vertrepeat.Value = prevvertrepeat > 0 ? -1 : 1;
+				vertrepeat.Text = prevvertrepeat > 0 ? "-1" : "1";
 				return;
 			}
 
-			prevvertrepeat = (int)vertrepeat.Value;
+			prevvertrepeat = (int)vertrepeat.GetResultFloat(0);
 			UpdateChanges();
 		}
 
-		private void accept_Click(object sender, EventArgs e) 
+		private void accept_Click(object sender, EventArgs e)
 		{
 			this.DialogResult = DialogResult.OK;
 			this.Close();
@@ -218,6 +234,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			if(blockupdate) return;
 			UpdateRepeatGroup();
+			UpdateChanges();
+		}
+
+		private void patternsize_ValueChanged(object sender, EventArgs e)
+		{
+			if (blockupdate) return;
 			UpdateChanges();
 		}
 
@@ -287,5 +309,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 #endif
 
 		#endregion
+
+
 	}
 }

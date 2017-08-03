@@ -171,13 +171,16 @@ namespace CodeImp.DoomBuilder.Config
 
 		//mxd. Holds base game type (doom, heretic, hexen or strife)
 		private readonly string basegame;
-		
-		#endregion
 
-		#region ================== Properties
+        // [ZZ] compat
+        private readonly bool buggymodeldefpitch;
 
-		// General settings
-		public string Name { get { return configname; } }
+        #endregion
+
+        #region ================== Properties
+
+        // General settings
+        public string Name { get { return configname; } }
 		public string EngineName { get { return enginename; } }
 		public string DefaultSaveCompiler { get { return defaultsavecompiler; } }
 		public string DefaultTestCompiler { get { return defaulttestcompiler; } }
@@ -305,6 +308,9 @@ namespace CodeImp.DoomBuilder.Config
 
 		//mxd
 		public string BaseGame { get { return basegame; } }
+
+        // [ZZ] compat
+        public bool BuggyModelDefPitch { get { return buggymodeldefpitch; } } // reverses +USEACTORPITCH (as in before GZDoom 2.4, but after +INHERITACTORPITCH)
 		
 		#endregion
 
@@ -409,6 +415,9 @@ namespace CodeImp.DoomBuilder.Config
 			//mxd. Texture names length
 			longtexturenames = cfg.ReadSetting("longtexturenames", false);
 			maxtexturenamelength = (longtexturenames ? short.MaxValue : DataManager.CLASIC_IMAGE_NAME_LENGTH);
+
+            // [ZZ] compat
+            buggymodeldefpitch = cfg.ReadSetting("buggymodeldefpitch", false);
 
 			// Flags have special (invariant culture) conversion
 			// because they are allowed to be written as integers in the configs

@@ -447,14 +447,15 @@ namespace CodeImp.DoomBuilder.Map
 
 			pitch = General.ClampAngle(newpitch);
 
-			switch(rendermode)
+            switch (rendermode)
 			{
 				case ThingRenderMode.MODEL:
-					ModelData md = General.Map.Data.ModeldefEntries[type];
-					if(md.InheritActorPitch || md.UseActorPitch)
-						pitchrad = Angle2D.DegToRad(md.InheritActorPitch ? -pitch : pitch);
-					else
-						pitchrad = 0;
+                    float pmult = General.Map.Config.BuggyModelDefPitch ? 1 : -1;
+                    ModelData md = General.Map.Data.ModeldefEntries[type];
+                    if (md.InheritActorPitch || md.UseActorPitch)
+                        pitchrad = Angle2D.DegToRad(pmult * (md.InheritActorPitch ? -pitch : pitch));
+                    else
+                        pitchrad = 0;
 					break;
 
 				case ThingRenderMode.FLATSPRITE:
@@ -581,9 +582,10 @@ namespace CodeImp.DoomBuilder.Map
 			switch(rendermode)
 			{
 				case ThingRenderMode.MODEL:
-					ModelData md = General.Map.Data.ModeldefEntries[type];
+                    float pmult = General.Map.Config.BuggyModelDefPitch ? 1 : -1;
+                    ModelData md = General.Map.Data.ModeldefEntries[type];
 					rollrad = (md.UseActorRoll ? Angle2D.DegToRad(roll) : 0);
-					pitchrad = ((md.InheritActorPitch || md.UseActorPitch) ? Angle2D.DegToRad(md.InheritActorPitch ? -pitch : pitch) : 0);
+					pitchrad = ((md.InheritActorPitch || md.UseActorPitch) ? Angle2D.DegToRad(pmult * (md.InheritActorPitch ? -pitch : pitch)) : 0);
 					break;
 
 				case ThingRenderMode.FLATSPRITE:

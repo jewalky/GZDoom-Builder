@@ -82,6 +82,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 		protected override void SetupInterface() 
 		{
+            minsubdivisions = 0;
 			maxsubdivisions = 16;
 			minpointscount = 4;
 

@@ -61,11 +61,11 @@ namespace CodeImp.DoomBuilder.GZBuilder
                     {
                         int baseType = light % 10;
                         int dispType = light - baseType;
-                        if (actor.GetFlagValue("MISSILEMORE", false))
+                        if (actor.GetFlagValue("MISSILEMORE", false) || actor.GetFlagValue("DYNAMICLIGHT.ADDITIVE", false))
                             dispType = 9810;
-                        else if (actor.GetFlagValue("MISSILEEVENMORE", false))
+                        else if (actor.GetFlagValue("MISSILEEVENMORE", false) || actor.GetFlagValue("DYNAMICLIGHT.SUBTRACTIVE", false))
                             dispType = 9820;
-                        else if (actor.GetFlagValue("INCOMBAT", false))
+                        else if (actor.GetFlagValue("INCOMBAT", false) || actor.GetFlagValue("DYNAMICLIGHT.ATTENUATE", false))
                             dispType = 9830;
                         return dispType + baseType;
                     }

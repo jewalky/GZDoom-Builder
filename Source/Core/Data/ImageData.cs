@@ -84,6 +84,9 @@ namespace CodeImp.DoomBuilder.Data
 		
 		// Disposing
 		protected bool isdisposed;
+
+        // Dummy object used when we don't have a bitmap for locking
+        private object bitmapLocker = new object();
 		
 		#endregion
 		
@@ -101,7 +104,7 @@ namespace CodeImp.DoomBuilder.Data
 		public bool HasPatchWithSameName { get { return hasPatchWithSameName; } } //mxd
 		internal bool HasLongName { get { return hasLongName; } } //mxd
 		public bool UseColorCorrection { get { return usecolorcorrection; } set { usecolorcorrection = value; } }
-		public Texture Texture { get { lock(this) { return texture; } } }
+		public Texture Texture { get { lock (this) lock (bitmap ?? bitmapLocker) { return texture; } } }
 		public bool IsPreviewLoaded { get { return (previewstate == ImageLoadState.Ready); } }
 		public bool IsImageLoaded { get { return (imagestate == ImageLoadState.Ready); } }
 		public bool LoadFailed { get { return loadfailed; } }
@@ -148,7 +151,7 @@ namespace CodeImp.DoomBuilder.Data
 			// Not already disposed?
 			if(!isdisposed)
 			{
-				lock(this)
+				lock (this) lock (bitmap ?? bitmapLocker)
 				{
 					// Clean up
 					if(bitmap != null) bitmap.Dispose();
@@ -208,8 +211,8 @@ namespace CodeImp.DoomBuilder.Data
 		// This unloads the image
 		public virtual void UnloadImage()
 		{
-			lock(this)
-			{
+            lock (this) lock (bitmap ?? bitmapLocker)
+            {
 				if(bitmap != null) bitmap.Dispose();
 				bitmap = null;
 				imagestate = ImageLoadState.None;
@@ -219,8 +222,8 @@ namespace CodeImp.DoomBuilder.Data
 		// This returns the bitmap image
 		public Bitmap GetBitmap()
 		{
-			lock(this)
-			{
+            lock (this) lock (bitmap ?? bitmapLocker)
+            {
 				// Image loaded successfully?
 				if(!loadfailed && (imagestate == ImageLoadState.Ready) && (bitmap != null))
 					return bitmap;
@@ -244,8 +247,8 @@ namespace CodeImp.DoomBuilder.Data
 		// This requests loading the image
 		protected virtual void LocalLoadImage()
 		{
-			lock(this)
-			{
+            lock (this) lock (bitmap ?? bitmapLocker)
+            {
 				// Bitmap loaded successfully?
 				if(bitmap != null)
 				{
@@ -443,8 +446,8 @@ namespace CodeImp.DoomBuilder.Data
 		// This creates the Direct3D texture
 		public virtual void CreateTexture()
 		{
-			lock(this)
-			{
+            lock (this) lock (bitmap ?? bitmapLocker)
+            {
 				// Only do this when texture is not created yet
 				if(((texture == null) || (texture.Disposed)) && this.IsImageLoaded && !loadfailed)
 				{
@@ -487,9 +490,9 @@ namespace CodeImp.DoomBuilder.Data
 		{
 			if(!dynamictexture)
 				throw new Exception("The image must be a dynamic image to support direct updating.");
-			
-			lock(this)
-			{
+
+            lock (this) lock (bitmap ?? bitmapLocker)
+            {
 				if((texture != null) && !texture.Disposed)
 				{
 					// Lock the bitmap and texture
@@ -523,8 +526,8 @@ namespace CodeImp.DoomBuilder.Data
 		// This destroys the Direct3D texture
 		public void ReleaseTexture()
 		{
-			lock(this)
-			{
+            lock (this) lock (bitmap ?? bitmapLocker)
+            {
 				// Trash it
 				if(texture != null) texture.Dispose();
 				texture = null;
@@ -534,8 +537,8 @@ namespace CodeImp.DoomBuilder.Data
 		// This draws a preview
 		public virtual void DrawPreview(Graphics target, Point targetpos)
 		{
-			lock(this)
-			{
+            lock (this) lock (bitmap ?? bitmapLocker)
+            {
 				// Preview ready?
 				if(!loadfailed && (previewstate == ImageLoadState.Ready))
 				{
@@ -563,8 +566,8 @@ namespace CodeImp.DoomBuilder.Data
 		// This returns a preview image
 		public virtual Image GetPreview()
 		{
-			lock(this)
-			{
+            lock (this) lock (bitmap ?? bitmapLocker)
+            {
 				// Preview ready?
 				if(previewstate == ImageLoadState.Ready)
 				{

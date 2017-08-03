@@ -41,6 +41,7 @@ namespace CodeImp.DoomBuilder.Rendering
 		private readonly EffectHandle vertexColorHandle;
 		private readonly EffectHandle lightPositionAndRadiusHandle; //lights
 		private readonly EffectHandle lightColorHandle;
+        private readonly EffectHandle ignoreNormalsHandle;
 		private readonly EffectHandle world;
 		private readonly EffectHandle camPosHandle; //used for fog rendering
 
@@ -111,6 +112,21 @@ namespace CodeImp.DoomBuilder.Rendering
 				}
 			}
 		}
+
+        // [ZZ] emulating broken gz lights
+        private bool ignorenormals;
+        public bool IgnoreNormals
+        {
+            set
+            {
+                if (ignorenormals != value)
+                {
+                    effect.SetValue(ignoreNormalsHandle, value ? 1f : 0f);
+                    ignorenormals = value;
+                    settingschanged = true;
+                }
+            }
+        }
 
 		private Vector4 lightpos;
 		public Vector4 LightPositionAndRadius
@@ -196,6 +212,7 @@ namespace CodeImp.DoomBuilder.Rendering
 				//lights
 				lightPositionAndRadiusHandle = effect.GetParameter(null, "lightPosAndRadius");
 				lightColorHandle = effect.GetParameter(null, "lightColor");
+                ignoreNormalsHandle = effect.GetParameter(null, "ignoreNormals");
 				//fog
 				camPosHandle = effect.GetParameter(null, "campos");
 
@@ -238,6 +255,7 @@ namespace CodeImp.DoomBuilder.Rendering
 				//mxd
 				if(vertexColorHandle != null) vertexColorHandle.Dispose();
 				if(lightColorHandle != null) lightColorHandle.Dispose();
+                if (ignoreNormalsHandle != null) ignoreNormalsHandle.Dispose();
 				if(lightPositionAndRadiusHandle != null) lightPositionAndRadiusHandle.Dispose();
 				if(camPosHandle != null) camPosHandle.Dispose();
                 if (stencilColorHandle != null) stencilColorHandle.Dispose();
@@ -259,7 +277,7 @@ namespace CodeImp.DoomBuilder.Rendering
 			TextureFilter magminfilter = (bilinear ? TextureFilter.Linear : TextureFilter.Point);
 			effect.SetValue(magfiltersettings, magminfilter);
 			effect.SetValue(minfiltersettings, (maxanisotropy > 1.0f ? TextureFilter.Anisotropic : magminfilter));
-			effect.SetValue(mipfiltersettings, TextureFilter.Linear);
+			effect.SetValue(mipfiltersettings, (bilinear ? TextureFilter.Linear : TextureFilter.None)); // [SB] use None, otherwise textures are still filtered
 			effect.SetValue(maxanisotropysetting, maxanisotropy);
 
 			settingschanged = true; //mxd
