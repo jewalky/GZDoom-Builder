@@ -128,19 +128,5 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 		#endregion
 
-		private void label17_Click(object sender, System.EventArgs e)
-		{
-
-		}
-
-		private void label16_Click(object sender, System.EventArgs e)
-		{
-
-		}
-
-		private void buttonsNumericTextbox1_Load(object sender, System.EventArgs e)
-		{
-
-		}
 	}
 }

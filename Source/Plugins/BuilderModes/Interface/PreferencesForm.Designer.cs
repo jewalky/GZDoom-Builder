@@ -397,7 +397,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.mouseselectionthreshold.Size = new System.Drawing.Size(59, 24);
 			this.mouseselectionthreshold.StepValues = null;
 			this.mouseselectionthreshold.TabIndex = 16;
-			this.mouseselectionthreshold.Load += new System.EventHandler(this.buttonsNumericTextbox1_Load);
 			// 
 			// label16
 			// 
@@ -407,7 +406,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.label16.Size = new System.Drawing.Size(33, 13);
 			this.label16.TabIndex = 18;
 			this.label16.Text = "pixels";
-			this.label16.Click += new System.EventHandler(this.label16_Click);
 			// 
 			// label17
 			// 
