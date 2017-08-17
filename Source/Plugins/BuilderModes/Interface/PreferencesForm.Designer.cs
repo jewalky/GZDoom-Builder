@@ -40,6 +40,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.defaultbrightness = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
 			this.label11 = new System.Windows.Forms.Label();
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
+			this.switchviewmodes = new System.Windows.Forms.CheckBox();
 			this.autodrawonedit = new System.Windows.Forms.CheckBox();
 			this.syncSelection = new System.Windows.Forms.CheckBox();
 			this.dontMoveGeometryOutsideBounds = new System.Windows.Forms.CheckBox();
@@ -51,6 +52,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.editnewsector = new System.Windows.Forms.CheckBox();
 			this.additiveselect = new System.Windows.Forms.CheckBox();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
+			this.mouseselectionthreshold = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
+			this.label16 = new System.Windows.Forms.Label();
+			this.label17 = new System.Windows.Forms.Label();
 			this.splitlinedefsrange = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
 			this.stitchrange = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
 			this.highlightthingsrange = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
@@ -68,7 +72,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.label10 = new System.Windows.Forms.Label();
 			this.label1 = new System.Windows.Forms.Label();
 			this.heightbysidedef = new System.Windows.Forms.ComboBox();
-			this.switchviewmodes = new System.Windows.Forms.CheckBox();
 			this.tabs.SuspendLayout();
 			this.taboptions.SuspendLayout();
 			this.groupBox4.SuspendLayout();
@@ -79,9 +82,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// 
 			// tabs
 			// 
-			this.tabs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.tabs.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.tabs.Controls.Add(this.taboptions);
 			this.tabs.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
 			this.tabs.Location = new System.Drawing.Point(12, 12);
@@ -116,9 +119,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.groupBox4.Controls.Add(this.label12);
 			this.groupBox4.Controls.Add(this.defaultbrightness);
 			this.groupBox4.Controls.Add(this.label11);
-			this.groupBox4.Location = new System.Drawing.Point(6, 261);
+			this.groupBox4.Location = new System.Drawing.Point(6, 300);
 			this.groupBox4.Name = "groupBox4";
-			this.groupBox4.Size = new System.Drawing.Size(272, 160);
+			this.groupBox4.Size = new System.Drawing.Size(272, 122);
 			this.groupBox4.TabIndex = 2;
 			this.groupBox4.TabStop = false;
 			this.groupBox4.Text = " Default sector settings";
@@ -144,6 +147,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// defaultfloorheight
 			// 
 			this.defaultfloorheight.AllowDecimal = false;
+			this.defaultfloorheight.AllowExpressions = false;
 			this.defaultfloorheight.AllowNegative = true;
 			this.defaultfloorheight.AllowRelative = false;
 			this.defaultfloorheight.ButtonStep = 5;
@@ -170,6 +174,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// defaultceilheight
 			// 
 			this.defaultceilheight.AllowDecimal = false;
+			this.defaultceilheight.AllowExpressions = false;
 			this.defaultceilheight.AllowNegative = true;
 			this.defaultceilheight.AllowRelative = false;
 			this.defaultceilheight.ButtonStep = 5;
@@ -196,6 +201,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// defaultbrightness
 			// 
 			this.defaultbrightness.AllowDecimal = false;
+			this.defaultbrightness.AllowExpressions = false;
 			this.defaultbrightness.AllowNegative = false;
 			this.defaultbrightness.AllowRelative = false;
 			this.defaultbrightness.ButtonStep = 5;
@@ -239,6 +245,16 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.groupBox3.TabStop = false;
 			this.groupBox3.Text = " Options ";
 			// 
+			// switchviewmodes
+			// 
+			this.switchviewmodes.AutoSize = true;
+			this.switchviewmodes.Location = new System.Drawing.Point(13, 287);
+			this.switchviewmodes.Name = "switchviewmodes";
+			this.switchviewmodes.Size = new System.Drawing.Size(317, 17);
+			this.switchviewmodes.TabIndex = 10;
+			this.switchviewmodes.Text = "Switch view modes when switching to the same Classic Mode";
+			this.switchviewmodes.UseVisualStyleBackColor = true;
+			// 
 			// autodrawonedit
 			// 
 			this.autodrawonedit.AutoSize = true;
@@ -247,7 +263,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.autodrawonedit.Size = new System.Drawing.Size(353, 30);
 			this.autodrawonedit.TabIndex = 0;
 			this.autodrawonedit.Text = "Start drawing when Edit pressed over empty space in Classic modes\r\nInsert new thi" +
-				"ng when Edit pressed over empty space in Things mode";
+    "ng when Edit pressed over empty space in Things mode";
 			this.autodrawonedit.UseVisualStyleBackColor = true;
 			// 
 			// syncSelection
@@ -342,6 +358,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// 
 			// groupBox2
 			// 
+			this.groupBox2.Controls.Add(this.mouseselectionthreshold);
+			this.groupBox2.Controls.Add(this.label16);
+			this.groupBox2.Controls.Add(this.label17);
 			this.groupBox2.Controls.Add(this.splitlinedefsrange);
 			this.groupBox2.Controls.Add(this.stitchrange);
 			this.groupBox2.Controls.Add(this.highlightthingsrange);
@@ -356,14 +375,54 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.groupBox2.Controls.Add(this.label7);
 			this.groupBox2.Location = new System.Drawing.Point(6, 104);
 			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(272, 151);
+			this.groupBox2.Size = new System.Drawing.Size(272, 190);
 			this.groupBox2.TabIndex = 1;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = " Ranges ";
 			// 
+			// mouseselectionthreshold
+			// 
+			this.mouseselectionthreshold.AllowDecimal = false;
+			this.mouseselectionthreshold.AllowExpressions = false;
+			this.mouseselectionthreshold.AllowNegative = false;
+			this.mouseselectionthreshold.AllowRelative = false;
+			this.mouseselectionthreshold.ButtonStep = 5;
+			this.mouseselectionthreshold.ButtonStepBig = 10F;
+			this.mouseselectionthreshold.ButtonStepFloat = 1F;
+			this.mouseselectionthreshold.ButtonStepSmall = 0.1F;
+			this.mouseselectionthreshold.ButtonStepsUseModifierKeys = false;
+			this.mouseselectionthreshold.ButtonStepsWrapAround = false;
+			this.mouseselectionthreshold.Location = new System.Drawing.Point(156, 141);
+			this.mouseselectionthreshold.Name = "mouseselectionthreshold";
+			this.mouseselectionthreshold.Size = new System.Drawing.Size(59, 24);
+			this.mouseselectionthreshold.StepValues = null;
+			this.mouseselectionthreshold.TabIndex = 16;
+			this.mouseselectionthreshold.Load += new System.EventHandler(this.buttonsNumericTextbox1_Load);
+			// 
+			// label16
+			// 
+			this.label16.AutoSize = true;
+			this.label16.Location = new System.Drawing.Point(221, 146);
+			this.label16.Name = "label16";
+			this.label16.Size = new System.Drawing.Size(33, 13);
+			this.label16.TabIndex = 18;
+			this.label16.Text = "pixels";
+			this.label16.Click += new System.EventHandler(this.label16_Click);
+			// 
+			// label17
+			// 
+			this.label17.AutoSize = true;
+			this.label17.Location = new System.Drawing.Point(13, 146);
+			this.label17.Name = "label17";
+			this.label17.Size = new System.Drawing.Size(133, 13);
+			this.label17.TabIndex = 17;
+			this.label17.Text = "Mouse selection threshold:";
+			this.label17.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
 			// splitlinedefsrange
 			// 
 			this.splitlinedefsrange.AllowDecimal = false;
+			this.splitlinedefsrange.AllowExpressions = false;
 			this.splitlinedefsrange.AllowNegative = false;
 			this.splitlinedefsrange.AllowRelative = false;
 			this.splitlinedefsrange.ButtonStep = 5;
@@ -381,6 +440,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// stitchrange
 			// 
 			this.stitchrange.AllowDecimal = false;
+			this.stitchrange.AllowExpressions = false;
 			this.stitchrange.AllowNegative = false;
 			this.stitchrange.AllowRelative = false;
 			this.stitchrange.ButtonStep = 5;
@@ -398,6 +458,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// highlightthingsrange
 			// 
 			this.highlightthingsrange.AllowDecimal = false;
+			this.highlightthingsrange.AllowExpressions = false;
 			this.highlightthingsrange.AllowNegative = false;
 			this.highlightthingsrange.AllowRelative = false;
 			this.highlightthingsrange.ButtonStep = 5;
@@ -415,6 +476,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// highlightrange
 			// 
 			this.highlightrange.AllowDecimal = false;
+			this.highlightrange.AllowExpressions = false;
 			this.highlightrange.AllowNegative = false;
 			this.highlightrange.AllowRelative = false;
 			this.highlightrange.ButtonStep = 5;
@@ -566,16 +628,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.heightbysidedef.Size = new System.Drawing.Size(309, 21);
 			this.heightbysidedef.TabIndex = 0;
 			// 
-			// switchviewmodes
-			// 
-			this.switchviewmodes.AutoSize = true;
-			this.switchviewmodes.Location = new System.Drawing.Point(13, 287);
-			this.switchviewmodes.Name = "switchviewmodes";
-			this.switchviewmodes.Size = new System.Drawing.Size(317, 17);
-			this.switchviewmodes.TabIndex = 10;
-			this.switchviewmodes.Text = "Switch view modes when switching to the same Classic Mode";
-			this.switchviewmodes.UseVisualStyleBackColor = true;
-			// 
 			// PreferencesForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -585,7 +637,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "PreferencesForm";
-			this.Opacity = 1;
 			this.ShowIcon = false;
 			this.Text = "PreferencesForm";
 			this.tabs.ResumeLayout(false);
@@ -645,5 +696,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private System.Windows.Forms.Label label14;
 		private System.Windows.Forms.CheckBox autodrawonedit;
 		private System.Windows.Forms.CheckBox switchviewmodes;
+		private Controls.ButtonsNumericTextbox mouseselectionthreshold;
+		private System.Windows.Forms.Label label16;
+		private System.Windows.Forms.Label label17;
 	}
 }

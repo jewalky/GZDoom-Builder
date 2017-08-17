@@ -50,6 +50,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			highlightrange.Text = General.Settings.ReadPluginSetting("highlightrange", 20).ToString();
 			highlightthingsrange.Text = General.Settings.ReadPluginSetting("highlightthingsrange", 10).ToString();
 			splitlinedefsrange.Text = General.Settings.ReadPluginSetting("splitlinedefsrange", 10).ToString();
+			mouseselectionthreshold.Text = General.Settings.ReadPluginSetting("mouseselectionthreshold", 2).ToString();
 			splitbehavior.SelectedIndex = (int)General.Settings.SplitLineBehavior; //mxd
 			autoclearselection.Checked = BuilderPlug.Me.AutoClearSelection;
 			visualmodeclearselection.Checked = BuilderPlug.Me.VisualModeClearSelection;
@@ -80,6 +81,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			General.Settings.WritePluginSetting("highlightrange", highlightrange.GetResult(0));
 			General.Settings.WritePluginSetting("highlightthingsrange", highlightthingsrange.GetResult(0));
 			General.Settings.WritePluginSetting("splitlinedefsrange", splitlinedefsrange.GetResult(0));
+			General.Settings.WritePluginSetting("mouseselectionthreshold", mouseselectionthreshold.GetResult(0));
 			General.Settings.WritePluginSetting("autoclearselection", autoclearselection.Checked);
 			General.Settings.WritePluginSetting("visualmodeclearselection", visualmodeclearselection.Checked);
 			General.Settings.WritePluginSetting("autodragonpaste", autodragonpaste.Checked);
@@ -125,5 +127,20 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		}
 
 		#endregion
+
+		private void label17_Click(object sender, System.EventArgs e)
+		{
+
+		}
+
+		private void label16_Click(object sender, System.EventArgs e)
+		{
+
+		}
+
+		private void buttonsNumericTextbox1_Load(object sender, System.EventArgs e)
+		{
+
+		}
 	}
 }

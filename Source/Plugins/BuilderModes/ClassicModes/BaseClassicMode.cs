@@ -32,12 +32,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 {
 	public abstract class BaseClassicMode : ClassicMode
 	{
-		#region ================== Constants
-
-		protected const int MULTISELECT_START_MOVE_PIXELS = 2; //mxd
-
-		#endregion
-
 		#region ================== Variables
 
 		protected bool paintselectpressed; //mxd
