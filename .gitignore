@@ -6,3 +6,4 @@ obj
 /Build/Refmanual.chm
 /.vs
 /Build/DevIL.dll
+/Build/Plugins/*.dll
