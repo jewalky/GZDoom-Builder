@@ -788,7 +788,7 @@ namespace CodeImp.DoomBuilder.Data
 				// Done
 				notifiedbusy = false;
 				backgroundloader = null;
-				General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+				General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 			}
 		}
 		
@@ -833,7 +833,7 @@ namespace CodeImp.DoomBuilder.Data
 						if(!notifiedbusy)
 						{
 							notifiedbusy = true;
-							General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+							General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 						}
 						Thread.Sleep(0);
 					}
@@ -847,7 +847,7 @@ namespace CodeImp.DoomBuilder.Data
 							if(!notifiedbusy)
 							{
 								notifiedbusy = true;
-								General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+								General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 							}
 							Thread.Sleep(0);
 						}
@@ -872,13 +872,13 @@ namespace CodeImp.DoomBuilder.Data
 								{
 									notifiedbusy = false;
 									IntPtr strptr = Marshal.StringToCoTaskMemAuto(deltatimesec);
-									General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.ResourcesLoaded, strptr.ToInt32(), 0);
+									General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.ResourcesLoaded, strptr, IntPtr.Zero);
 								}
 							}
 							else if(notifiedbusy) //mxd. Sould never happen (?)
 							{
 								notifiedbusy = false;
-								General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+								General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 							}
 							
 							// Wait longer to release CPU resources
@@ -911,7 +911,7 @@ namespace CodeImp.DoomBuilder.Data
 			}
 			
 			// Update icon
-			General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+			General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 		}
 
 		//mxd. This loads a model

@@ -1,6 +1,6 @@
 ﻿using System.IO;
-using SharpCompress.Compressor;
-using SharpCompress.Compressor.BZip2;
+using SharpCompress.Compressors;
+using SharpCompress.Compressors.BZip2;
 
 namespace CodeImp.DoomBuilder.GZBuilder.Data
 {

@@ -60,7 +60,7 @@ namespace CodeImp.DoomBuilder.Data
 
 			// Notify the main thread about the change to redraw display
 			IntPtr strptr = Marshal.StringToCoTaskMemAuto(this.Name);
-			General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.SpriteDataLoaded, strptr.ToInt32(), 0);
+			General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.SpriteDataLoaded, strptr, IntPtr.Zero);
 		}
 
 		// This loads the image

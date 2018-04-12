@@ -63,7 +63,7 @@ namespace CodeImp.DoomBuilder
 		//internal static extern unsafe void CopyMemory(void* dst, void* src, uint length);
 
 		[DllImport("user32.dll", EntryPoint = "SendMessage", SetLastError = true, CallingConvention = CallingConvention.StdCall)]
-		internal static extern int SendMessage(IntPtr hwnd, uint Msg, int wParam, int lParam);
+		internal static extern int SendMessage(IntPtr hwnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
 		[DllImport("user32.dll", SetLastError = true)]
 		internal static extern bool MessageBeep(MessageBeepType type);

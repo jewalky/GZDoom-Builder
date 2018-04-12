@@ -9,9 +9,9 @@ using System.Net;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using SharpCompress.Archive.SevenZip;
-using SharpCompress.Common;
-using SharpCompress.Reader;
+using SharpCompress.Archives.SevenZip;
+//using SharpCompress.Common;
+using SharpCompress.Readers;
 
 #endregion
 
@@ -214,7 +214,7 @@ namespace CodeImp.DoomBuilder
 						while(reader.MoveToNextEntry())
 						{
 							if(reader.Entry.IsDirectory) continue; // Shouldn't be there, but who knows...
-							reader.WriteEntryToDirectory(General.AppPath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
+							reader.WriteEntryToDirectory(General.AppPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
 						}
 					}
 				}
