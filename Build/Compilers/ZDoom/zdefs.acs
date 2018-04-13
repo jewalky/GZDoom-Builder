@@ -193,6 +193,10 @@
 #define CR_DARKGRAY				20
 #define CR_DARKGREY				20
 #define CR_CYAN					21
+#define CR_ICE					22
+#define CR_FIRE					23
+#define CR_SAPPHIRE				24
+#define CR_TEAL					25
 
 // HUD message types --------------------------------------------------------
 

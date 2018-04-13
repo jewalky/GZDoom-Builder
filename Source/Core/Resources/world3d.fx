@@ -59,6 +59,7 @@ float4 lightPosAndRadius;
 float3 lightOrientation; // this is a vector that points in light's direction
 float2 light2Radius; // this is used with spotlights
 float4 lightColor; //also used as fog color
+float desaturation;
 float ignoreNormals; // ignore normals in lighting equation. used for non-attenuated lights on models.
 float spotLight; // use lightOrientation
 
@@ -156,12 +157,19 @@ LitPixelData vs_lightpass(VertexData vd)
 	return pd;
 }
 
+// [ZZ] desaturation routine. almost literal quote from GZDoom's GLSL
+float4 desaturate(float4 texel)
+{
+	float gray = (texel.r * 0.3 + texel.g * 0.56 + texel.b * 0.14);	
+	return lerp(texel, float4(gray,gray,gray,texel.a), desaturation);
+}
+
 // Normal pixel shader
 float4 ps_main(PixelData pd) : COLOR
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
 	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
-	return tcolor * pd.color;
+	return desaturate(tcolor * pd.color);
 }
 
 // Full-bright pixel shader
@@ -181,7 +189,7 @@ float4 ps_main_highlight(PixelData pd) : COLOR
 	if(tcolor.a == 0) return tcolor;
 	
 	// Blend texture color and vertex color
-	float4 ncolor = tcolor * pd.color;
+	float4 ncolor = desaturate(tcolor * pd.color);
 	
 	return float4(highlightcolor.rgb * highlightcolor.a + (ncolor.rgb - 0.4f * highlightcolor.a), max(pd.color.a + 0.25f, 0.5f));
 }
@@ -217,7 +225,7 @@ float4 ps_main_fog(LitPixelData pd) : COLOR
 	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0) return tcolor;
 	
-	return getFogColor(pd, tcolor * pd.color);
+	return desaturate(getFogColor(pd, tcolor * pd.color));
 }
 
 // Normal pixel shader with highlight
@@ -228,7 +236,7 @@ float4 ps_main_highlight_fog(LitPixelData pd) : COLOR
 	if(tcolor.a == 0) return tcolor;
 	
 	// Blend texture color and vertex color
-	float4 ncolor = getFogColor(pd, tcolor * pd.color);
+	float4 ncolor = desaturate(getFogColor(pd, tcolor * pd.color));
 	
 	return float4(highlightcolor.rgb * highlightcolor.a + (ncolor.rgb - 0.4f * highlightcolor.a), max(ncolor.a + 0.25f, 0.5f));
 }
@@ -286,8 +294,8 @@ float4 ps_lightpass(LitPixelData pd) : COLOR
 	{
 		lightColorMod.rgb *= lightColor.a;
 		if (lightColor.a > 0.4f) //Normal, vavoom or negative light (or attenuated)
-			return tcolor * lightColorMod;
-		return lightColorMod; //Additive light
+			lightColorMod *= tcolor;
+		return desaturate(lightColorMod); //Additive light
 	}
 	clip(-1);
 	return lightColorMod; //should never get here

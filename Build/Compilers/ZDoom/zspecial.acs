@@ -263,10 +263,16 @@ special
 	270:Stairs_BuildDownDoom(5),
 	271:Stairs_BuildUpDoomSync(4),
 	272:Stairs_BuildDownDoomSync(4),
+	
+	// New additions can go avove 255 now.
 	273:Stairs_BuildUpDoomCrush(5),
 	274:Door_AnimatedClose(2),
 	275:Floor_Stop(1),
 	276:Ceiling_Stop(1),
+	277:Sector_SetFloorGlow(5),
+	278:Sector_SetCeilingGlow(5),
+	279:Floor_MoveToValueAndCrush(4, 5),
+	280:Ceiling_MoveToValueAndCrush(4, 5),
 	
 	// new to Eternity
 //	300:Portal_Define(5),
@@ -415,11 +421,13 @@ special
 	-208:Round(1),
 	-209:Ceil(1),
 	-210:ScriptCall(2, 100),	// ACS does not know varargs so use something large as maximum.
+	-211:StartSlideshow(1),
 	
 	
 	// Eternity's
 	-300:GetLineX(3),
 	-301:GetLineY(3),
+	-302:SetAirFriction(1),
 	
 	// GZDoom OpenGL
 	-400:SetSectorGlow(6),

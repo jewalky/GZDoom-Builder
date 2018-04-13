@@ -128,6 +128,15 @@ namespace CodeImp.DoomBuilder.Map
 		//mxd. Rednering
 		public Color4 FogColor { get { return fogcolor; } }
 		public SectorFogMode FogMode { get { return fogmode; } }
+        public float Desaturation
+        {
+            get
+            {
+                if (General.Map.UDMF && Fields.ContainsKey("desaturation"))
+                    return (float)Fields["desaturation"].Value;
+                return 0f;
+            }
+        }
 
 		//mxd. Slopes
 		public Vector3D FloorSlope { get { return floorslope; } set { BeforePropsChange(); floorslope = value; updateneeded = true; } }
@@ -402,9 +411,10 @@ namespace CodeImp.DoomBuilder.Map
 				General.Plugins.OnSectorCeilingSurfaceUpdate(this, ref updateinfo.ceilvertices);
 				updateinfo.floortexture = longfloortexname;
 				updateinfo.ceiltexture = longceiltexname;
+                updateinfo.desaturation = this.Desaturation;
 
-				// Update surfaces
-				General.Map.CRenderer2D.Surfaces.UpdateSurfaces(surfaceentries, updateinfo);
+                // Update surfaces
+                General.Map.CRenderer2D.Surfaces.UpdateSurfaces(surfaceentries, updateinfo);
 
 				// Updated
 				updateneeded = false;
@@ -437,6 +447,7 @@ namespace CodeImp.DoomBuilder.Map
 			flatvertices.CopyTo(updateinfo.ceilvertices, 0);
 			General.Plugins.OnSectorCeilingSurfaceUpdate(this, ref updateinfo.ceilvertices);
 			updateinfo.ceiltexture = longceiltexname;
+            updateinfo.desaturation = this.Desaturation;
 			
 			// Update entry
 			General.Map.CRenderer2D.Surfaces.UpdateSurfaces(surfaceentries, updateinfo);
@@ -898,7 +909,7 @@ namespace CodeImp.DoomBuilder.Map
 				fogmode = (brightness < 248 ? SectorFogMode.CLASSIC : SectorFogMode.NONE);
 			}
 		}
-		
-		#endregion
-	}
+
+        #endregion
+    }
 }

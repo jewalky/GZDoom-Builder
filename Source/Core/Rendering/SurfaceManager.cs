@@ -428,6 +428,7 @@ namespace CodeImp.DoomBuilder.Rendering
 					Array.Copy(update.ceilvertices, update.numvertices - vertsremaining, e.ceilvertices, 0, vertsinentry);
 					e.floortexture = update.floortexture;
 					e.ceiltexture = update.ceiltexture;
+                    e.desaturation = update.desaturation;
 					
 					entries.Add(e);
 					vertsremaining -= vertsinentry;
@@ -451,7 +452,9 @@ namespace CodeImp.DoomBuilder.Rendering
 						e.ceiltexture = update.ceiltexture;
 					}
 
-					vertsremaining -= e.numvertices;
+                    e.desaturation = update.desaturation;
+
+                    vertsremaining -= e.numvertices;
 				}
 			}
 
@@ -671,6 +674,9 @@ namespace CodeImp.DoomBuilder.Rendering
 					VertexBuffer lastbuffer = null;
 					foreach(SurfaceEntry entry in imgsurfaces.Value)
 					{
+                        graphics.Shaders.Display2D.Desaturation = entry.desaturation;
+                        graphics.Shaders.Display2D.ApplySettings();
+                        
 						// Set the vertex buffer
 						SurfaceBufferSet set = sets[entry.numvertices];
 						if(set.buffers[entry.bufferindex] != lastbuffer)
@@ -686,7 +692,9 @@ namespace CodeImp.DoomBuilder.Rendering
 					graphics.Shaders.Display2D.EndPass();
 				}
 				graphics.Shaders.Display2D.End();
-			}
+                graphics.Shaders.Display2D.Desaturation = 0;
+                graphics.Shaders.Display2D.ApplySettings();
+            }
 		}
 		
 		#endregion

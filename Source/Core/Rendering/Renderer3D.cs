@@ -817,7 +817,8 @@ namespace CodeImp.DoomBuilder.Rendering
 						}
 					}
 
-					if(sector != null) 
+                    graphics.Shaders.World3D.Desaturation = 0;
+                    if (sector != null) 
 					{
 						// Determine the shader pass we want to use for this object
 						int wantedshaderpass = (((g == highlighted) && showhighlight) || (g.Selected && showselection)) ? highshaderpass : shaderpass;
@@ -846,9 +847,12 @@ namespace CodeImp.DoomBuilder.Rendering
 							graphics.Shaders.World3D.CameraPosition = new Vector4(cameraposition.x, cameraposition.y, cameraposition.z, g.FogFactor);
 							graphics.Shaders.World3D.LightColor = sector.Sector.FogColor;
 						}
-
+                        
 						// Set the colors to use
 						graphics.Shaders.World3D.HighlightColor = CalculateHighlightColor((g == highlighted) && showhighlight, (g.Selected && showselection));
+
+                        // [ZZ] include desaturation factor
+                        graphics.Shaders.World3D.Desaturation = sector.Sector.Desaturation;
 
 						// Apply changes
 						graphics.Shaders.World3D.ApplySettings();
@@ -954,6 +958,10 @@ namespace CodeImp.DoomBuilder.Rendering
 
                             // [ZZ] check if we want stencil
                             graphics.Shaders.World3D.StencilColor = t.StencilColor.ToColorValue();
+
+                            // [ZZ] apply desaturation
+                            if (t.Thing.Sector != null)
+                                graphics.Shaders.World3D.Desaturation = t.Thing.Sector.Desaturation;
 
                             // Apply changes
                             ApplyMatrices3D();
@@ -1093,47 +1101,51 @@ namespace CodeImp.DoomBuilder.Rendering
 					}
 				}
 
-				if(sector != null)
-				{
-					// Determine the shader pass we want to use for this object
-					int wantedshaderpass = (((g == highlighted) && showhighlight) || (g.Selected && showselection)) ? highshaderpass : shaderpass;
+                if (sector != null)
+                {
+                    // Determine the shader pass we want to use for this object
+                    int wantedshaderpass = (((g == highlighted) && showhighlight) || (g.Selected && showselection)) ? highshaderpass : shaderpass;
 
-					//mxd. Render fog?
-					if(General.Settings.GZDrawFog && !fullbrightness && sector.Sector.FogMode != SectorFogMode.NONE)
-						wantedshaderpass += 8;
+                    //mxd. Render fog?
+                    if (General.Settings.GZDrawFog && !fullbrightness && sector.Sector.FogMode != SectorFogMode.NONE)
+                        wantedshaderpass += 8;
 
-					// Switch shader pass?
-					if(currentshaderpass != wantedshaderpass)
-					{
-						graphics.Shaders.World3D.EndPass();
-						graphics.Shaders.World3D.BeginPass(wantedshaderpass);
-						currentshaderpass = wantedshaderpass;
+                    // Switch shader pass?
+                    if (currentshaderpass != wantedshaderpass)
+                    {
+                        graphics.Shaders.World3D.EndPass();
+                        graphics.Shaders.World3D.BeginPass(wantedshaderpass);
+                        currentshaderpass = wantedshaderpass;
 
-						//mxd. Set variables for fog rendering?
-						if(wantedshaderpass > 7)
-						{
-							graphics.Shaders.World3D.World = world;
-						}
-					}
+                        //mxd. Set variables for fog rendering?
+                        if (wantedshaderpass > 7)
+                        {
+                            graphics.Shaders.World3D.World = world;
+                        }
+                    }
 
-					// Set variables for fog rendering?
-					if(wantedshaderpass > 7 && g.FogFactor != fogfactor)
-					{
-						graphics.Shaders.World3D.CameraPosition = new Vector4(cameraposition.x, cameraposition.y, cameraposition.z, g.FogFactor);
-						fogfactor = g.FogFactor;
-					}
+                    // Set variables for fog rendering?
+                    if (wantedshaderpass > 7 && g.FogFactor != fogfactor)
+                    {
+                        graphics.Shaders.World3D.CameraPosition = new Vector4(cameraposition.x, cameraposition.y, cameraposition.z, g.FogFactor);
+                        fogfactor = g.FogFactor;
+                    }
 
-					// Set the colors to use
-					graphics.Shaders.World3D.LightColor = sector.Sector.FogColor;
-					graphics.Shaders.World3D.HighlightColor = CalculateHighlightColor((g == highlighted) && showhighlight, (g.Selected && showselection));
+                    //
+                    graphics.Shaders.World3D.Desaturation = sector.Sector.Desaturation;
 
-					// Apply changes
-					graphics.Shaders.World3D.ApplySettings();
+                    // Set the colors to use
+                    graphics.Shaders.World3D.LightColor = sector.Sector.FogColor;
+                    graphics.Shaders.World3D.HighlightColor = CalculateHighlightColor((g == highlighted) && showhighlight, (g.Selected && showselection));
 
-					// Render!
-					graphics.Device.DrawPrimitives(PrimitiveType.TriangleList, g.VertexOffset, g.Triangles);
-				}
-			}
+                    // Apply changes
+                    graphics.Shaders.World3D.ApplySettings();
+
+                    // Render!
+                    graphics.Device.DrawPrimitives(PrimitiveType.TriangleList, g.VertexOffset, g.Triangles);
+                }
+                else graphics.Shaders.World3D.Desaturation = 0f;
+            }
 
 			// Get things for this pass
 			if(thingspass.Count > 0)
@@ -1267,6 +1279,9 @@ namespace CodeImp.DoomBuilder.Rendering
                         // [ZZ] check if we want stencil
                         graphics.Shaders.World3D.StencilColor = t.StencilColor.ToColorValue();
 
+                        //
+                        graphics.Shaders.World3D.Desaturation = t.Thing.Sector.Desaturation;
+
                         // Apply changes
                         ApplyMatrices3D();
 						graphics.Shaders.World3D.ApplySettings();
@@ -1359,6 +1374,8 @@ namespace CodeImp.DoomBuilder.Rendering
                 }
 
                 if (sector == null) continue;
+
+                graphics.Shaders.World3D.Desaturation = sector.Sector.Desaturation;
 
                 // note: additive geometry doesn't receive lighting
                 if (g.RenderPass == RenderPass.Additive)
@@ -1636,6 +1653,8 @@ namespace CodeImp.DoomBuilder.Rendering
 					if(t.Thing.Sector != null) graphics.Shaders.World3D.LightColor = t.Thing.Sector.FogColor;
 					graphics.Shaders.World3D.CameraPosition = new Vector4(cameraposition.x, cameraposition.y, cameraposition.z, t.FogFactor);
 				}
+
+                graphics.Shaders.World3D.Desaturation = t.Thing.Sector.Desaturation;
 
                 GZModel model = General.Map.Data.ModeldefEntries[t.Thing.Type].Model;
                 for (int j = 0; j < model.Meshes.Count; j++)

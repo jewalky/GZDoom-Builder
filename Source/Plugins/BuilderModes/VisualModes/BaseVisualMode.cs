@@ -1057,11 +1057,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			cameraflooroffset = General.Map.Config.ReadSetting("cameraflooroffset", cameraflooroffset);
 			cameraceilingoffset = General.Map.Config.ReadSetting("cameraceilingoffset", cameraceilingoffset);
 
-			//mxd. Update fog color (otherwise FogBoundaries won't be setup correctly)
-			foreach(Sector s in General.Map.Map.Sectors) s.UpdateFogColor();
+            //mxd. Update fog color (otherwise FogBoundaries won't be setup correctly)
+            foreach (Sector s in General.Map.Map.Sectors)
+                s.UpdateFogColor();
 
-			// (Re)create special effects
-			RebuildElementData();
+            // (Re)create special effects
+            RebuildElementData();
 
             //mxd. Update event lines
             renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));

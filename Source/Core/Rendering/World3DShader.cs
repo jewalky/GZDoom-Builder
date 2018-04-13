@@ -43,6 +43,7 @@ namespace CodeImp.DoomBuilder.Rendering
         private readonly EffectHandle lightOrientationHandle;
         private readonly EffectHandle light2RadiusHandle;
 		private readonly EffectHandle lightColorHandle;
+        private readonly EffectHandle desaturationHandle;
         private readonly EffectHandle ignoreNormalsHandle;
         private readonly EffectHandle spotLightHandle;
 		private readonly EffectHandle world;
@@ -115,6 +116,21 @@ namespace CodeImp.DoomBuilder.Rendering
 				}
 			}
 		}
+
+        // [ZZ] desaturation!
+        private float desaturation;
+        public float Desaturation
+        {
+            set
+            {
+                if (desaturation != value)
+                {
+                    effect.SetValue(desaturationHandle, value);
+                    desaturation = value;
+                    settingschanged = true;
+                }
+            }
+        }
 
         // [ZZ] emulating broken gz lights
         private bool ignorenormals;
@@ -259,6 +275,7 @@ namespace CodeImp.DoomBuilder.Rendering
                 lightOrientationHandle = effect.GetParameter(null, "lightOrientation");
                 light2RadiusHandle = effect.GetParameter(null, "light2Radius");
                 lightColorHandle = effect.GetParameter(null, "lightColor");
+                desaturationHandle = effect.GetParameter(null, "desaturation");
                 ignoreNormalsHandle = effect.GetParameter(null, "ignoreNormals");
                 spotLightHandle = effect.GetParameter(null, "spotLight");
                 //fog
@@ -303,10 +320,13 @@ namespace CodeImp.DoomBuilder.Rendering
 				//mxd
 				if(vertexColorHandle != null) vertexColorHandle.Dispose();
 				if(lightColorHandle != null) lightColorHandle.Dispose();
-                if (ignoreNormalsHandle != null) ignoreNormalsHandle.Dispose();
-				if(lightPositionAndRadiusHandle != null) lightPositionAndRadiusHandle.Dispose();
+                if(desaturationHandle != null) desaturationHandle.Dispose();
+                if(ignoreNormalsHandle != null) ignoreNormalsHandle.Dispose();
+                if(light2RadiusHandle != null) light2RadiusHandle.Dispose();
+                if(lightOrientationHandle != null) lightOrientationHandle.Dispose();
+                if(lightPositionAndRadiusHandle != null) lightPositionAndRadiusHandle.Dispose();
 				if(camPosHandle != null) camPosHandle.Dispose();
-                if (stencilColorHandle != null) stencilColorHandle.Dispose();
+                if(stencilColorHandle != null) stencilColorHandle.Dispose();
 				if(world != null) world.Dispose();
 
 				// Done
