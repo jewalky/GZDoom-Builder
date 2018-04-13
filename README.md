@@ -1,10 +1,10 @@
 **System requirements:**
 - 2.4 GHz CPU or faster (multi-core recommended)
-- Windows XP, Vista, 7, 8 or 10
+- Windows 7, 8 or 10
 - Graphics card with Pixel Shader model 2.0 support
 
 **Required software:**
-- [Microsoft .Net Framework 3.5](http://www.microsoft.com/download/en/details.aspx?id=25150)
+- [Microsoft .Net Framework 4.6.1](https://www.microsoft.com/en-ca/download/details.aspx?id=49981)
 - [DirectX 9.0 Runtime](https://www.microsoft.com/en-us/download/details.aspx?id=35&44F86079-8679-400C-BFF2-9CA5F2BCBDFC=1)
 
 **Links:**
