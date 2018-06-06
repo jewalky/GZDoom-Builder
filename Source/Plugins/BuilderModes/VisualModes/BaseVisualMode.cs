@@ -2106,26 +2106,45 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			PostAction();
 		}
 
-		[BeginAction("raisesector1")]
-		public void RaiseSector1()
-		{
-			PreAction(UndoGroup.SectorHeightChange);
-			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-			foreach(IVisualEventReceiver i in objs) i.OnChangeTargetHeight(1);
-			PostAction();
-		}
+	    [BeginAction("raisesector1")]
+	    public void RaiseSector1() {
+	        PreAction(UndoGroup.SectorHeightChange);
+	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+	        foreach (IVisualEventReceiver i in objs)
+	            i.OnChangeTargetHeight(1);
+	        PostAction();
+	    }
 
-		[BeginAction("lowersector1")]
-		public void LowerSector1()
-		{
-			PreAction(UndoGroup.SectorHeightChange);
-			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-			foreach(IVisualEventReceiver i in objs) i.OnChangeTargetHeight(-1);
-			PostAction();
-		}
+	    [BeginAction("lowersector1")]
+	    public void LowerSector1() {
+	        PreAction(UndoGroup.SectorHeightChange);
+	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+	        foreach (IVisualEventReceiver i in objs)
+	            i.OnChangeTargetHeight(-1);
+	        PostAction();
+	    }
 
-		//mxd
-		[BeginAction("raisesectortonearest")]
+	    [BeginAction("raisesector128")]
+	    public void RaiseSector128() {
+	        PreAction(UndoGroup.SectorHeightChange);
+	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+	        foreach (IVisualEventReceiver i in objs)
+	            i.OnChangeTargetHeight(128);
+	        PostAction();
+	    }
+
+	    [BeginAction("lowersector128")]
+	    public void LowerSector128() {
+	        PreAction(UndoGroup.SectorHeightChange);
+	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+	        foreach (IVisualEventReceiver i in objs)
+	            i.OnChangeTargetHeight(-128);
+	        PostAction();
+	    }
+
+
+        //mxd
+        [BeginAction("raisesectortonearest")]
 		public void RaiseSectorToNearest() 
 		{
 			Dictionary<Sector, VisualFloor> floors = new Dictionary<Sector, VisualFloor>();
