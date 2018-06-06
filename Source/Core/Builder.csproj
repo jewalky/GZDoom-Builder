@@ -1513,11 +1513,16 @@ echo Copying platform-appropriate SlimDX.dll file.
 copy /Y ..\SlimDX\$(PlatformName)\SlimDX.dll .\
 echo Copying platform-appropriate Updater.ini.
 copy /Y ..\UpdaterConfig\Updater-$(PlatformName).ini Updater.ini</PreBuildEvent>
-    <PostBuildEvent>if exist "%25VS140COMNTOOLS%25" goto tools140 
+    <PostBuildEvent>if exist "%25VSAPPIDDIR%25" goto tools17
+if exist "%25VS140COMNTOOLS%25" goto tools140 
 if exist "%25VS120COMNTOOLS%25" goto tools120 
 if exist "%25VS110COMNTOOLS%25" goto tools110 
 if exist "%25VS100COMNTOOLS%25" goto tools100
 if exist "%25VS90COMNTOOLS%25" goto tools90 
+
+:tools17
+call "%25VSAPPIDDIR%25..\Tools\vsdevcmd" -arch=x86
+goto end
 
 :tools140
 call "%25VS140COMNTOOLS%25vsvars32.bat"
