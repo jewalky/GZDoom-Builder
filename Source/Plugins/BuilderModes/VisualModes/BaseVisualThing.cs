@@ -646,7 +646,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// Unused
 		public void OnSelectBegin() { }
 		public void OnEditBegin() { }
-		public void OnMouseMove(MouseEventArgs e) { }
 		public void OnChangeTargetBrightness(bool up) { }
 		public void OnChangeTextureOffset(int horizontal, int vertical, bool doSurfaceAngleCorrection) { }
 		public void OnSelectTexture() { }
@@ -665,7 +664,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public void ApplyUpperUnpegged(bool set) { }
 		public void ApplyLowerUnpegged(bool set) { }
 		public void SelectNeighbours(bool select, bool withSameTexture, bool withSameHeight) { } //mxd
-		
+		public virtual void OnPaintSelectEnd() { } // biwa
+
 		// Return texture name
 		public string GetTextureName() { return ""; }
 
@@ -857,6 +857,66 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			this.Changed = true;
+		}
+
+		// biwa. Moving the mouse
+		public virtual void OnMouseMove(MouseEventArgs e)
+		{
+			// biwa. Paint selection going on?
+			if (mode.PaintSelectPressed)
+			{
+				// toggle selected state
+				if (mode.PaintSelectType == this.GetType() && mode.Highlighted != this)
+				{
+					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+					{
+						this.selected = true;
+						mode.AddSelectedObject(this);
+					}
+					else if (General.Interface.CtrlState)
+					{
+						this.selected = false;
+						mode.RemoveSelectedObject(this);
+
+					}
+					else
+					{
+						if (this.selected)
+							mode.RemoveSelectedObject(this);
+						else
+							mode.AddSelectedObject(this);
+
+						this.selected = !this.selected;
+					}
+				}
+			}
+		}
+
+		// biwa
+		public virtual void OnPaintSelectBegin()
+		{
+			mode.PaintSelectType = this.GetType();
+
+			// toggle selected state
+			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+			{
+				this.selected = true;
+				mode.AddSelectedObject(this);
+			}
+			else if (General.Interface.CtrlState)
+			{
+				this.selected = false;
+				mode.RemoveSelectedObject(this);
+			}
+			else
+			{
+				if (this.selected)
+					mode.RemoveSelectedObject(this);
+				else
+					mode.AddSelectedObject(this);
+
+				this.selected = !this.selected;
+			}
 		}
 
 		//mxd

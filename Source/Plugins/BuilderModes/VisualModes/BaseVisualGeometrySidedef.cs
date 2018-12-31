@@ -833,7 +833,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		protected abstract void MoveTextureOffset(int offsetx, int offsety);
 		protected abstract Point GetTextureOffset();
 		public virtual void OnTextureFit(FitTextureOptions options) { } //mxd
-		
+		public virtual void OnPaintSelectEnd() { } // biwa
+
 		// Insert middle texture
 		public virtual void OnInsert()
 		{
@@ -1414,6 +1415,35 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				UpdateDragUV();
 			}
+			else if (mode.PaintSelectPressed) // biwa. Paint selection going on?
+			{
+				if (mode.PaintSelectType == this.GetType().BaseType && mode.Highlighted != this) // using BaseType so that middle, upper, lower, etc can be selecting in one go
+				{
+					// toggle selected state
+					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+					{
+						this.selected = true;
+						mode.AddSelectedObject(this);
+					}
+					else if (General.Interface.CtrlState)
+					{
+						this.selected = false;
+						mode.RemoveSelectedObject(this);
+
+					}
+					else
+					{
+						if (this.selected)
+							mode.RemoveSelectedObject(this);
+						else
+							mode.AddSelectedObject(this);
+
+						this.selected = !this.selected;
+					}
+				}
+
+				return;
+			}
 			else
 			{
 				// Select button pressed?
@@ -1665,6 +1695,33 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			if(sd != null) sd.Reset(true);
 
 			mode.SetActionResult("Wall scale changed to " + scaleX.ToString("F03", CultureInfo.InvariantCulture) + ", " + scaleY.ToString("F03", CultureInfo.InvariantCulture) + " (" + (int)Math.Round(Texture.Width / scaleX) + " x " + (int)Math.Round(Texture.Height / scaleY) + ").");
+		}
+
+		// biwa
+		public virtual void OnPaintSelectBegin()
+		{
+			mode.PaintSelectType = this.GetType().BaseType; // using BaseType so that middle, upper, lower, etc can be selecting in one go
+
+			// toggle selected state
+			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+			{
+				this.selected = true;
+				mode.AddSelectedObject(this);
+			}
+			else if (General.Interface.CtrlState)
+			{
+				this.selected = false;
+				mode.RemoveSelectedObject(this);
+			}
+			else
+			{
+				if (this.selected)
+					mode.RemoveSelectedObject(this);
+				else
+					mode.AddSelectedObject(this);
+
+				this.selected = !this.selected;
+			}
 		}
 
 		#endregion

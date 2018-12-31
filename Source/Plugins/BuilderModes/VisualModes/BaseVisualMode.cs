@@ -48,6 +48,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		#region ================== Constants
 		// Object picking
 		private const long PICK_INTERVAL = 80;
+		private const long PICK_INTERVAL_PAINT_SELECT = 10; // biwa
 		private const float PICK_RANGE = 0.98f;
 
 		// Gravity
@@ -93,6 +94,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		//mxd. Used in Cut/PasteSelection actions
 		private readonly List<ThingCopyData> copybuffer;
 		private Type lasthighlighttype;
+
+		// biwa. Info for paint selection
+		protected bool paintselectpressed;
+		protected Type paintselecttype = null;
+		protected IVisualPickable highlighted; // biwa
 
 		//mxd. Moved here from Tools
 		private struct SidedefAlignJob
@@ -158,6 +164,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		
 		public bool IsSingleSelection { get { return singleselection; } }
 		public bool SelectionChanged { get { return selectionchanged; } set { selectionchanged |= value; } }
+
+		public bool PaintSelectPressed { get { return paintselectpressed; } } // biwa
+		public Type PaintSelectType { get { return paintselecttype; } set { paintselecttype = value; } } // biwa
+		public IVisualPickable Highlighted { get { return highlighted; } } // biwa
 
 		#endregion
 		
@@ -1130,6 +1140,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// Processing
 		public override void OnProcess(long deltatime)
 		{
+			long pickinterval = PICK_INTERVAL; // biwa
 			// Process things?
 			base.ProcessThings = (BuilderPlug.Me.ShowVisualThings != 0);
 			
@@ -1203,9 +1214,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				g.OnProcess(deltatime);
 			}
+
+			// biwa. Use a lower pick interval for paint selection, to make it more reliable
+			if (paintselectpressed)
+				pickinterval = PICK_INTERVAL_PAINT_SELECT;
 			
 			// Time to pick a new target?
-			if(Clock.CurrentTime > (lastpicktime + PICK_INTERVAL))
+			if(Clock.CurrentTime > (lastpicktime + pickinterval))
 			{
 				PickTargetUnlocked();
 				lastpicktime = Clock.CurrentTime;
@@ -1443,6 +1458,14 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 				lasthighlighttype = o.GetType();
 			}
+
+			// biwa
+			if (o is NullVisualEventReceiver)
+				highlighted = null;
+			else if (o is VisualGeometry)
+				highlighted = (VisualGeometry)o;
+			else if (o is VisualThing)
+				highlighted = (VisualThing)o;
 		}
 		
 		// Undo performed
@@ -3739,6 +3762,23 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			BuilderPlug.Me.AlphaBasedTextureHighlighting = !BuilderPlug.Me.AlphaBasedTextureHighlighting;
 			General.Interface.DisplayStatus(StatusType.Info, "Alpha-based textures highlighting is " + (BuilderPlug.Me.AlphaBasedTextureHighlighting ? "ENABLED" : "DISABLED"));
+		}
+
+		// biwa
+		[BeginAction("visualpaintselect")]
+		protected virtual void OnPaintSelectBegin()
+		{
+			paintselectpressed = true;
+			GetTargetEventReceiver(true).OnPaintSelectBegin();
+		}
+
+		// biwa
+		[EndAction("visualpaintselect")]
+		protected virtual void OnPaintSelectEnd()
+		{
+			paintselectpressed = false;
+			paintselecttype = null;
+			GetTargetEventReceiver(true).OnPaintSelectEnd();
 		}
 
 		#endregion

@@ -449,6 +449,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public virtual void ApplyLowerUnpegged(bool set) { }
 		protected abstract void MoveTextureOffset(int offsetx, int offsety);
 		protected abstract Point GetTextureOffset();
+		public virtual void OnPaintSelectEnd() { } // biwa
 
 		// Setup this plane
 		public bool Setup() { return this.Setup(this.level, this.extrafloor); }
@@ -501,6 +502,37 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// Moving the mouse
 		public virtual void OnMouseMove(MouseEventArgs e)
 		{
+			// biwa. Paint selection going on?
+			if(mode.PaintSelectPressed)
+			{
+				// toggle selected state
+				if (mode.PaintSelectType == this.GetType().BaseType && mode.Highlighted != this) // using BaseType so that both floor and ceiling can be selected in one go
+				{
+					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+					{
+						this.selected = true;
+						mode.AddSelectedObject(this);
+					}
+					else if (General.Interface.CtrlState)
+					{
+						this.selected = false;
+						mode.RemoveSelectedObject(this);
+
+					}
+					else
+					{
+						if (this.selected)
+							mode.RemoveSelectedObject(this);
+						else
+							mode.AddSelectedObject(this);
+
+						this.selected = !this.selected;
+					}
+				}
+
+				return;
+			}
+
 			if(!General.Map.UDMF) return; //mxd. Cannot change texture offsets in other map formats...
 			
 			// Dragging UV?
@@ -970,6 +1002,34 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			if(vs != null) vs.UpdateSectorGeometry(false);
+		}
+
+		// biwa
+		public virtual void OnPaintSelectBegin()
+		{
+			mode.PaintSelectType = this.GetType().BaseType; // using BaseType so that both floor and ceiling can be selected in one go
+
+			// toggle selected state
+			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+			{
+				this.selected = true;
+				mode.AddSelectedObject(this);
+			}
+			else if (General.Interface.CtrlState)
+			{
+				this.selected = false;
+				mode.RemoveSelectedObject(this);
+
+			}
+			else
+			{
+				if (this.selected)
+					mode.RemoveSelectedObject(this);
+				else
+					mode.AddSelectedObject(this);
+
+				this.selected = !this.selected;
+			}
 		}
 		
 		#endregion
