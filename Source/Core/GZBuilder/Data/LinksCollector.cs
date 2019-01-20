@@ -19,7 +19,9 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 		private class SpecialThings 
 		{
 			public readonly Dictionary<int, List<Thing>> PatrolPoints; // PatrolPoint tag, list of PatrolPoints
+			public readonly List<Thing> PatrolSpecials;
 			public readonly Dictionary<int, List<PathNode>> InterpolationPoints; // InterpolationPoint tag, list of InterpolationPoints
+			public readonly List<Thing> InterpolationSpecials;
 			public readonly List<Thing> ThingsWithGoal;
 			public readonly List<Thing> Cameras;
 			public readonly Dictionary<int, List<Thing>> ActorMovers; // ActorMover target tag, list of ActorMovers
@@ -30,7 +32,9 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 			public SpecialThings()
 			{
 				PatrolPoints = new Dictionary<int, List<Thing>>();
+				PatrolSpecials = new List<Thing>();
 				InterpolationPoints = new Dictionary<int, List<PathNode>>();
+				InterpolationSpecials = new List<Thing>();
 				ThingsWithGoal = new List<Thing>();
 				Cameras = new List<Thing>();
 				ActorMovers = new Dictionary<int, List<Thing>>();
@@ -158,6 +162,10 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 						}
 						break;
 
+					case "patrolspecial":
+						result.PatrolSpecials.Add(t);
+						break;
+
 					case "$polyanchor":
 						if(!result.PolyobjectAnchors.ContainsKey(t.AngleDoom)) result.PolyobjectAnchors[t.AngleDoom] = new List<Thing>();
 						result.PolyobjectAnchors[t.AngleDoom].Add(t);
@@ -192,6 +200,10 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 					case "interpolationpoint":
 						if(!result.InterpolationPoints.ContainsKey(t.Tag)) result.InterpolationPoints.Add(t.Tag, new List<PathNode>());
 						result.InterpolationPoints[t.Tag].Add(new PathNode(t, blockmap));
+						break;
+
+					case "interpolationspecial":
+						result.InterpolationSpecials.Add(t);
 						break;
 
 					case "movingcamera":
@@ -261,6 +273,23 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 				start.z += GetCorrectHeight(t, blockmap, true);
 
 				foreach(Thing tt in result.PatrolPoints[t.Args[1]]) 
+				{
+					end = tt.Position;
+					end.z += GetCorrectHeight(tt, blockmap, true);
+
+					lines.Add(new Line3D(start, end, General.Colors.Selection));
+				}
+			}
+
+			// Process patrol specials
+			foreach (Thing t in result.PatrolSpecials)
+			{
+				if (!result.PatrolPoints.ContainsKey(t.Tag)) continue;
+
+				start = t.Position;
+				start.z += GetCorrectHeight(t, blockmap, true);
+
+				foreach (Thing tt in result.PatrolPoints[t.Tag])
 				{
 					end = tt.Position;
 					end.z += GetCorrectHeight(tt, blockmap, true);
@@ -382,6 +411,24 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 				foreach(PathNode node in group.Value) node.PropagateCurvedFlag();
 			}
 
+			// Process interpolation specials
+			foreach (Thing t in result.InterpolationSpecials)
+			{
+				int targettag = t.Tag;
+				if (targettag == 0 || !result.InterpolationPoints.ContainsKey(targettag)) continue; //no target / target doesn't exist
+
+				start = t.Position;
+				start.z += GetCorrectHeight(t, blockmap, true);
+
+				foreach (PathNode node in result.InterpolationPoints[targettag])
+				{
+					//Do not connect specials to the first or last node of a curved path, since those are used as spline control points only
+					if (node.IsCurved && (node.PreviousNodes.Count == 0 || node.NextNodes.Count == 0))
+						continue;
+					lines.Add(new Line3D(start, node.Position, General.Colors.Selection));
+				}
+			}
+
 			// 3. Make lines
 			HashSet<int> processedindices = new HashSet<int>();
 			foreach(KeyValuePair<int, List<PathNode>> group in result.InterpolationPoints)
@@ -480,86 +527,225 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 			return lines;
 		}
 
-		#endregion
+        #endregion
 
-		#region ================== GetDynamicLightShapes
+        #region ================== GetDynamicLightShapes
 
-		public static List<Line3D> GetDynamicLightShapes(IEnumerable<Thing> things, bool highlight)
-		{
-			List<Line3D> circles = new List<Line3D>();
-			if(General.Map.DOOM) return circles;
+        public static List<Line3D> GetPointLightShape(Thing t, bool highlight, GZGeneral.LightData ld, int linealpha)
+        {
+            // TODO: this basically duplicates VisualThing.UpdateLight()...
+            // Determine light radiii
+            int primaryradius;
+            int secondaryradius = 0;
 
-			const int linealpha = 128;
-			foreach(Thing t in things)
-			{
-				int lightid = Array.IndexOf(GZGeneral.GZ_LIGHTS, t.Type);
-				if(lightid == -1) continue;
+            if (ld.LightDef != GZGeneral.LightDef.VAVOOM_GENERIC &&
+                ld.LightDef != GZGeneral.LightDef.VAVOOM_COLORED) //if it's gzdoom light
+            {
+                if (ld.LightModifier == GZGeneral.LightModifier.SECTOR)
+                {
+                    if (t.Sector == null) t.DetermineSector();
+                    int scaler = (t.Sector != null ? t.Sector.Brightness / 4 : 2);
+                    primaryradius = t.Args[3] * scaler;
+                }
+                else
+                {
+                    primaryradius = t.Args[3] * 2; //works... that.. way in GZDoom
+                    if (ld.LightAnimated) secondaryradius = t.Args[4] * 2;
+                }
+            }
+            else //it's one of vavoom lights
+            {
+                primaryradius = t.Args[0] * 8;
+            }
 
-				// TODO: this basically duplicates VisualThing.UpdateLight()...
-				// Determine light radiii
-				int primaryradius;
-				int secondaryradius = 0;
+            // Check radii...
+            if (primaryradius < 1 && secondaryradius < 1) return null;
 
-				if(lightid < GZGeneral.GZ_LIGHT_TYPES[2]) //if it's gzdoom light
-				{
-					int n;
-					if(lightid < GZGeneral.GZ_LIGHT_TYPES[0]) n = 0;
-					else if(lightid < GZGeneral.GZ_LIGHT_TYPES[1]) n = 10;
-					else n = 20;
-					DynamicLightType lightType = (DynamicLightType)(t.Type - 9800 - n);
+            // Determine light color
+            PixelColor color;
+            if (highlight)
+            {
+                color = General.Colors.Highlight.WithAlpha((byte)linealpha);
+            }
+            else
+            {
+                switch (t.DynamicLightType.LightDef)
+                {
+                    case GZGeneral.LightDef.VAVOOM_GENERIC: // Vavoom light
+                        color = new PixelColor((byte)linealpha, 255, 255, 255);
+                        break;
 
-					if(lightType == DynamicLightType.SECTOR)
-					{
-						if(t.Sector == null) t.DetermineSector();
-						int scaler = (t.Sector != null ? t.Sector.Brightness / 4 : 2);
-						primaryradius = t.Args[3] * scaler;
-					}
-					else
-					{
-						primaryradius = t.Args[3] * 2; //works... that.. way in GZDoom
-						if(lightType > 0) secondaryradius = t.Args[4] * 2;
-					}
-				}
-				else //it's one of vavoom lights
-				{
-					primaryradius = t.Args[0] * 8;
-				}
+                    case GZGeneral.LightDef.VAVOOM_COLORED: // Vavoom colored light
+                        color = new PixelColor((byte)linealpha, (byte)t.Args[1], (byte)t.Args[2], (byte)t.Args[3]);
+                        break;
 
-				// Check radii...
-				if(primaryradius < 1 && secondaryradius < 1) continue;
+                    default:
+                        color = new PixelColor((byte)linealpha, (byte)t.Args[0], (byte)t.Args[1], (byte)t.Args[2]);
+                        break;
+                }
+            }
 
-				// Determine light color
-				PixelColor color;
-				if(highlight)
-				{
-					color = General.Colors.Highlight.WithAlpha(linealpha);
-				}
-				else
-				{
-					switch(t.Type)
-					{
-						case 1502: // Vavoom light
-							color = new PixelColor(linealpha, 255, 255, 255);
-							break;
+            // Add lines if visible
+            List<Line3D> circles = new List<Line3D>();
+            if (primaryradius > 0) circles.AddRange(MakeCircleLines(t.Position, color, primaryradius, CIRCLE_SIDES));
+            if (secondaryradius > 0) circles.AddRange(MakeCircleLines(t.Position, color, secondaryradius, CIRCLE_SIDES));
+            return circles;
+        }
 
-						case 1503: // Vavoom colored light
-							color = new PixelColor(linealpha, (byte)t.Args[1], (byte)t.Args[2], (byte)t.Args[3]);
-							break;
+        private static Vector3D GetRotatedVertex(Vector3D bp, float angle, float pitch)
+        {
+            Vector3D bp_rotated = bp;
+            bp_rotated.x = bp.x * (float)Math.Cos(pitch) - bp.z * (float)Math.Sin(pitch);
+            bp_rotated.z = bp.z * (float)Math.Cos(pitch) + bp.x * (float)Math.Sin(pitch);
+            bp = bp_rotated;
+            bp_rotated.x = bp.x * (float)Math.Cos(angle) - bp.y * (float)Math.Sin(angle);
+            bp_rotated.y = bp.y * (float)Math.Cos(angle) + bp.x * (float)Math.Sin(angle);
+            return bp_rotated;
+        }
 
-						default:
-							color = new PixelColor(linealpha, (byte)t.Args[0], (byte)t.Args[1], (byte)t.Args[2]);
-							break;
-					}
-				}
+        public static List<Line3D> GetSpotLightShape(Thing t, bool highlight, GZGeneral.LightData ld, int linealpha)
+        {
+            PixelColor color;
+            if (t.Fields.ContainsKey("arg0str"))
+            {
+                ZDoom.ZDTextParser.GetColorFromString(t.Fields["arg0str"].Value.ToString(), out color);
+                color.a = (byte)linealpha;
+            }
+            else color = new PixelColor((byte)linealpha, (byte)((t.Args[0] & 0xFF0000) >> 16), (byte)((t.Args[0] & 0x00FF00) >> 8), (byte)((t.Args[0] & 0x0000FF)));
 
-				// Add lines if visible
-				if(primaryradius > 0) circles.AddRange(MakeCircleLines(t.Position, color, primaryradius, CIRCLE_SIDES));
-				if(secondaryradius > 0) circles.AddRange(MakeCircleLines(t.Position, color, secondaryradius, CIRCLE_SIDES));
-			}
+            if (highlight)
+            {
+                color = General.Colors.Highlight.WithAlpha((byte)linealpha);
+            }
 
-			// Done
-			return circles;
-		}
+            PixelColor color_secondary = color;
+            color_secondary.a /= 2;
+
+            List<Line3D> shapes = new List<Line3D>();
+            float _lAngle1 = Angle2D.DegToRad(t.Args[1]);
+            float _lAngle2 = Angle2D.DegToRad(t.Args[2]);
+            float lAngle1 = _lAngle1;
+            float lAngle2 = _lAngle2;
+            
+            float lRadius = t.Args[3]*2;
+            float lDirY1 = (float)Math.Sin(-lAngle1) * lRadius;
+            float lDirX1 = (float)Math.Cos(-lAngle1) * lRadius;
+            float lDirY2 = (float)Math.Sin(-lAngle2) * lRadius;
+            float lDirX2 = (float)Math.Cos(-lAngle2) * lRadius;
+            
+            IEnumerable<Line3D> circleLines = MakeCircleLines(new Vector3D(0, 0, 0), color, (float)Math.Abs(lDirY1), CIRCLE_SIDES);
+            foreach (Line3D l3d in circleLines)
+            {
+                shapes.Add(new Line3D(new Vector3D(lDirX1, l3d.Start.x, l3d.Start.y),
+                                      new Vector3D(lDirX1, l3d.End.x, l3d.End.y),
+                                      color, false));
+            }
+
+            if (lAngle2 != lAngle1)
+            {
+                circleLines = MakeCircleLines(new Vector3D(0, 0, 0), color_secondary, (float)Math.Abs(lDirY2), CIRCLE_SIDES);
+                foreach (Line3D l3d in circleLines)
+                {
+                    shapes.Add(new Line3D(new Vector3D(lDirX2, l3d.Start.x, l3d.Start.y),
+                                          new Vector3D(lDirX2, l3d.End.x, l3d.End.y),
+                                          color_secondary, false));
+                }
+            }
+
+            // draw another circle to show the front cone shape
+            int numsides = CIRCLE_SIDES * 2;
+            float anglestep = Angle2D.PI2 / numsides;
+            for (int j = -1; j <= 1; j++)
+            {
+                if (j == 0) continue;
+                List<Line3D> tmplines = new List<Line3D>();
+                PixelColor ccol = color;
+                for (int i = 1; i < numsides + 1; i++)
+                {
+                    float angc = j * i * anglestep;
+                    float angp = j * (i - 1) * anglestep;
+                    if (i * anglestep > lAngle1 && ccol.a == color.a)
+                    {
+                        shapes.Add(new Line3D(new Vector3D((float)Math.Cos(angp) * lRadius, (float)Math.Sin(angp) * lRadius, 0),
+                                                new Vector3D((float)Math.Cos(j * lAngle1) * lRadius, (float)Math.Sin(j * lAngle1) * lRadius, 0),
+                                                ccol, false));
+                        bool dobreak = false;
+                        if (i * anglestep > lAngle2)
+                        {
+                            angc = j * lAngle2;
+                            dobreak = true;
+                        }
+                        shapes.Add(new Line3D(new Vector3D((float)Math.Cos(j * lAngle1) * lRadius, (float)Math.Sin(j * lAngle1) * lRadius, 0),
+                                                new Vector3D((float)Math.Cos(angc) * lRadius, (float)Math.Sin(angc) * lRadius, 0),
+                                                color_secondary, false));
+                        ccol = color_secondary;
+                        if (dobreak) break;
+                    }
+                    else if (i * anglestep > lAngle2)
+                    {
+                        angc = j * lAngle2;
+                        shapes.Add(new Line3D(new Vector3D((float)Math.Cos(angp) * lRadius, (float)Math.Sin(angp) * lRadius, 0),
+                                                new Vector3D((float)Math.Cos(angc) * lRadius, (float)Math.Sin(angc) * lRadius, 0),
+                                                ccol, false));
+                        break;
+                    }
+                    else
+                    {
+                        shapes.Add(new Line3D(new Vector3D((float)Math.Cos(angp) * lRadius, (float)Math.Sin(angp) * lRadius, 0),
+                                                new Vector3D((float)Math.Cos(angc) * lRadius, (float)Math.Sin(angc) * lRadius, 0),
+                                                ccol, false));
+                    }
+                }
+            }
+
+            shapes.Add(new Line3D(new Vector3D(0, 0, 0), new Vector3D(lDirX1, lDirY1, 0), color, false));
+            shapes.Add(new Line3D(new Vector3D(0, 0, 0), new Vector3D(lDirX1, -lDirY1, 0), color, false));
+            if (lAngle2 != lAngle1)
+            {
+                shapes.Add(new Line3D(new Vector3D(0, 0, 0), new Vector3D(lDirX2, lDirY2, 0), color_secondary, false));
+                shapes.Add(new Line3D(new Vector3D(0, 0, 0), new Vector3D(lDirX2, -lDirY2, 0), color_secondary, false));
+            }
+
+            // do translation and rotation
+            foreach (Line3D l3d in shapes)
+            {
+                // rotate
+                l3d.Start = GetRotatedVertex(l3d.Start, t.Angle-1.5708f, Angle2D.DegToRad(t.Pitch));
+                l3d.End = GetRotatedVertex(l3d.End, t.Angle-1.5708f, Angle2D.DegToRad(t.Pitch));
+                // translate
+                l3d.Start += t.Position;
+                l3d.End += t.Position;
+            }
+
+            return shapes;
+        }
+
+        public static List<Line3D> GetDynamicLightShapes(IEnumerable<Thing> things, bool highlight)
+        {
+            List<Line3D> circles = new List<Line3D>();
+            if (General.Map.DOOM) return circles;
+
+            const int linealpha = 128;
+            foreach (Thing t in things)
+            {
+                GZGeneral.LightData ld = t.DynamicLightType;
+                if (ld == null) continue;
+
+                if (ld.LightType != GZGeneral.LightType.SPOT)
+                {
+                    List<Line3D> lshape = GetPointLightShape(t, highlight, ld, linealpha);
+                    if (lshape != null) circles.AddRange(lshape);
+                }
+                else
+                {
+                    List<Line3D> lshape = GetSpotLightShape(t, highlight, ld, linealpha);
+                    if (lshape != null) circles.AddRange(lshape);
+                }
+            }
+
+            // Done
+            return circles;
+        }
 
 		#endregion
 

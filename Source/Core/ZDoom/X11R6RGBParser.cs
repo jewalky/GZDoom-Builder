@@ -30,7 +30,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 
 		internal X11R6RGBParser()
 		{
-			knowncolors = new Dictionary<string, PixelColor>(StringComparer.OrdinalIgnoreCase);
+			knowncolors = new Dictionary<string, PixelColor>(StringComparer.InvariantCultureIgnoreCase);
 		}
 
 		#endregion
@@ -73,6 +73,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 
 				// Assemble name
 				string colorname = string.Join("", parts, 3, parts.Length - 3);
+                colorname = colorname.ToLowerInvariant(); // [ZZ] just to make sure, even though it's OrdinalIgnoreCase
 
 				// Add to collection
 				knowncolors[colorname] = new PixelColor(255, r, g, b);

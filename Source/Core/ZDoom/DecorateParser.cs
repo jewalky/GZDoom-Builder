@@ -22,6 +22,7 @@ using System.Globalization;
 using System.IO;
 using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Data;
+using CodeImp.DoomBuilder.Types;
 
 #endregion
 
@@ -52,11 +53,14 @@ namespace CodeImp.DoomBuilder.ZDoom
 		// These are all parsed actors, also those from other games
 		private Dictionary<string, ActorStructure> archivedactors;
 
-		//mxd. Includes tracking
-		private readonly HashSet<string> parsedlumps;
+        // These are actors from ZScript. Don't even try to expose this list.
+        private Dictionary<string, ActorStructure> zscriptactors;
+
+        //mxd. Includes tracking
+        private HashSet<string> parsedlumps;
 
 		//mxd. Custom damagetypes
-		private readonly HashSet<string> damagetypes;
+		private HashSet<string> damagetypes;
 
 		//mxd. Disposing. Is that really needed?..
 		private bool isdisposed;
@@ -89,24 +93,20 @@ namespace CodeImp.DoomBuilder.ZDoom
 		/// mxd. Custom DamageTypes (http://zdoom.org/wiki/Damage_types).
 		/// </summary>
 		public IEnumerable<string> DamageTypes { get { return damagetypes; } }
-
 		#endregion
 		
 		#region ================== Constructor / Disposer
 		
 		// Constructor
-		public DecorateParser()
+		public DecorateParser(Dictionary<string, ActorStructure> _zscriptactors)
 		{
 			// Syntax
 			whitespace = "\n \t\r\u00A0"; //mxd. non-breaking space is also space :)
 			specialtokens = ":{}[]()+-\n;,";
 			skipregions = false; //mxd
-			
-			// Initialize
-			actors = new Dictionary<string, ActorStructure>(StringComparer.OrdinalIgnoreCase);
-			archivedactors = new Dictionary<string, ActorStructure>(StringComparer.OrdinalIgnoreCase);
-			parsedlumps = new HashSet<string>(StringComparer.OrdinalIgnoreCase); //mxd
-			damagetypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase); //mxd
+
+            ClearActors();
+            zscriptactors = _zscriptactors;
 		}
 		
 		// Disposer
@@ -170,7 +170,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 						case "actor":
 						{
 							// Read actor structure
-							ActorStructure actor = new ActorStructure(this, (regions.Count > 0 ? regions[regions.Count - 1] : null));
+							ActorStructure actor = new DecorateActorStructure(this, (regions.Count > 0 ? regions[regions.Count - 1] : null));
 							if(this.HasError) return false;
 						
 							// Add the actor
@@ -313,7 +313,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 								{
 									// Preserve nesting
 									info.Category.AddRange(regions[regions.Count - 1].Category);
-									info.Properties = new Dictionary<string, List<string>>(regions[regions.Count - 1].Properties);
+									info.Properties = new Dictionary<string, List<string>>(regions[regions.Count - 1].Properties, StringComparer.OrdinalIgnoreCase);
 								}
 								info.Category.AddRange(parts);
 
@@ -421,9 +421,20 @@ namespace CodeImp.DoomBuilder.ZDoom
 		internal ActorStructure GetArchivedActorByName(string name)
 		{
 			name = name.ToLowerInvariant();
+            ActorStructure zscriptactor = (zscriptactors.ContainsKey(name) ? zscriptactors[name] : null);
+            if (zscriptactor != null) return zscriptactor;
 			return (archivedactors.ContainsKey(name) ? archivedactors[name] : null);
 		}
-		
-		#endregion
-	}
+
+        internal void ClearActors()
+        {
+            // Initialize
+            actors = new Dictionary<string, ActorStructure>(StringComparer.OrdinalIgnoreCase);
+            archivedactors = new Dictionary<string, ActorStructure>(StringComparer.OrdinalIgnoreCase);
+            parsedlumps = new HashSet<string>(StringComparer.OrdinalIgnoreCase); //mxd
+            damagetypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase); //mxd
+        }
+
+        #endregion
+    }
 }

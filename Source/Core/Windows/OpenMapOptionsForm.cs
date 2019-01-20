@@ -211,9 +211,12 @@ namespace CodeImp.DoomBuilder.Windows
 					}
 				}
 			}
-			
-			//mxd. Bail out if still no dice...
-			if(config.SelectedIndex == -1 || mapslist.Items.Count == 0)
+
+            // [ZZ] dispose of wadfile
+            wadfile.Dispose();
+
+            //mxd. Bail out if still no dice...
+            if (config.SelectedIndex == -1 || mapslist.Items.Count == 0)
 			{
 				General.ShowWarningMessage("Unable to find maps using any game configuration.\nDoes this wad contain any maps at all?..", MessageBoxButtons.OK);
 				cancel_Click(this, EventArgs.Empty);
@@ -297,10 +300,12 @@ namespace CodeImp.DoomBuilder.Windows
 			string selectedname = (mapslist.SelectedItems.Count > 0 ? mapslist.SelectedItems[0].Text : "");
 
 			// Make an array for the map names
-			List<ListViewItem> mapnames = new List<ListViewItem>();
+			//List<ListViewItem> mapnames = new List<ListViewItem>();
+            // [ZZ] This should be a string list so we can do mapnames.Contains
+            List<string> mapnames = new List<string>();
 
-			// Get selected configuration info
-			ConfigurationInfo ci = (config.SelectedItem as ConfigurationInfo);
+            // Get selected configuration info
+            ConfigurationInfo ci = (config.SelectedItem as ConfigurationInfo);
 
 			//mxd. Get configuration
 			Configuration cfg = ci.Configuration;
@@ -351,16 +356,18 @@ namespace CodeImp.DoomBuilder.Windows
 						checkoffset++;
 					}
 
-					// Map found? Then add it to the list
-					if(lumpsfound >= lumpsrequired)
-						mapnames.Add(new ListViewItem(wadfile.Lumps[scanindex].Name));
+                    // Map found? Then add it to the list
+                    string mapname = wadfile.Lumps[scanindex].Name;
+					if ((lumpsfound >= lumpsrequired) && !mapnames.Contains(mapname))
+						mapnames.Add(mapname);
 				}
 			}
 
 			// Clear the list and add the new map names
 			mapslist.BeginUpdate();
 			mapslist.Items.Clear();
-			mapslist.Items.AddRange(mapnames.ToArray());
+            foreach (string mapname in mapnames)
+                mapslist.Items.Add(mapname);
 			mapslist.Sort();
 
 			// Go for all items in the list

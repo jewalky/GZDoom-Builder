@@ -278,13 +278,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			//mxd. Interpolate vertex colors?
-			if(sd.CeilingGlow != null || sd.FloorGlow != null) 
+			for(int i = 0; i < verts.Count; i++)
 			{
-				for(int i = 0; i < verts.Count; i++)
-				{
-					if(verts[i].c == PixelColor.INT_WHITE) continue; // Fullbright verts are not affected by glows.
-					verts[i] = InterpolateVertexColor(verts[i], sd);
-				}
+				//if(verts[i].c == PixelColor.INT_WHITE) continue; // Fullbright verts are not affected by glows.
+				verts[i] = InterpolateVertexColor(verts[i], sd);
 			}
 			
 			return verts;
@@ -293,6 +290,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		//mxd
 		private static WorldVertex InterpolateVertexColor(WorldVertex v, SectorData data) 
 		{
+            // don't process glows if fullbright.
+            //if (v.c == PixelColor.INT_WHITE)
+            //    return v;
+
 			// Apply ceiling glow?
 			if(data.CeilingGlow != null)
 			{
@@ -325,7 +326,19 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				}
 			}
 
-			return v;
+            // [ZZ] process sector top and bottom colors.
+            // block
+            {
+                float cz = data.Ceiling.plane.GetZ(v.x, v.y);
+                float cgz = data.Floor.plane.GetZ(v.x, v.y);
+                float delta = 1.0f - (((v.z - cgz) / (cz - cgz)) * 0.9f);
+                PixelColor vertexcolor = PixelColor.FromInt(v.c);
+                PixelColor topcolor = PixelColor.Modulate(vertexcolor, data.ColorWallTop);
+                PixelColor bottomcolor = PixelColor.Modulate(vertexcolor, data.ColorWallBottom);
+                v.c = InterpolationTools.InterpolateColor(topcolor, bottomcolor, delta).WithAlpha(255).ToInt();
+            }
+
+            return v;
 		}
 		
 		// This splits a polygon with a plane and returns the other part as a new polygon
@@ -519,7 +532,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		protected static float GetRoundedTextureOffset(float oldValue, float offset, float scale, float textureSize) 
 		{
 			if(offset == 0f) return oldValue;
-			float scaledOffset = offset * scale;
+			float scaledOffset = offset * Math.Abs(scale);
 			float result = (float)Math.Round(oldValue + scaledOffset);
 			if(textureSize > 0) result %= textureSize;
 			if(result == oldValue) result += (scaledOffset < 0 ? -1 : 1);
@@ -527,7 +540,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		}
 
 		//mxd
-		public void SelectNeighbours(bool select, bool matchtexture, bool matchheight) 
+        public void SelectNeighbours(bool select, bool matchtexture, bool matchheight)
+        {
+            SelectNeighbours(select, matchtexture, matchheight, true, true);
+        }
+
+		private void SelectNeighbours(bool select, bool matchtexture, bool matchheight, bool clearlinedefs, bool forward)
 		{
 			if(Sidedef.Sector == null || Triangles < 1 || (!matchtexture && !matchheight)) return;
 
@@ -545,48 +563,77 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				mode.RemoveSelectedObject(this);
 			}
 
-			// Select
-			SelectNeighbourLines(Sidedef.Line.Start.Linedefs, rect, select, matchtexture, matchheight);
-			SelectNeighbourLines(Sidedef.Line.End.Linedefs, rect, select, matchtexture, matchheight);
+            // [ZZ] use the marking system.
+            if (clearlinedefs) General.Map.Map.ClearMarkedLinedefs(false);
+            Sidedef.Line.Marked = true;
+
+            // Select
+            Vertex v;
+
+            if (forward)
+            {
+                v = Sidedef.IsFront ? Sidedef.Line.End : Sidedef.Line.Start;
+                SelectNeighbourLines(v.Linedefs, v, rect, select, matchtexture, matchheight, true);
+                v = Sidedef.IsFront ? Sidedef.Line.Start : Sidedef.Line.End;
+                SelectNeighbourLines(v.Linedefs, v, rect, select, matchtexture, matchheight, false);
+            }
+            else
+            {
+                v = Sidedef.IsFront ? Sidedef.Line.Start : Sidedef.Line.End;
+                SelectNeighbourLines(v.Linedefs, v, rect, select, matchtexture, matchheight, false);
+                v = Sidedef.IsFront ? Sidedef.Line.End : Sidedef.Line.Start;
+                SelectNeighbourLines(v.Linedefs, v, rect, select, matchtexture, matchheight, true);
+            }
 		}
 
 		//mxd
-		private void SelectNeighbourLines(IEnumerable<Linedef> lines, Rectangle sourcerect, bool select, bool matchtexture, bool matchheight)
+		private void SelectNeighbourLines(IEnumerable<Linedef> lines, Vertex v, Rectangle sourcerect, bool select, bool matchtexture, bool matchheight, bool forward)
 		{
 			foreach(Linedef line in lines)
 			{
-				if(line.Index == Sidedef.Line.Index) continue;
+                // [ZZ] decide which side of the next linedef to iterate.
+                //      do NOT do both
+                Sidedef next = null;
+                Sidedef side1 = forward ? line.Front : line.Back;
+                Sidedef side2 = forward ? line.Back : line.Front;
 
-				if(line.Front != null && line.Front.Sector != null)
-					SelectNeighbourSideParts(line.Front, sourcerect, select, matchtexture, matchheight);
+                if (line.Start == v)
+                    next = side1;
+                else if (line.End == v)
+                    next = side2;
 
-				if(line.Back != null && line.Back.Sector != null)
-					SelectNeighbourSideParts(line.Back, sourcerect, select, matchtexture, matchheight);
+                if (next == null || next.Sector == null)
+                    continue;
+
+                SelectNeighbourSideParts(next, sourcerect, select, matchtexture, matchheight, forward);
 			}
 		}
 
 		//mxd
-		private void SelectNeighbourSideParts(Sidedef side, Rectangle sourcerect, bool select, bool matchtexture, bool matchheight)
+		private void SelectNeighbourSideParts(Sidedef side, Rectangle sourcerect, bool select, bool matchtexture, bool matchheight, bool forward)
 		{
+            if (side.Line.Marked)
+                return;
+
 			BaseVisualSector s = (BaseVisualSector)mode.GetVisualSector(side.Sector);
 			if(s != null)
 			{
 				VisualSidedefParts parts = s.GetSidedefParts(side);
-				SelectNeighbourSidePart(parts.lower, sourcerect, select, matchtexture, matchheight);
-				SelectNeighbourSidePart(parts.middlesingle, sourcerect, select, matchtexture, matchheight);
-				SelectNeighbourSidePart(parts.middledouble, sourcerect, select, matchtexture, matchheight);
-				SelectNeighbourSidePart(parts.upper, sourcerect, select, matchtexture, matchheight);
+				SelectNeighbourSidePart(parts.lower, sourcerect, select, matchtexture, matchheight, forward);
+				SelectNeighbourSidePart(parts.middlesingle, sourcerect, select, matchtexture, matchheight, forward);
+				SelectNeighbourSidePart(parts.middledouble, sourcerect, select, matchtexture, matchheight, forward);
+				SelectNeighbourSidePart(parts.upper, sourcerect, select, matchtexture, matchheight, forward);
 
 				if(parts.middle3d != null)
 				{
 					foreach(VisualMiddle3D middle3D in parts.middle3d)
-						SelectNeighbourSidePart(middle3D, sourcerect, select, matchtexture, matchheight);
+						SelectNeighbourSidePart(middle3D, sourcerect, select, matchtexture, matchheight, forward);
 				}
 			}
 		}
 
 		//mxd
-		private void SelectNeighbourSidePart(BaseVisualGeometrySidedef visualside, Rectangle sourcerect, bool select, bool matchtexture, bool matchheight)
+		private void SelectNeighbourSidePart(BaseVisualGeometrySidedef visualside, Rectangle sourcerect, bool select, bool matchtexture, bool matchheight, bool forward)
 		{
 			if(visualside != null && visualside.Triangles > 0 && visualside.Selected != select)
 			{
@@ -595,7 +642,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				if((!matchtexture || (visualside.Texture == Texture && r.IntersectsWith(sourcerect))) &&
 				   (!matchheight || (sourcerect.Height == r.Height && sourcerect.Y == r.Y)))
 				{
-					visualside.SelectNeighbours(select, matchtexture, matchheight);
+					visualside.SelectNeighbours(select, matchtexture, matchheight, false, forward);
 				}
 			}
 		}
@@ -631,16 +678,41 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				float scalex, offsetx;
 				float linelength = (float)Math.Round(Sidedef.Line.Length); // Let's use ZDoom-compatible line length here
+				float patternwidth = (options.AutoWidth && options.PatternWidth > 0) ? options.PatternWidth : Texture.Width;
+				float horizontalrepeat = options.HorizontalRepeat;
 
-				if(options.FitAcrossSurfaces) 
+				if (options.FitAcrossSurfaces)
 				{
-					scalex = Texture.ScaledWidth / (linelength * (options.GlobalBounds.Width / linelength)) * options.HorizontalRepeat;
+					if (options.AutoWidth)
+					{
+						horizontalrepeat = (float)Math.Round((float)options.GlobalBounds.Width / patternwidth);
+
+						if (horizontalrepeat == 0)
+							horizontalrepeat = 1.0f;
+
+						if (options.PatternWidth > 0)
+							horizontalrepeat /= Texture.Width / patternwidth;
+					}
+
+					scalex = Texture.ScaledWidth / (linelength * (options.GlobalBounds.Width / linelength)) * horizontalrepeat;
 					offsetx = (float)Math.Round((options.Bounds.X * scalex - Sidedef.OffsetX - options.ControlSideOffsetX), General.Map.FormatInterface.VertexDecimals);
 					if(Texture.IsImageLoaded) offsetx %= Texture.Width;
 				} 
 				else 
 				{
-					scalex = Texture.ScaledWidth / linelength * options.HorizontalRepeat;
+					if (options.AutoWidth)
+					{
+						horizontalrepeat = (float)Math.Round(linelength / patternwidth);
+
+						if (horizontalrepeat == 0)
+							horizontalrepeat = 1.0f;
+
+						if (options.PatternWidth > 0)
+							horizontalrepeat /= Texture.Width / patternwidth;
+					}
+
+
+					scalex = Texture.ScaledWidth / linelength * horizontalrepeat;
 					offsetx = -Sidedef.OffsetX - options.ControlSideOffsetX;
 				}
 
@@ -660,10 +732,23 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				if(Sidedef.Sector != null) 
 				{
 					float scaley, offsety;
+					float patternheight = (options.AutoHeight && options.PatternHeight > 0) ? options.PatternHeight : Texture.Height;
+					float verticalrepeat = options.VerticalRepeat;
 
-					if(options.FitAcrossSurfaces) 
+					if (options.FitAcrossSurfaces) 
 					{
-						scaley = Texture.ScaledHeight / (options.Bounds.Height * ((float)options.GlobalBounds.Height / options.Bounds.Height)) * options.VerticalRepeat;
+						if (options.AutoHeight)
+						{
+							verticalrepeat = (float)Math.Round((float)options.GlobalBounds.Height / patternheight);
+
+							if (verticalrepeat == 0)
+								verticalrepeat = 1.0f;
+
+							if (options.PatternHeight > 0)
+								verticalrepeat /= Texture.Height / patternheight;
+						}
+
+						scaley = Texture.ScaledHeight / (options.Bounds.Height * ((float)options.GlobalBounds.Height / options.Bounds.Height)) * verticalrepeat;
 
 						if(this is VisualLower) // Special cases, special cases...
 						{ 
@@ -684,7 +769,18 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					} 
 					else 
 					{
-						scaley = Texture.ScaledHeight / options.Bounds.Height * options.VerticalRepeat;
+						if (options.AutoHeight)
+						{
+							verticalrepeat = (float)Math.Round((float)options.Bounds.Height / patternheight);
+
+							if (verticalrepeat == 0)
+								verticalrepeat = 1.0f;
+
+							if (options.PatternHeight > 0)
+								verticalrepeat /= Texture.Height / patternheight;
+						}
+
+						scaley = Texture.ScaledHeight / options.Bounds.Height * verticalrepeat;
 
 						// Special cases, special cases...
 						if(this is VisualLower)
@@ -737,7 +833,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		protected abstract void MoveTextureOffset(int offsetx, int offsety);
 		protected abstract Point GetTextureOffset();
 		public virtual void OnTextureFit(FitTextureOptions options) { } //mxd
-		
+		public virtual void OnPaintSelectEnd() { } // biwa
+
 		// Insert middle texture
 		public virtual void OnInsert()
 		{
@@ -1003,7 +1100,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 							// Limit the alignment to selection only
 							General.Map.Map.ClearMarkedSidedefs(true);
 							List<Sidedef> sides = mode.GetSelectedSidedefs();
-							foreach(Sidedef sd in sides) sd.Marked = false;
+                            foreach (Sidedef sd in sides)
+                            {
+                                sd.Marked = false;
+                                if (sd.Other != null)
+                                    sd.Other.Marked = false;
+                            }
 						}
 
 						//mxd. We potentially need to deal with 2 textures (because of long and short texture names)...
@@ -1073,7 +1175,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				// Limit the alignment to selection only
 				General.Map.Map.ClearMarkedSidedefs(true);
 				List<Sidedef> sides = mode.GetSelectedSidedefs();
-				foreach(Sidedef sd in sides) sd.Marked = false;
+                foreach (Sidedef sd in sides)
+                {
+                    sd.Marked = false;
+                    if (sd.Other != null)
+                        sd.Other.Marked = false;
+                }
 			}
 			
 			// Do the alignment
@@ -1308,6 +1415,35 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				UpdateDragUV();
 			}
+			else if (mode.PaintSelectPressed) // biwa. Paint selection going on?
+			{
+				if (mode.PaintSelectType == this.GetType().BaseType && mode.Highlighted != this) // using BaseType so that middle, upper, lower, etc can be selecting in one go
+				{
+					// toggle selected state
+					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+					{
+						this.selected = true;
+						mode.AddSelectedObject(this);
+					}
+					else if (General.Interface.CtrlState)
+					{
+						this.selected = false;
+						mode.RemoveSelectedObject(this);
+
+					}
+					else
+					{
+						if (this.selected)
+							mode.RemoveSelectedObject(this);
+						else
+							mode.AddSelectedObject(this);
+
+						this.selected = !this.selected;
+					}
+				}
+
+				return;
+			}
 			else
 			{
 				// Select button pressed?
@@ -1420,8 +1556,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				Tools.UpdateLightFogFlag(Sidedef);
 				mode.SetActionResult("Changed wall brightness to " + newlight + ".");
 
-				// Update this part only
-				this.Setup();
+                // Update this part only
+                //this.Setup();
+                // [ZZ] why the hell was maxed updating only this part? sidedef change is global per sidedef, not only upper/lower/middle part.
+                //      find this sidedef in sector, update all parts.
+                VisualSidedefParts parts = Sector.GetSidedefParts(Sidedef);
+                parts.SetupAllParts();
 			}
 			else if(!Sector.Changed)
 			{
@@ -1555,6 +1695,33 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			if(sd != null) sd.Reset(true);
 
 			mode.SetActionResult("Wall scale changed to " + scaleX.ToString("F03", CultureInfo.InvariantCulture) + ", " + scaleY.ToString("F03", CultureInfo.InvariantCulture) + " (" + (int)Math.Round(Texture.Width / scaleX) + " x " + (int)Math.Round(Texture.Height / scaleY) + ").");
+		}
+
+		// biwa
+		public virtual void OnPaintSelectBegin()
+		{
+			mode.PaintSelectType = this.GetType().BaseType; // using BaseType so that middle, upper, lower, etc can be selecting in one go
+
+			// toggle selected state
+			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+			{
+				this.selected = true;
+				mode.AddSelectedObject(this);
+			}
+			else if (General.Interface.CtrlState)
+			{
+				this.selected = false;
+				mode.RemoveSelectedObject(this);
+			}
+			else
+			{
+				if (this.selected)
+					mode.RemoveSelectedObject(this);
+				else
+					mode.AddSelectedObject(this);
+
+				this.selected = !this.selected;
+			}
 		}
 
 		#endregion

@@ -56,13 +56,13 @@ namespace CodeImp.DoomBuilder.Windows
 		//mxd
 		private void zdoomorglink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) 
 		{
-			General.OpenWebsite("http://forum.zdoom.org/viewtopic.php?f=3&t=32392");
+			General.OpenWebsite("http://forum.zdoom.org/viewtopic.php?f=44&t=54957");
 		}
 
 		//mxd
 		private void gitlink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			General.OpenWebsite("https://github.com/m-x-d/GZDoom-Builder");
+			General.OpenWebsite("https://github.com/jewalky/GZDoom-Builder-Bugfix");
 		}
 
 		// This copies the version number to clipboard

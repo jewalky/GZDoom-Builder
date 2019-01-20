@@ -105,7 +105,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			byte alpha = 255;
 			if(Thing.Sector != null)
 			{
-				string renderstyle = info.RenderStyle;
+				string renderstyle = info.RenderStyle.ToLowerInvariant();
 				alpha = info.AlphaByte;
 				
 				if(General.Map.UDMF)
@@ -122,15 +122,22 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					}
 					else if(Thing.Fields.ContainsKey("renderstyle"))
 					{
-						renderstyle = Thing.Fields.GetValue("renderstyle", renderstyle);
+						renderstyle = Thing.Fields.GetValue("renderstyle", renderstyle).ToLowerInvariant();
 					}
 
-					if((renderstyle == "add" || renderstyle == "translucent" || renderstyle == "subtract" || renderstyle == "stencil") 
+					if((renderstyle == "add" || renderstyle == "translucent" || renderstyle == "subtract" || renderstyle.EndsWith("stencil")) 
 						&& Thing.Fields.ContainsKey("alpha"))
 					{
 						alpha = (byte)(General.Clamp(Thing.Fields.GetValue("alpha", info.Alpha), 0f, 1f) * 255);
 					}
-				}
+
+                    if (renderstyle.EndsWith("stencil"))
+                    {
+                        stencilColor = PixelColor.FromInt(UniFields.GetInteger(Thing.Fields, "fillcolor", 0));
+                        stencilColor.a = 255; // 0xFF alpha means nothing was read. 0x00 alpha means there was a valid fillcolor.
+                    }
+                    else stencilColor.a = 0;
+                }
 				else if(General.Map.HEXEN)
 				{
 					if(Thing.IsFlagSet("2048"))
@@ -155,6 +162,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						break;
 
 					case "add":
+                    case "addstencil":
 						RenderPass = RenderPass.Additive;
 						break;
 
@@ -170,9 +178,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						break;
 				}
 			}
-
-			// Don't bother when alpha is unchanged, unless Additive RenderStyle is used
-			if(RenderPass != RenderPass.Additive && alpha == 255) RenderPass = RenderPass.Mask;
 
 			int sectorcolor = new PixelColor(alpha, 255, 255, 255).ToInt();
 			fogfactor = 0f; //mxd
@@ -262,7 +267,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 						PixelColor areabrightness = PixelColor.FromInt(mode.CalculateBrightness(brightness));
 						PixelColor areacolor = PixelColor.Modulate(level.colorbelow, areabrightness);
-						sectorcolor = areacolor.WithAlpha(alpha).ToInt();
+
+                        // [ZZ] if sector is using Doom64 lighting, apply thing color here.
+                        sectorcolor = PixelColor.Modulate(sd.ColorSprites, areacolor).WithAlpha(alpha).ToInt();
 
 						//mxd. Calculate fogfactor
 						fogfactor = VisualGeometry.CalculateFogFactor(level.sector, brightness);
@@ -280,10 +287,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						fogfactor = VisualGeometry.CalculateFogFactor(level.sector, level.brightnessbelow);
 					}
 				}
-			}
+            }
 
-			//mxd. Create verts for all sprite angles
-			WorldVertex[][] allverts = new WorldVertex[info.SpriteFrame.Length][];
+            //mxd. Create verts for all sprite angles
+            WorldVertex[][] allverts = new WorldVertex[info.SpriteFrame.Length][];
 			Vector2D[] alloffsets = new Vector2D[info.SpriteFrame.Length];
 			base.textures = new ImageData[info.SpriteFrame.Length];
 			isloaded = true;
@@ -639,7 +646,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// Unused
 		public void OnSelectBegin() { }
 		public void OnEditBegin() { }
-		public void OnMouseMove(MouseEventArgs e) { }
 		public void OnChangeTargetBrightness(bool up) { }
 		public void OnChangeTextureOffset(int horizontal, int vertical, bool doSurfaceAngleCorrection) { }
 		public void OnSelectTexture() { }
@@ -658,7 +664,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public void ApplyUpperUnpegged(bool set) { }
 		public void ApplyLowerUnpegged(bool set) { }
 		public void SelectNeighbours(bool select, bool withSameTexture, bool withSameHeight) { } //mxd
-		
+		public virtual void OnPaintSelectEnd() { } // biwa
+
 		// Return texture name
 		public string GetTextureName() { return ""; }
 
@@ -850,6 +857,66 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			this.Changed = true;
+		}
+
+		// biwa. Moving the mouse
+		public virtual void OnMouseMove(MouseEventArgs e)
+		{
+			// biwa. Paint selection going on?
+			if (mode.PaintSelectPressed)
+			{
+				// toggle selected state
+				if (mode.PaintSelectType == this.GetType() && mode.Highlighted != this)
+				{
+					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+					{
+						this.selected = true;
+						mode.AddSelectedObject(this);
+					}
+					else if (General.Interface.CtrlState)
+					{
+						this.selected = false;
+						mode.RemoveSelectedObject(this);
+
+					}
+					else
+					{
+						if (this.selected)
+							mode.RemoveSelectedObject(this);
+						else
+							mode.AddSelectedObject(this);
+
+						this.selected = !this.selected;
+					}
+				}
+			}
+		}
+
+		// biwa
+		public virtual void OnPaintSelectBegin()
+		{
+			mode.PaintSelectType = this.GetType();
+
+			// toggle selected state
+			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+			{
+				this.selected = true;
+				mode.AddSelectedObject(this);
+			}
+			else if (General.Interface.CtrlState)
+			{
+				this.selected = false;
+				mode.RemoveSelectedObject(this);
+			}
+			else
+			{
+				if (this.selected)
+					mode.RemoveSelectedObject(this);
+				else
+					mode.AddSelectedObject(this);
+
+				this.selected = !this.selected;
+			}
 		}
 
 		//mxd

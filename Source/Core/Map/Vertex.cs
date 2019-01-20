@@ -93,8 +93,16 @@ namespace CodeImp.DoomBuilder.Map
 		// Constructor
 		internal Vertex(MapSet map, int listindex, Vector2D pos)
 		{
-			// Initialize
-			this.elementtype = MapElementType.VERTEX; //mxd
+            // [ZZ] Check coordinates
+            //      Something in GZDB creates vertices with NaN coordinates. This needs to be found.
+            if (float.IsNaN(pos.x) ||
+                float.IsNaN(pos.y))
+            {
+                throw new Exception("Tried to create a vertex at coordinates NaN,NaN");
+            }
+
+            // Initialize
+            this.elementtype = MapElementType.VERTEX; //mxd
 			this.map = map;
 			this.linedefs = new LinkedList<Linedef>();
 			this.listindex = listindex;

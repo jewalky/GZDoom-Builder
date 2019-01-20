@@ -128,6 +128,15 @@ namespace CodeImp.DoomBuilder.Map
 		//mxd. Rednering
 		public Color4 FogColor { get { return fogcolor; } }
 		public SectorFogMode FogMode { get { return fogmode; } }
+        public float Desaturation
+        {
+            get
+            {
+                if (General.Map.UDMF && Fields.ContainsKey("desaturation"))
+                    return (float)Fields["desaturation"].Value;
+                return 0f;
+            }
+        }
 
 		//mxd. Slopes
 		public Vector3D FloorSlope { get { return floorslope; } set { BeforePropsChange(); floorslope = value; updateneeded = true; } }
@@ -387,9 +396,9 @@ namespace CodeImp.DoomBuilder.Map
 					flatvertices[i].y = triangles.Vertices[i].y;
 					flatvertices[i].z = 1.0f;
 					flatvertices[i].c = brightint;
-					flatvertices[i].u = triangles.Vertices[i].x;
-					flatvertices[i].v = triangles.Vertices[i].y;
-				}
+                    flatvertices[i].u = flatvertices[i].x;
+                    flatvertices[i].v = flatvertices[i].y;
+                }
 
 				// Create bounding box
 				bbox = CreateBBox();
@@ -402,9 +411,10 @@ namespace CodeImp.DoomBuilder.Map
 				General.Plugins.OnSectorCeilingSurfaceUpdate(this, ref updateinfo.ceilvertices);
 				updateinfo.floortexture = longfloortexname;
 				updateinfo.ceiltexture = longceiltexname;
+                updateinfo.desaturation = this.Desaturation;
 
-				// Update surfaces
-				General.Map.CRenderer2D.Surfaces.UpdateSurfaces(surfaceentries, updateinfo);
+                // Update surfaces
+                General.Map.CRenderer2D.Surfaces.UpdateSurfaces(surfaceentries, updateinfo);
 
 				// Updated
 				updateneeded = false;
@@ -414,8 +424,8 @@ namespace CodeImp.DoomBuilder.Map
 		// This updates the floor surface
 		public void UpdateFloorSurface()
 		{
-			if(flatvertices == null) return;
-			
+            if (flatvertices == null) return;
+
 			// Create floor vertices
 			SurfaceUpdate updateinfo = new SurfaceUpdate(flatvertices.Length, true, false);
 			flatvertices.CopyTo(updateinfo.floorvertices, 0);
@@ -437,6 +447,7 @@ namespace CodeImp.DoomBuilder.Map
 			flatvertices.CopyTo(updateinfo.ceilvertices, 0);
 			General.Plugins.OnSectorCeilingSurfaceUpdate(this, ref updateinfo.ceilvertices);
 			updateinfo.ceiltexture = longceiltexname;
+            updateinfo.desaturation = this.Desaturation;
 			
 			// Update entry
 			General.Map.CRenderer2D.Surfaces.UpdateSurfaces(surfaceentries, updateinfo);
@@ -898,7 +909,7 @@ namespace CodeImp.DoomBuilder.Map
 				fogmode = (brightness < 248 ? SectorFogMode.CLASSIC : SectorFogMode.NONE);
 			}
 		}
-		
-		#endregion
-	}
+
+        #endregion
+    }
 }

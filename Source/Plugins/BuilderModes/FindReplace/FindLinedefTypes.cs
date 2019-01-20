@@ -105,13 +105,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					int i = 1;
 
 					//mxd. Named script search support...
-					if(General.Map.UDMF && Array.IndexOf(GZGeneral.ACS_SPECIALS, replaceaction) != -1) 
+					if(General.Map.UDMF)
 					{
-						string possiblescriptname = replaceparts[1].Trim().Replace("\"", "").ToLowerInvariant();
+                        string possiblescriptname = replaceparts[1].Trim();
 						int tmp;
 						if(!string.IsNullOrEmpty(possiblescriptname) && possiblescriptname != "*" && !int.TryParse(possiblescriptname, out tmp)) 
 						{
-							replacearg0str = possiblescriptname;
+                            replacearg0str = possiblescriptname.Replace("\"", "");
 							i = 2;
 						}
 					}
@@ -141,22 +141,26 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				int[] args = null;
 				string arg0str = string.Empty; //mxd
 
-				//parse the arg values out
-				if(parts.Length > 1) 
+                bool isacs = Array.IndexOf(GZGeneral.ACS_SPECIALS, action) != -1;
+
+                //parse the arg values out
+                if (parts.Length > 1) 
 				{
 					args = new[] { int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue };
 					int i = 1;
 
-					//mxd. Named script search support...
-					if(General.Map.UDMF && Array.IndexOf(GZGeneral.ACS_SPECIALS, action) != -1)
+                    //mxd. Named script search support...
+                    if (General.Map.UDMF)
 					{
-						string possiblescriptname = parts[1].Trim().Replace("\"", "").ToLowerInvariant();
-						int tmp;
-						if(!string.IsNullOrEmpty(possiblescriptname) && possiblescriptname != "*" && !int.TryParse(possiblescriptname, out tmp))
-						{
-							arg0str = possiblescriptname;
-							i = 2;
-						}
+                        // [ZZ] edit: we can enclose number with "" to signify a named script called "1".
+                        //      this is achieved by trying to parse the number before removing "'s.
+                        string possiblescriptname = parts[1].Trim();
+                        int tmp;
+                        if (!string.IsNullOrEmpty(possiblescriptname) && possiblescriptname != "*" && !int.TryParse(possiblescriptname, out tmp))
+                        {
+                            arg0str = possiblescriptname.Replace("\"", "").ToLowerInvariant();
+                            i = 2;
+                        }
 					}
 
 					for(; i < parts.Length && i < args.Length + 1; i++)
@@ -223,7 +227,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						}
 
 						// Process arg0str...
-						if(Array.IndexOf(GZGeneral.ACS_SPECIALS, l.Action) != -1)
+						//if(Array.IndexOf(GZGeneral.ACS_SPECIALS, l.Action) != -1)
 						{
 							string s = l.Fields.GetValue("arg0str", string.Empty);
 							if(!string.IsNullOrEmpty(s))
@@ -244,16 +248,19 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 					if(match) 
 					{
-						// Replace
-						if(replace)
+                        // Replace
+                        LinedefActionInfo info = General.Map.Config.GetLinedefActionInfo(l.Action);
+
+                        if (replace)
 						{
 							l.Action = replaceaction;
+                            info = General.Map.Config.GetLinedefActionInfo(l.Action);
 
-							//mxd. Replace args as well?
-							if(replaceargs != null)
+                            //mxd. Replace args as well?
+                            if (replaceargs != null)
 							{
 								int i = 0;
-								if(!string.IsNullOrEmpty(replacearg0str))
+								if(!string.IsNullOrEmpty(replacearg0str) && info.Args[0].Str) // [ZZ] make sure that arg0str is supported for this special.
 								{
 									l.Fields["arg0str"] = new UniValue(UniversalType.String, replacearg0str);
 									i = 1;
@@ -267,7 +274,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						}
 
 						// Add to list
-						LinedefActionInfo info = General.Map.Config.GetLinedefActionInfo(l.Action);
 						if(!info.IsNull)
 							objs.Add(new FindReplaceObject(l, "Linedef " + l.Index + " (" + info.Title + argtext + ")"));
 						else

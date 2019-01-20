@@ -94,6 +94,7 @@ namespace CodeImp.DoomBuilder.Data
 		protected bool issuspended;
 		protected bool isdisposed;
 		protected bool isreadonly; //mxd
+        protected bool wasreadonly; // [ZZ]
 		protected ResourceTextureSet textureset;
 
 		#endregion
@@ -103,7 +104,7 @@ namespace CodeImp.DoomBuilder.Data
 		public DataLocation Location { get { return location; } }
 		public bool IsDisposed { get { return isdisposed; } }
 		public bool IsSuspended { get { return issuspended; } }
-		public bool IsReadOnly { get { return isreadonly; } } //mxd
+		public bool IsReadOnly { get { return (issuspended?wasreadonly:isreadonly); } } //mxd, [ZZ]
 		public ResourceTextureSet TextureSet { get { return textureset; } }
 
 		#endregion
@@ -141,14 +142,27 @@ namespace CodeImp.DoomBuilder.Data
 		// This suspends use of this resource
 		public virtual void Suspend()
 		{
+            // [ZZ] validate
+            if (issuspended) throw new Exception("Tried to suspend already suspended resource!");
 			issuspended = true;
+            wasreadonly = isreadonly;
+            isreadonly = true;
 		}
 
 		// This resumes use of this resource
 		public virtual void Resume()
 		{
-			issuspended = false;
+            // [ZZ] validate
+            if (!issuspended) throw new Exception("Tried to resume already resumed resource!");
+            issuspended = false;
+            isreadonly = wasreadonly;
 		}
+
+        // This reloads the resource (possibly as readonly).
+        public virtual void Reload(bool newreadonly)
+        {
+
+        }
 
 		#endregion
 
@@ -222,8 +236,14 @@ namespace CodeImp.DoomBuilder.Data
 		// When implemented, this returns DECORATE lumps
 		public abstract IEnumerable<TextResourceData> GetDecorateData(string pname);
 
-		//mxd. When implemented, this returns MAPINFO lumps
-		public abstract IEnumerable<TextResourceData> GetMapinfoData();
+        // [ZZ] When implemented, this returns ZSCRIPT lumps
+        public abstract IEnumerable<TextResourceData> GetZScriptData(string pname);
+
+        // [ZZ] When implemented, this returns MODELDEF lumps
+        public abstract IEnumerable<TextResourceData> GetModeldefData(string pname);
+
+        //mxd. When implemented, this returns MAPINFO lumps
+        public abstract IEnumerable<TextResourceData> GetMapinfoData();
 
 		//mxd. When implemented, this returns GLDEFS lumps
 		public abstract IEnumerable<TextResourceData> GetGldefsData(string basegame);

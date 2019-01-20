@@ -404,6 +404,100 @@ namespace CodeImp.DoomBuilder.Controls
 		
 		#region ================== Methods
 
+        // [ZZ] Find and Replace
+        //      This needs to be done in the script editor class, because we don't want to loop over the same value
+        //      And for this, we need to know the context properly, not just "while FindNext && Replace".
+        //      Which means there should be a function that does both find and replace manually.
+        public int FindReplace(FindReplaceOptions options)
+        {
+            // [ZZ] why do we require current tab for "find everywhere" and "replace everywhere"?
+            //      todo: understand and refactor
+            //
+            // [ZZ] note: if we want CURRENT_*, error out if no active tab.
+            FindReplaceOptions singlesearchoptions = new FindReplaceOptions(options) { SearchMode = FindReplaceSearchMode.CURRENT_FILE };
+            List<ScriptDocumentTab> rtabs = new List<ScriptDocumentTab>();
+            switch (options.SearchMode)
+            {
+                // we really need a bitfield here. Whatever.
+                case FindReplaceSearchMode.CURRENT_FILE:
+                    if (ActiveTab == null)
+                        return 0;
+                    rtabs.Add(ActiveTab);
+                    break;
+
+                case FindReplaceSearchMode.OPENED_TABS_CURRENT_SCRIPT_TYPE:
+                    if (ActiveTab == null)
+                        return 0;
+                    // .NET is heavily retarded
+                    goto case FindReplaceSearchMode.OPENED_TABS_ALL_SCRIPT_TYPES;
+                case FindReplaceSearchMode.OPENED_TABS_ALL_SCRIPT_TYPES:
+                    foreach (ScriptDocumentTab tab in tabs.TabPages)
+                    {
+                        if (options.SearchMode == FindReplaceSearchMode.OPENED_TABS_ALL_SCRIPT_TYPES ||
+                             tab.Config.ScriptType == ActiveTab.Config.ScriptType) rtabs.Add(tab);
+                    }
+                    break;
+
+                case FindReplaceSearchMode.CURRENT_PROJECT_CURRENT_SCRIPT_TYPE:
+                    if (ActiveTab == null)
+                        return 0;
+                    // .NET is heavily retarded
+                    goto case FindReplaceSearchMode.CURRENT_PROJECT_ALL_SCRIPT_TYPES;
+                case FindReplaceSearchMode.CURRENT_PROJECT_ALL_SCRIPT_TYPES:
+                    // Just search among all resources
+                    var usedscripttypes = new List<ScriptType>(General.Map.Data.ScriptResources.Keys);
+                    for (int i = 0; i < usedscripttypes.Count; i++)
+                    {
+                        if (options.SearchMode != FindReplaceSearchMode.CURRENT_PROJECT_ALL_SCRIPT_TYPES &&
+                            usedscripttypes[i] != ActiveTab.Config.ScriptType) continue; // [ZZ] skip irrelevant script types
+                        foreach (ScriptResource sr in General.Map.Data.ScriptResources[usedscripttypes[i]])
+                        {
+                            if (!sr.IsReadOnly && sr.ContainsText(singlesearchoptions))
+                            {
+                                // open this tab
+                                var newtab = OpenResource(sr);
+                                rtabs.Add(newtab);
+                            }
+                        }
+                    }
+                    break;
+            }
+
+            int replacements = 0;
+            foreach (ScriptDocumentTab tab in rtabs)
+            {
+                // do find/replace in the current tab.
+                // make sure that we don't find the same thing twice in case replacement has part of it's value.
+                int firstPosition = -1;
+                int lengthDifference = options.ReplaceWith.Length - options.FindText.Length;
+                int lastSelectionStart = -1;
+                int lastSelectionEnd = -1;
+                while (true)
+                {
+                    if (!tab.FindNext(singlesearchoptions))
+                        break;
+                    if (firstPosition < 0)
+                        firstPosition = tab.SelectionStart;
+                    else if (tab.SelectionStart == firstPosition) // found the first
+                    {
+                        tab.SelectionStart = lastSelectionStart;
+                        tab.SelectionEnd = lastSelectionEnd;
+                        break;
+                    }
+                    if (tab.SelectionStart < firstPosition) // offset the first position with string length difference if we are replacing before it.
+                        firstPosition += lengthDifference;
+                    // do replacement
+                    tab.ReplaceSelection(options.ReplaceWith);
+                    //
+                    lastSelectionStart = tab.SelectionStart;
+                    lastSelectionEnd = tab.SelectionEnd;
+                    replacements++;
+                }
+            }
+
+            return replacements;
+        }
+
 		// Find Next
 		public bool FindNext(FindReplaceOptions options)
 		{

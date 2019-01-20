@@ -53,6 +53,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public void OnProcess(long deltatime) { }
 		public void OnInsert() { }
 		public void OnDelete() { }
+		public void OnPaintSelectBegin() { } // biwa
+		public void OnPaintSelectEnd() { } // biwa
 		public void ApplyTexture(string texture) { }
 		public void ApplyUpperUnpegged(bool set) { }
 		public void ApplyLowerUnpegged(bool set) { }

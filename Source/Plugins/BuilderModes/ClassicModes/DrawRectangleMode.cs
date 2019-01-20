@@ -82,6 +82,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 		protected override void SetupInterface() 
 		{
+            minsubdivisions = 0;
 			maxsubdivisions = 16;
 			minpointscount = 4;
 
@@ -237,7 +238,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			if(bevelwidth == 0) 
 			{
 				currentbevelwidth = 0;
-				return new[] { pStart, new Vector2D((int)pStart.x, (int)pEnd.y), pEnd, new Vector2D((int)pEnd.x, (int)pStart.y), pStart };
+				return new[] { pStart, new Vector2D(pStart.x, pEnd.y), pEnd, new Vector2D(pEnd.x, pStart.y), pStart };
 			}
 
 			//got corners. TODO: check point order

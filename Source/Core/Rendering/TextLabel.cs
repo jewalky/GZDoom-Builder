@@ -94,6 +94,11 @@ namespace CodeImp.DoomBuilder.Rendering
 		// Disposing
 		private bool isdisposed;
 
+        // ano - static stuff to prevent often alloc/dealloc performance hits
+        private static StringFormat strFormat;
+        private static SolidBrush brush;
+        private static Pen pen;
+
 		#endregion
 
 		#region ================== Properties
@@ -156,9 +161,11 @@ namespace CodeImp.DoomBuilder.Rendering
 			this.texturesize = Size.Empty; //mxd
 			this.updateneeded = true;
 			this.textureupdateneeded = true; //mxd
-			
-			// Register as resource
-			General.Map.Graphics.RegisterResource(this);
+
+            InitializeStatics();
+
+            // Register as resource
+            General.Map.Graphics.RegisterResource(this);
 			
 			// We have no destructor
 			GC.SuppressFinalize(this);
@@ -181,8 +188,10 @@ namespace CodeImp.DoomBuilder.Rendering
 			this.updateneeded = true;
 			this.textureupdateneeded = true;
 
-			// Register as resource
-			General.Map.Graphics.RegisterResource(this);
+            InitializeStatics();
+
+            // Register as resource
+            General.Map.Graphics.RegisterResource(this);
 
 			// We have no destructor
 			GC.SuppressFinalize(this);
@@ -206,10 +215,31 @@ namespace CodeImp.DoomBuilder.Rendering
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region ================== Methods
-		
+        #region ================== Methods
+
+        // ano - share resources instead of constantly alloc/dealloc
+        public void InitializeStatics()
+        {
+            if (strFormat == null)
+            {
+                strFormat = new StringFormat();
+                strFormat.FormatFlags = StringFormatFlags.FitBlackBox | StringFormatFlags.NoWrap;
+                strFormat.Alignment = StringAlignment.Center;
+                strFormat.LineAlignment = StringAlignment.Center;
+            }
+            if (brush == null)
+            {
+                // if we actually see magenta, know we made a mistake somewhere
+                brush = new SolidBrush(System.Drawing.Color.Magenta);
+            }
+            if (pen == null)
+            {
+                pen = new Pen(System.Drawing.Color.Magenta);
+            }
+        }
+
 		// This updates the text if needed
 		public void Update(float translatex, float translatey, float scalex, float scaley)
 		{
@@ -343,7 +373,7 @@ namespace CodeImp.DoomBuilder.Rendering
 			}
 		}
 
-		//mxd
+        //mxd
 		private static Bitmap CreateLabelImage(string text, Font font, PixelColor color, PixelColor backcolor, bool drawbg, RectangleF textrect, RectangleF bgrect, Size texturesize, PointF textorigin)
 		{
 			Bitmap result = new Bitmap(texturesize.Width, texturesize.Height);
@@ -354,67 +384,64 @@ namespace CodeImp.DoomBuilder.Rendering
 				g.CompositingQuality = CompositingQuality.HighQuality;
 
 				// Draw text
-				using(StringFormat sf = new StringFormat())
+				// Draw text with BG
+				if(drawbg)
 				{
-					sf.FormatFlags = StringFormatFlags.FitBlackBox | StringFormatFlags.NoWrap;
-					sf.Alignment = StringAlignment.Center;
-					sf.LineAlignment = StringAlignment.Center;
+					GraphicsPath p = new GraphicsPath();
+					float radius = textorigin.X;
+					const float outlinewidth = 1;
 
-					// Draw text with BG
-					if(drawbg)
-					{
-						GraphicsPath p = new GraphicsPath();
-						float radius = textorigin.X;
-						const float outlinewidth = 1;
+					RectangleF pathrect = bgrect;
+					pathrect.Width -= 1;
+					pathrect.Height -= 1;
 
-						RectangleF pathrect = bgrect;
-						pathrect.Width -= 1;
-						pathrect.Height -= 1;
+					// Left line
+					p.AddLine(pathrect.Left, pathrect.Bottom - radius + outlinewidth, pathrect.Left, pathrect.Top + radius);
+					p.AddArc(pathrect.Left, pathrect.Top, radius, radius, 180, 90);
 
-						// Left line
-						p.AddLine(pathrect.Left, pathrect.Bottom - radius + outlinewidth, pathrect.Left, pathrect.Top + radius);
-						p.AddArc(pathrect.Left, pathrect.Top, radius, radius, 180, 90);
+					// Top line
+					p.AddLine(pathrect.Left + radius, pathrect.Top, pathrect.Right - radius, pathrect.Top);
+					p.AddArc(pathrect.Right - radius, pathrect.Top, radius, radius, 270, 90);
 
-						// Top line
-						p.AddLine(pathrect.Left + radius, pathrect.Top, pathrect.Right - radius, pathrect.Top);
-						p.AddArc(pathrect.Right - radius, pathrect.Top, radius, radius, 270, 90);
+					// Right line
+					p.AddLine(pathrect.Right, pathrect.Top + radius, pathrect.Right, pathrect.Bottom - radius);
+					p.AddArc(pathrect.Right - radius, pathrect.Bottom - radius, radius, radius, 0, 90);
 
-						// Right line
-						p.AddLine(pathrect.Right, pathrect.Top + radius, pathrect.Right, pathrect.Bottom - radius);
-						p.AddArc(pathrect.Right - radius, pathrect.Bottom - radius, radius, radius, 0, 90);
+					// Bottom line
+					p.AddLine(pathrect.Left + radius, pathrect.Bottom, pathrect.Left + radius, pathrect.Bottom);
+					p.AddArc(pathrect.Left, pathrect.Bottom - radius, radius, radius, 90, 90);
 
-						// Bottom line
-						p.AddLine(pathrect.Left + radius, pathrect.Bottom, pathrect.Left + radius, pathrect.Bottom);
-						p.AddArc(pathrect.Left, pathrect.Bottom - radius, radius, radius, 90, 90);
+                    // Fill'n'draw bg
+                    brush.Color = color.ToColor();
 
-						// Fill'n'draw bg
-						using(SolidBrush brush = new SolidBrush(color.ToColor()))
-							g.FillPath(brush, p);
+                    g.FillPath(brush, p);
 
-						using(Pen pen = new Pen(backcolor.ToColor(), outlinewidth))
-							g.DrawPath(pen, p);
+                    pen.Color = backcolor.ToColor();
 
-						// Draw text
-						textrect.Inflate(4, 2);
-						using(SolidBrush brush = new SolidBrush(backcolor.ToColor()))
-							g.DrawString(text, font, brush, textrect, sf);
-					}
-					// Draw plain text
-					else
-					{
-						RectangleF plainbgrect = textrect;
-						if(text.Length > 1) plainbgrect.Inflate(6, 2);
+                    g.DrawPath(pen, p);
+                    
+					// Draw text
+					textrect.Inflate(4, 2);
+                    brush.Color = backcolor.ToColor();
 
-						RectangleF plaintextrect = textrect;
-						plaintextrect.Inflate(6, 4);
-
-						using(SolidBrush brush = new SolidBrush(backcolor.ToColor()))
-							g.FillRectangle(brush, plainbgrect);
-
-						using(SolidBrush brush = new SolidBrush(color.ToColor()))
-							g.DrawString(text, font, brush, plaintextrect, sf);
-					}
+                    g.DrawString(text, font, brush, textrect, strFormat);
 				}
+				// Draw plain text
+				else
+				{
+					RectangleF plainbgrect = textrect;
+					if(text.Length > 1) plainbgrect.Inflate(6, 2);
+
+					RectangleF plaintextrect = textrect;
+					plaintextrect.Inflate(6, 4);
+
+                    brush.Color = backcolor.ToColor();
+                    g.FillRectangle(brush, plainbgrect);
+
+                    brush.Color = color.ToColor();
+                    g.DrawString(text, font, brush, plaintextrect, strFormat);
+				}
+				
 			}
 
 			return result;

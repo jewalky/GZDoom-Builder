@@ -108,6 +108,9 @@ namespace CodeImp.DoomBuilder.Controls
 		// Implicit save
 		public override bool Save()
 		{
+            // [ZZ] remove trailing whitespace
+            RemoveTrailingWhitespace();
+
 			// Store the lump data
 			MemoryStream stream = new MemoryStream(editor.GetText());
 			General.Map.SetLumpData(lumpname, stream);

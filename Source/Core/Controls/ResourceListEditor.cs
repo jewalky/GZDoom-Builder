@@ -401,10 +401,13 @@ namespace CodeImp.DoomBuilder.Controls
 						switch(ext.ToLower())
 						{
 							case ".wad":
+                            case ".iwad":
 								if(AddItem(new DataLocation(DataLocation.RESOURCE_WAD, path, false, false, false))) addedfiles++;
 								break;
 							case ".pk7":
 							case ".pk3":
+                            case ".ipk3":
+                            case ".ipk7":
 								if(AddItem(new DataLocation(DataLocation.RESOURCE_PK3, path, false, false, false))) addedfiles++;
 								break;
 						}

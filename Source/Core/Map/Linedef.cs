@@ -893,42 +893,58 @@ namespace CodeImp.DoomBuilder.Map
 		}
 
 		// This returns all points at which the line intersects with the grid
-		public List<Vector2D> GetGridIntersections() 
+		public List<Vector2D> GetGridIntersections()
 		{
-			return GetGridIntersections(new Vector2D());
+			return GetGridIntersections(0.0f);
+		}
+
+		
+		public List<Vector2D> GetGridIntersections(float gridrotation, float gridoriginx = 0.0f, float gridoriginy = 0.0f) 
+		{
+			return GetGridIntersections(new Vector2D(), gridrotation, gridoriginx, gridoriginy);
 		}
 
 		// This returns all points at which the line intersects with the grid
-		public List<Vector2D> GetGridIntersections(Vector2D gridoffset)
+		public List<Vector2D> GetGridIntersections(Vector2D gridoffset, float gridrotation = 0.0f, float gridoriginx = 0.0f, float gridoriginy = 0.0f)
 		{
 			List<Vector2D> coords = new List<Vector2D>();
 			Vector2D v = new Vector2D();
 			float minx, maxx, miny, maxy;
 			bool reversex, reversey;
-			
-			if(start.Position.x > end.Position.x)
+
+			Vector2D v1 = start.Position;
+			Vector2D v2 = end.Position;
+
+			bool transformed = Math.Abs(gridrotation) > 1e-4 || Math.Abs(gridoriginx) > 1e-4 || Math.Abs(gridoriginy) > 1e-4;
+			if (transformed)
 			{
-				minx = end.Position.x;
-				maxx = start.Position.x;
+				v1 = (v1 - new Vector2D(gridoriginx, gridoriginy)).GetRotated(-gridrotation);
+				v2 = (v2 - new Vector2D(gridoriginx, gridoriginy)).GetRotated(-gridrotation);
+			}
+			
+			if(v1.x > v2.x)
+			{
+				minx = v2.x;
+				maxx = v1.x;
 				reversex = true;
 			}
 			else
 			{
-				minx = start.Position.x;
-				maxx = end.Position.x;
+				minx = v1.x;
+				maxx = v2.x;
 				reversex = false;
 			}
 
-			if(start.Position.y > end.Position.y)
+			if(v1.y > v2.y)
 			{
-				miny = end.Position.y;
-				maxy = start.Position.y;
+				miny = v2.y;
+				maxy = v1.y;
 				reversey = true;
 			}
 			else
 			{
-				miny = start.Position.y;
-				maxy = end.Position.y;
+				miny = v1.y;
+				maxy = v2.y;
 				reversey = false;
 			}
 
@@ -942,7 +958,7 @@ namespace CodeImp.DoomBuilder.Map
 					float u = (gx - minx) / (maxx - minx);
 					if(reversex) u = 1.0f - u;
 					v.x = gx;
-					v.y = start.Position.y + (end.Position.y - start.Position.y) * u;
+					v.y = v1.y + (v2.y - v1.y) * u;
 					coords.Add(v);
 				}
 			}
@@ -956,9 +972,17 @@ namespace CodeImp.DoomBuilder.Map
 					// Add intersection point at this y coordinate
 					float u = (gy - miny) / (maxy - miny);
 					if(reversey) u = 1.0f - u;
-					v.x = start.Position.x + (end.Position.x - start.Position.x) * u;
+					v.x = v1.x + (v2.x - v1.x) * u;
 					v.y = gy;
 					coords.Add(v);
+				}
+			}
+
+			if (transformed)
+			{
+				for (int i = 0; i < coords.Count; i++)
+				{
+					coords[i] = coords[i].GetRotated(gridrotation) + new Vector2D(gridoriginx, gridoriginy);
 				}
 			}
 			
@@ -984,8 +1008,19 @@ namespace CodeImp.DoomBuilder.Map
 			float u = ((p.x - v1.x) * (v2.x - v1.x) + (p.y - v1.y) * (v2.y - v1.y)) * lengthsqinv;
 
 			// Limit intersection offset to the line
-			if(bounded) if(u < lengthinv) u = lengthinv; else if(u > (1f - lengthinv)) u = 1f - lengthinv;
+			if (bounded)
+			{
+				if (General.Map.UDMF)
+				{
+					u = Math.Max(0f, Math.Min(1f, u));
+				}
+				else // restore old way for visplane explorer (which doesn't work for UDMF anyway)
+				{
+					u = Math.Max(lengthinv, Math.Min(1f - lengthinv, u));
+				}
+			}
 
+			/*
 			// Calculate intersection point
 			Vector2D i = v1 + u * (v2 - v1);
 
@@ -993,6 +1028,12 @@ namespace CodeImp.DoomBuilder.Map
 			// which is the shortest distance to the line
 			float ldx = p.x - i.x;
 			float ldy = p.y - i.y;
+			*/
+
+			// ano - let's check to see if we can do the previous faster without using operator overloading and etc
+			// the answer: running it  int.MaxValue / 64 times it tended to be around 100ms faster
+			float ldx = p.x - (v1.x + u * (v2.x - v1.x));
+			float ldy = p.y - (v1.y + u * (v2.y - v1.y));
 			return ldx * ldx + ldy * ldy;
 		}
 

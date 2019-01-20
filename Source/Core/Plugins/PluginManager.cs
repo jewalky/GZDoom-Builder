@@ -30,6 +30,7 @@ using CodeImp.DoomBuilder.Windows;
 using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.IO;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 
 #endregion
 
@@ -273,7 +274,7 @@ namespace CodeImp.DoomBuilder.Plugins
 		public void OnMapNewBegin() { foreach(Plugin p in plugins) p.Plug.OnMapNewBegin(); }
 		public void OnMapNewEnd() { foreach(Plugin p in plugins) p.Plug.OnMapNewEnd(); }
 		public void OnMapCloseBegin() { foreach(Plugin p in plugins) p.Plug.OnMapCloseBegin(); }
-		public void OnMapCloseEnd() { foreach(Plugin p in plugins) p.Plug.OnMapCloseEnd(); }
+        public void OnMapCloseEnd() { foreach(Plugin p in plugins) p.Plug.OnMapCloseEnd(); }
 		public void OnMapSaveBegin(SavePurpose purpose) { foreach(Plugin p in plugins) p.Plug.OnMapSaveBegin(purpose); }
 		public void OnMapSaveEnd(SavePurpose purpose) { foreach(Plugin p in plugins) p.Plug.OnMapSaveEnd(purpose); }
 		public void OnMapSetChangeBegin() { foreach(Plugin p in plugins) p.Plug.OnMapSetChangeBegin(); }

@@ -30,6 +30,7 @@ using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.Types;
 using CodeImp.DoomBuilder.Windows;
 using CodeImp.DoomBuilder.VisualModes;
+using System.Diagnostics;
 
 #endregion
 
@@ -2103,9 +2104,9 @@ namespace CodeImp.DoomBuilder.Map
 			ICollection<Vertex> nearbyfixedverts = FilterByArea(fixedverts, ref editarea);
 			if(!SplitLinesByVertices(movinglines, nearbyfixedverts, STITCH_DISTANCE, movinglines, mergemode))
 				return false;
-			
-			// Split non-moving lines with selected vertices
-			fixedlines = FilterByArea(fixedlines, ref editarea);
+
+            // Split non-moving lines with selected vertices
+            fixedlines = new HashSet<Linedef>(fixedlines.Where(fixedline => !fixedline.IsDisposed));
 			if(!SplitLinesByVertices(fixedlines, movingverts, STITCH_DISTANCE, movinglines, mergemode))
 				return false;
 
@@ -2194,12 +2195,16 @@ namespace CodeImp.DoomBuilder.Map
 			//DebugConsole.Clear();
 			//DebugConsole.WriteLine("CorrectSectorReferences for " + lines.Count + " lines");
 			
+            // ano - set a bunch of foreaches to be for()s because they're faster
+
 			// Create a list of sidedefs to perform sector creation with
 			List<LinedefSide> edges = new List<LinedefSide>();
 			if(existing_only)
 			{
-				foreach(Linedef l in lines)
+                int lineCount = lines.Count;
+				for(int i = 0; i < lineCount; i++)
 				{
+                    Linedef l = lines[i];
 					// Add only existing sides as edges (or front side if line has none)
 					if(l.Front != null || l.Back == null)
 						edges.Add(new LinedefSide(l, true));
@@ -2209,10 +2214,12 @@ namespace CodeImp.DoomBuilder.Map
 			}
 			else
 			{
-				foreach(Linedef l in lines)
-				{
-					// Add front side
-					edges.Add(new LinedefSide(l, true));
+                int lineCount = lines.Count;
+                for (int i = 0; i < lineCount; i++)
+                {
+                    Linedef l = lines[i];
+                    // Add front side
+                    edges.Add(new LinedefSide(l, true));
 
 					// Add back side if there's a sector
 					if(General.Map.Map.GetSectorByCoordinates(l.GetSidePoint(false)) != null)
@@ -2221,9 +2228,11 @@ namespace CodeImp.DoomBuilder.Map
 			}
 
 			HashSet<Sidedef> sides_correct = new HashSet<Sidedef>();
-			foreach(LinedefSide ls in edges)
-			{
-				if(ls.Front && ls.Line.Front != null)
+            int edgeCount = edges.Count;
+            for (int i = 0; i < edgeCount; i++)
+            {
+                LinedefSide ls = edges[i];
+                if (ls.Front && ls.Line.Front != null)
 					sides_correct.Add(ls.Line.Front);
 				else if(!ls.Front && ls.Line.Back != null)
 					sides_correct.Add(ls.Line.Back);
@@ -2241,17 +2250,25 @@ namespace CodeImp.DoomBuilder.Map
 			SectorBuilder builder = new SectorBuilder();
 			List<Sector> sectors_reused = new List<Sector>();
 
-			foreach(LinedefSide ls in edges)
-			{
-				// Skip if edge is ignored
-				//DebugConsole.WriteLine((ls.Ignore ? "Ignoring line " : "Processing line ") + ls.Line.Index);
-				if(ls.Ignore) continue;
+            for (int i = 0; i < edgeCount; i++)
+            {
+                LinedefSide ls = edges[i];
+                // Skip if edge is ignored
+                //DebugConsole.WriteLine((ls.Ignore ? "Ignoring line " : "Processing line ") + ls.Line.Index);
+                if (ls.Ignore) continue;
 
-				// Run sector builder on current edge
-				if(!builder.TraceSector(ls.Line, ls.Front)) continue; // Don't create sector if trace failed
+                // Run sector builder on current edge
+                Stopwatch watch = new Stopwatch();
+                watch.Start();
+                if (!builder.TraceSector(ls.Line, ls.Front))
+                {
+                    //General.ErrorLogger.Add(ErrorType.Warning, string.Format("TraceSector: took {0}ms, failed!", watch.ElapsedMilliseconds));
+                    continue; // Don't create sector if trace failed
+                }
+                //General.ErrorLogger.Add(ErrorType.Warning, string.Format("TraceSector: took {0}ms", watch.ElapsedMilliseconds));
 
-				// Find any subsequent edges that were part of the sector created
-				bool has_existing_lines = false;
+                // Find any subsequent edges that were part of the sector created
+                bool has_existing_lines = false;
 				bool has_existing_sides = false;
 				//bool has_zero_sided_lines = false;
 				bool has_dragged_sides = false; //mxd
@@ -2263,9 +2280,10 @@ namespace CodeImp.DoomBuilder.Map
 					if(side_exists && sectorsides.Contains(edge.Front ? edge.Line.Front : edge.Line.Back))
 						has_dragged_sides = true; //mxd
 
-					foreach(LinedefSide ls2 in edges)
-					{
-						if(ls2.Line == edge.Line)
+                    for (int k = 0; k < edgeCount; k++)
+                    {
+                        LinedefSide ls2 = edges[k];
+                        if (ls2.Line == edge.Line)
 						{
 							line_is_ours = true;
 							if(ls2.Front == edge.Front)
@@ -2276,12 +2294,16 @@ namespace CodeImp.DoomBuilder.Map
 						}
 					}
 
-					if(line_is_ours)
+                    // ano - so this inner part was already commented out
+                    // so i just put the /* */ around it
+					/*if(line_is_ours)
 					{
 						//if(edge.Line.Front == null && edge.Line.Back == null)
 							//has_zero_sided_lines = true;
 					}
-					else
+					else*/
+
+                    if(!line_is_ours)
 					{
 						has_existing_lines = true;
 						has_existing_sides |= side_exists; //mxd
@@ -2330,10 +2352,13 @@ namespace CodeImp.DoomBuilder.Map
 				builder.CreateSector(sector, null);
 			}
 
-			// Remove any sides that weren't part of a sector
-			foreach(LinedefSide ls in edges)
-			{
-				if(ls.Ignore || ls.Line == null) continue;
+            // Remove any sides that weren't part of a sector
+            for (int i = 0; i < edgeCount; i++)
+            {
+                LinedefSide ls = edges[i];
+                if (ls.Ignore || ls.Line == null) continue;
+                if (ls.Line.Start == null || ls.Line.End == null)
+                    throw new Exception("ls line is null");
 
 				if(ls.Front)
 				{
@@ -3050,8 +3075,8 @@ namespace CodeImp.DoomBuilder.Map
 
 											// Trash vertex
 											v.Dispose();
-										}
-									}
+                                        }
+                                    }
 								}
 
 								break;
@@ -3060,12 +3085,20 @@ namespace CodeImp.DoomBuilder.Map
 					}
 				}
 			}
-			
-			return true;
+
+            // [ZZ] note: disposing a vertex means also disposing all attached linedefs!
+            //      we need to iterate through our lines collection and make sure no disposed linedefs exist there.
+            //      also, just in case, do it for vertices as well, because vertices can be chain-disposed.
+            foreach (Linedef line in lines.Where(line => line.IsDisposed).ToList())
+                while (lines.Remove(line));
+            foreach (Vertex vert in verts.Where(vert => vert.IsDisposed).ToList())
+                while (verts.Remove(vert));
+
+            return true;
 		}
 
 		/// <summary>Splits lines by lines. Adds new lines to the second collection. Returns false when the operation failed.</summary>
-		public static bool SplitLinesByLines(HashSet<Linedef> lines, HashSet<Linedef> changedlines, MergeGeometryMode mergemode) //mxd
+		public static bool SplitLinesByLines(ICollection<Linedef> lines, HashSet<Linedef> changedlines, MergeGeometryMode mergemode) //mxd
 		{
 			if(lines.Count == 0 || changedlines.Count == 0 || mergemode == MergeGeometryMode.CLASSIC) return true;
 			

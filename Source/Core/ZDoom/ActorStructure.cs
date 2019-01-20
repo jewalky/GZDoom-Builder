@@ -27,39 +27,43 @@ using CodeImp.DoomBuilder.Types;
 
 namespace CodeImp.DoomBuilder.ZDoom
 {
-	public sealed class ActorStructure
+	public class ActorStructure
 	{
 		#region ================== Constants
 		
 		private readonly string[] SPRITE_CHECK_STATES = { "idle", "see", "inactive", "spawn" }; //mxd
 		internal const string ACTOR_CLASS_SPECIAL_TOKENS = ":{}\n;,"; //mxd
 
-		#endregion
-		
-		#region ================== Variables
-		
-		// Declaration
-		private readonly string classname;
-		private readonly string inheritclass;
-		private readonly string replaceclass;
-		private int doomednum = -1;
-		
-		// Inheriting
-		private ActorStructure baseclass;
-		private readonly bool skipsuper;
-		
-		// Flags
-		private Dictionary<string, bool> flags;
-		
-		// Properties
-		private Dictionary<string, List<string>> props;
-		private readonly Dictionary<string, UniversalType> uservars; //mxd
+        #endregion
 
-		//mxd. Categories
-		private DecorateCategoryInfo catinfo;
-		
-		// States
-		private Dictionary<string, StateStructure> states;
+        #region ================== Variables
+
+        // Declaration
+        internal string classname;
+        internal string inheritclass;
+        internal string replaceclass;
+        internal int doomednum = -1;
+
+        // Inheriting
+        internal ActorStructure baseclass;
+        internal bool skipsuper;
+
+        // Flags
+        internal Dictionary<string, bool> flags;
+
+        // Properties
+        internal Dictionary<string, List<string>> props;
+        internal Dictionary<string, UniversalType> uservars; //mxd
+        internal Dictionary<string, object> uservar_defaults; // [ZZ] should correspond to UniversalType
+
+        //mxd. Categories
+        internal DecorateCategoryInfo catinfo;
+
+        // [ZZ] direct ArgumentInfos (from game configuration), or own ArgumentInfos (from props)
+        internal ArgumentInfo[] args = new ArgumentInfo[5];
+
+        // States
+        internal Dictionary<string, StateStructure> states;
 		
 		#endregion
 		
@@ -73,6 +77,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 		public ActorStructure BaseClass { get { return baseclass; } }
 		internal int DoomEdNum { get { return doomednum; } set { doomednum = value; } }
 		public Dictionary<string, UniversalType> UserVars { get { return uservars; } } //mxd
+        public Dictionary<string, object> UserVarDefaults { get { return uservar_defaults; } } // [ZZ]
 		internal DecorateCategoryInfo CategoryInfo { get { return catinfo; } } //mxd
 
 		#endregion
@@ -80,15 +85,14 @@ namespace CodeImp.DoomBuilder.ZDoom
 		#region ================== Constructor / Disposer
 		
 		// Constructor
-		internal ActorStructure(DecorateParser parser, DecorateCategoryInfo catinfo)
+		internal ActorStructure()
 		{
 			// Initialize
-			this.catinfo = catinfo; //mxd
 			flags = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
 			props = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 			states = new Dictionary<string, StateStructure>(StringComparer.OrdinalIgnoreCase);
 			uservars = new Dictionary<string, UniversalType>(StringComparer.OrdinalIgnoreCase);//mxd
-			bool done = false; //mxd
+            uservar_defaults = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);// [ZZ]
 			
 			// Always define a game property, but default to 0 values
 			props["game"] = new List<string>();
@@ -97,414 +101,6 @@ namespace CodeImp.DoomBuilder.ZDoom
 			replaceclass = null;
 			baseclass = null;
 			skipsuper = false;
-			
-			// First next token is the class name
-			parser.SkipWhitespace(true);
-			classname = parser.StripTokenQuotes(parser.ReadToken(ACTOR_CLASS_SPECIAL_TOKENS));
-
-			if(string.IsNullOrEmpty(classname))
-			{
-				parser.ReportError("Expected actor class name");
-				return;
-			}
-
-			//mxd. Fail on duplicates
-			if(parser.ActorsByClass.ContainsKey(classname.ToLowerInvariant()))
-			{
-				parser.ReportError("Actor \"" + classname + "\" is double-defined");
-				return;
-			}
-
-			// Parse tokens before entering the actor scope
-			while(parser.SkipWhitespace(true))
-			{
-				string token = parser.ReadToken();
-				if(!string.IsNullOrEmpty(token))
-				{
-					token = token.ToLowerInvariant();
-
-					switch(token) 
-					{
-						case ":":
-							// The next token must be the class to inherit from
-							parser.SkipWhitespace(true);
-							inheritclass = parser.StripTokenQuotes(parser.ReadToken());
-							if(string.IsNullOrEmpty(inheritclass)) 
-							{
-								parser.ReportError("Expected class name to inherit from");
-								return;
-							}
-
-							// Find the actor to inherit from
-							baseclass = parser.GetArchivedActorByName(inheritclass);
-							break;
-
-						case "replaces":
-							// The next token must be the class to replace
-							parser.SkipWhitespace(true);
-							replaceclass = parser.StripTokenQuotes(parser.ReadToken());
-							if(string.IsNullOrEmpty(replaceclass)) 
-							{
-								parser.ReportError("Expected class name to replace");
-								return;
-							}
-							break;
-
-						case "native":
-							// Igore this token
-							break;
-
-						case "{":
-							// Actor scope begins here,
-							// break out of this parse loop
-							done = true;
-							break;
-
-						case "-":
-							// This could be a negative doomednum (but our parser sees the - as separate token)
-							// So read whatever is after this token and ignore it (negative doomednum indicates no doomednum)
-							parser.ReadToken();
-							break;
-
-						default:
-							//mxd. Property begins with $? Then the whole line is a single value
-							if(token.StartsWith("$")) 
-							{
-								// This is for editor-only properties such as $sprite and $category
-								props[token] = new List<string> { (parser.SkipWhitespace(false) ? parser.ReadLine() : "") };
-								continue;
-							}
-
-							if(!int.TryParse(token, NumberStyles.Integer, CultureInfo.InvariantCulture, out doomednum)) // Check if numeric
-							{
-								// Not numeric!
-								parser.ReportError("Expected editor number or start of actor scope while parsing \"" + classname + "\"");
-								return;
-							}
-							
-							//mxd. Range check
-							if((doomednum < General.Map.FormatInterface.MinThingType) || (doomednum > General.Map.FormatInterface.MaxThingType))
-							{
-								// Out of bounds!
-								parser.ReportError("Actor \"" + classname + "\" has invalid editor number. Editor number must be between " 
-									+ General.Map.FormatInterface.MinThingType + " and " + General.Map.FormatInterface.MaxThingType);
-								return;
-							}
-							break;
-					}
-
-					if(done) break; //mxd
-				}
-				else
-				{
-					parser.ReportError("Unexpected end of structure");
-					return;
-				}
-			}
-			
-			// Now parse the contents of actor structure
-			string previoustoken = "";
-			done = false; //mxd
-			while(parser.SkipWhitespace(true))
-			{
-				string token = parser.ReadToken();
-				token = token.ToLowerInvariant();
-
-				switch(token) 
-				{
-					case "+":
-					case "-":
-						// Next token is a flag (option) to set or remove
-						bool flagvalue = (token == "+");
-						parser.SkipWhitespace(true);
-						string flagname = parser.ReadToken();
-						if(!string.IsNullOrEmpty(flagname)) 
-						{
-							// Add the flag with its value
-							flagname = flagname.ToLowerInvariant();
-							flags[flagname] = flagvalue;
-						} 
-						else 
-						{
-							parser.ReportError("Expected flag name");
-							return;
-						}
-						break;
-
-					case "action":
-					case "native":
-						// We don't need this, ignore up to the first next ;
-						while(parser.SkipWhitespace(true)) 
-						{
-							string t = parser.ReadToken();
-							if(string.IsNullOrEmpty(t) || t == ";") break;
-						}
-						break;
-
-					case "skip_super":
-						skipsuper = true;
-						break;
-
-					case "states":
-						// Now parse actor states until we reach the end of the states structure
-						while(parser.SkipWhitespace(true)) 
-						{
-							string statetoken = parser.ReadToken();
-							if(!string.IsNullOrEmpty(statetoken)) 
-							{
-								// Start of scope?
-								if(statetoken == "{") 
-								{
-									// This is fine
-								}
-								// End of scope?
-								else if(statetoken == "}") 
-								{
-									// Done with the states,
-									// break out of this parse loop
-									break;
-								}
-								// State label?
-								else if(statetoken == ":") 
-								{
-									if(!string.IsNullOrEmpty(previoustoken)) 
-									{
-										// Parse actor state
-										StateStructure st = new StateStructure(this, parser);
-										if(parser.HasError) return;
-										states[previoustoken.ToLowerInvariant()] = st;
-									} 
-									else 
-									{
-										parser.ReportError("Expected actor state name");
-										return;
-									}
-								} 
-								else 
-								{
-									// Keep token
-									previoustoken = statetoken;
-								}
-							}
-							else 
-							{
-								parser.ReportError("Unexpected end of structure");
-								return;
-							}
-						}
-						break;
-
-					case "var": //mxd
-						// Type
-						parser.SkipWhitespace(true);
-						string typestr = parser.ReadToken().ToUpperInvariant();
-						UniversalType type = UniversalType.EnumOption; // There is no Unknown type, so let's use something impossiburu...
-						switch(typestr)
-						{
-							case "INT": type = UniversalType.Integer; break;
-							case "FLOAT": type = UniversalType.Float; break;
-							default: parser.LogWarning("Unknown user variable type"); break;
-						}
-
-						// Name
-						parser.SkipWhitespace(true);
-						string name = parser.ReadToken();
-						if(string.IsNullOrEmpty(name))
-						{
-							parser.ReportError("Expected User Variable name");
-							return;
-						}
-						if(!name.StartsWith("user_", StringComparison.OrdinalIgnoreCase))
-						{
-							parser.ReportError("User Variable name must start with \"user_\" prefix");
-							return;
-						}
-						if(uservars.ContainsKey(name))
-						{
-							parser.ReportError("User Variable \"" + name + "\" is double defined");
-							return;
-						}
-						if(!skipsuper && baseclass != null && baseclass.uservars.ContainsKey(name))
-						{
-							parser.ReportError("User variable \"" + name + "\" is already defined in one of the parent classes");
-							return;
-						}
-
-						// Rest
-						parser.SkipWhitespace(true);
-						string next = parser.ReadToken();
-						if(next == "[") // that's User Array. Let's skip it...
-						{
-							int arrlen = -1;
-							if(!parser.ReadSignedInt(ref arrlen))
-							{
-								parser.ReportError("Expected User Array length");
-								return;
-							}
-							if(arrlen < 1)
-							{
-								parser.ReportError("User Array length must be a positive value");
-								return;
-							}
-							if(!parser.NextTokenIs("]") || !parser.NextTokenIs(";"))
-							{
-								return;
-							}
-						}
-						else if(next != ";")
-						{
-							parser.ReportError("Expected \";\", but got \"" + next + "\"");
-							return;
-						}
-						else
-						{
-							// Add to collection
-							uservars.Add(name, type);
-						}
-						break;
-
-					case "}":
-						//mxd. Get user vars from the BaseClass, if we have one
-						if(!skipsuper && baseclass != null && baseclass.uservars.Count > 0)
-						{
-							foreach(var group in baseclass.uservars)
-								uservars.Add(group.Key, group.Value);
-						}
-
-						// Actor scope ends here, break out of this parse loop
-						done = true;
-						break;
-
-					// Monster property?
-					case "monster":
-						// This sets certain flags we are interested in
-						flags["shootable"] = true;
-						flags["countkill"] = true;
-						flags["solid"] = true;
-						flags["canpushwalls"] = true;
-						flags["canusewalls"] = true;
-						flags["activatemcross"] = true;
-						flags["canpass"] = true;
-						flags["ismonster"] = true;
-						break;
-
-					// Projectile property?
-					case "projectile":
-						// This sets certain flags we are interested in
-						flags["noblockmap"] = true;
-						flags["nogravity"] = true;
-						flags["dropoff"] = true;
-						flags["missile"] = true;
-						flags["activateimpact"] = true;
-						flags["activatepcross"] = true;
-						flags["noteleport"] = true;
-						break;
-
-					// Clearflags property?
-					case "clearflags":
-						// Clear all flags
-						flags.Clear();
-						break;
-
-					// Game property?
-					case "game":
-						// Include all tokens on the same line
-						List<string> games = new List<string>();
-						while(parser.SkipWhitespace(false)) 
-						{
-							string v = parser.ReadToken();
-							if(string.IsNullOrEmpty(v)) 
-							{
-								parser.ReportError("Expected \"Game\" property value");
-								return;
-							}
-							if(v == "\n") break;
-							if(v == "}") return; //mxd
-							if(v != ",") games.Add(v.ToLowerInvariant());
-						}
-						props[token] = games;
-						break;
-
-					// Property
-					default:
-						// Property begins with $? Then the whole line is a single value
-						if(token.StartsWith("$")) 
-						{
-							// This is for editor-only properties such as $sprite and $category
-							props[token] = new List<string> { (parser.SkipWhitespace(false) ? parser.ReadLine() : "") };
-						} 
-						else 
-						{
-							// Next tokens up until the next newline are values
-							List<string> values = new List<string>();
-							while(parser.SkipWhitespace(false)) 
-							{
-								string v = parser.ReadToken();
-								if(string.IsNullOrEmpty(v)) 
-								{
-									parser.ReportError("Unexpected end of structure");
-									return;
-								}
-								if(v == "\n") break;
-								if(v == "}") return; //mxd
-								if(v != ",") values.Add(v);
-							}
-
-							//mxd. Translate scale to xscale and yscale
-							if(token == "scale")
-							{
-								props["xscale"] = values;
-								props["yscale"] = values;
-							}
-							else
-							{
-								props[token] = values;
-							}
-						}
-						break;
-				}
-
-				if(done) break; //mxd
-
-				// Keep token
-				previoustoken = token;
-			}
-
-			//mxd. Check if baseclass is valid
-			if(inheritclass.ToLowerInvariant() != "actor" && doomednum > -1 && baseclass == null) 
-			{
-				//check if this class inherits from a class defined in game configuration
-				Dictionary<int, ThingTypeInfo> things = General.Map.Config.GetThingTypes();
-				string inheritclasscheck = inheritclass.ToLowerInvariant();
-
-				foreach(KeyValuePair<int, ThingTypeInfo> ti in things) 
-				{
-					if(!string.IsNullOrEmpty(ti.Value.ClassName) && ti.Value.ClassName.ToLowerInvariant() == inheritclasscheck) 
-					{
-						//states
-						if(states.Count == 0 && !string.IsNullOrEmpty(ti.Value.Sprite))
-							states.Add("spawn", new StateStructure(ti.Value.Sprite.Substring(0, 5)));
-
-						//flags
-						if(ti.Value.Hangs && !flags.ContainsKey("spawnceiling"))
-							flags["spawnceiling"] = true;
-
-						if(ti.Value.Blocking > 0 && !flags.ContainsKey("solid"))
-							flags["solid"] = true;
-						
-						//properties
-						if(!props.ContainsKey("height"))
-							props["height"] = new List<string> { ti.Value.Height.ToString() };
-
-						if(!props.ContainsKey("radius"))
-							props["radius"] = new List<string> { ti.Value.Radius.ToString() };
-
-						return;
-					}
-				}
-
-				parser.LogWarning("Unable to find \"" + inheritclass + "\" class to inherit from, while parsing \"" + classname + ":" + doomednum + "\"");
-			}
 		}
 		
 		// Disposer
@@ -624,6 +220,11 @@ namespace CodeImp.DoomBuilder.ZDoom
 		/// </summary>
 		public bool HasState(string statename)
 		{
+            // [ZZ] we should NOT pick up any states from Actor. (except Spawn, as the very default state)
+            //      for the greater good. (otherwise POL5 from GenericCrush is displayed for actors without frames, preferred before TNT1)
+            if (classname.ToLowerInvariant() == "actor" && statename.ToLowerInvariant() != "spawn")
+                return false;
+
 			if(states.ContainsKey(statename)) return true;
 			if(!skipsuper && (baseclass != null)) return baseclass.HasState(statename);
 			return false;
@@ -634,7 +235,12 @@ namespace CodeImp.DoomBuilder.ZDoom
 		/// </summary>
 		public StateStructure GetState(string statename)
 		{
-			if(states.ContainsKey(statename)) return states[statename];
+            // [ZZ] we should NOT pick up any states from Actor. (except Spawn, as the very default state)
+            //      for the greater good. (otherwise POL5 from GenericCrush is displayed for actors without frames, preferred before TNT1)
+            if (classname.ToLowerInvariant() == "actor" && statename.ToLowerInvariant() != "spawn")
+                return null;
+
+            if (states.ContainsKey(statename)) return states[statename];
 			if(!skipsuper && (baseclass != null)) return baseclass.GetState(statename);
 			return null;
 		}
@@ -644,9 +250,19 @@ namespace CodeImp.DoomBuilder.ZDoom
 		/// </summary>
 		public Dictionary<string, StateStructure> GetAllStates()
 		{
-			Dictionary<string, StateStructure> list = new Dictionary<string, StateStructure>(states, StringComparer.OrdinalIgnoreCase);
-			
-			if(!skipsuper && (baseclass != null))
+            // [ZZ] we should NOT pick up any states from Actor. (except Spawn, as the very default state)
+            //      for the greater good. (otherwise POL5 from GenericCrush is displayed for actors without frames, preferred before TNT1)
+            if (classname.ToLowerInvariant() == "actor")
+            {
+                Dictionary<string, StateStructure> list2 = new Dictionary<string, StateStructure>(StringComparer.OrdinalIgnoreCase);
+                if (states.ContainsKey("spawn"))
+                    list2.Add("spawn", states["spawn"]);
+                return list2;
+            }
+
+            Dictionary<string, StateStructure> list = new Dictionary<string, StateStructure>(states, StringComparer.OrdinalIgnoreCase);
+
+            if (!skipsuper && (baseclass != null))
 			{
 				Dictionary<string, StateStructure> baselist = baseclass.GetAllStates();
 				foreach(KeyValuePair<string, StateStructure> s in baselist)
@@ -689,27 +305,74 @@ namespace CodeImp.DoomBuilder.ZDoom
 				General.ErrorLogger.Add(ErrorType.Warning, "DECORATE warning in " + classname + ":" + doomednum + ". The sprite \"" + sprite + "\" assigned by the \"$sprite\" property does not exist.");
 			}
 
-			//mxd. Try to get a suitable sprite from our hardcoded states list
-			foreach(string state in SPRITE_CHECK_STATES)
+            StateStructure.FrameInfo firstNonTntInfo = null;
+            StateStructure.FrameInfo firstInfo = null;
+            // Pick the first we can find (including and not including TNT1)
+            Dictionary<string, StateStructure> list = GetAllStates();
+            foreach (StateStructure s in list.Values)
+            {
+                StateStructure.FrameInfo info = s.GetSprite(0);
+                if (string.IsNullOrEmpty(info.Sprite)) continue;
+
+                if (!info.IsEmpty()) firstNonTntInfo = info;
+                if (firstInfo == null) firstInfo = info;
+
+                if (firstNonTntInfo != null)
+                    break;
+            }
+
+            //mxd. Try to get a suitable sprite from our hardcoded states list
+            StateStructure.FrameInfo lastNonTntInfo = null;
+            StateStructure.FrameInfo lastInfo = null;
+            foreach (string state in SPRITE_CHECK_STATES)
 			{
 				if(!HasState(state)) continue;
 
 				StateStructure s = GetState(state);
 				StateStructure.FrameInfo info = s.GetSprite(0);
-				if(!string.IsNullOrEmpty(info.Sprite)) return info;
+                //if(!string.IsNullOrEmpty(info.Sprite)) return info;
+                if (string.IsNullOrEmpty(info.Sprite)) continue;
+
+                if (!info.IsEmpty()) lastNonTntInfo = info;
+                if (lastInfo == null) lastInfo = info;
+
+                if (lastNonTntInfo != null)
+                    break;
 			}
-			
-			// Still no sprite found? then just pick the first we can find
-			Dictionary<string, StateStructure> list = GetAllStates();
-			foreach(StateStructure s in list.Values)
-			{
-				StateStructure.FrameInfo info = s.GetSprite(0);
-				if(!string.IsNullOrEmpty(info.Sprite)) return info;
-			}
+
+            // [ZZ] return whatever is there by priority. try to pick non-TNT1 frames.
+            StateStructure.FrameInfo[] infos = new StateStructure.FrameInfo[] { lastNonTntInfo, lastInfo, firstNonTntInfo, firstInfo };
+            foreach (StateStructure.FrameInfo info in infos)
+                if (info != null) return info;
 			
 			//mxd. No dice...
 			return null;
 		}
+
+        /// <summary>
+        /// This method parses $argN into argumentinfos.
+        /// </summary>
+        public void ParseCustomArguments()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                if (HasProperty("$arg" + i))
+                    args[i] = new ArgumentInfo(this, i);
+                else args[i] = null;
+            }
+        }
+
+        public ArgumentInfo GetArgumentInfo(int idx)
+        {
+            if (args[idx] != null)
+                return args[idx];
+            // if we have $clearargs, don't inherit anything!
+            if (props.ContainsKey("$clearargs"))
+                return null;
+            if (baseclass != null)
+                return baseclass.GetArgumentInfo(idx);
+            return null;
+        }
 		
 		#endregion
 	}

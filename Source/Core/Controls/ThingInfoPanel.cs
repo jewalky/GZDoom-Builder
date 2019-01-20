@@ -134,73 +134,81 @@ namespace CodeImp.DoomBuilder.Controls
 			// Arguments
 			ArgumentInfo[] arginfo = ((t.Action == 0 && ti.Args[0] != null) ? ti.Args : act.Args); //mxd
 
-			//mxd. ACS script argument names
-			bool isacsscript = (Array.IndexOf(GZGeneral.ACS_SPECIALS, t.Action) != -1);
-			bool isnamedacsscript = (isacsscript && General.Map.UDMF && t.Fields.ContainsKey("arg0str"));
-			string scriptname = (isnamedacsscript ? t.Fields.GetValue("arg0str", string.Empty) : string.Empty);
-			ScriptItem scriptitem = null;
+            //mxd. ACS script argument names
+            bool isacsscript = (Array.IndexOf(GZGeneral.ACS_SPECIALS, t.Action) != -1);
+            bool isarg0str = (General.Map.UDMF && t.Fields.ContainsKey("arg0str"));
+            string arg0str = isarg0str ? t.Fields.GetValue("arg0str", string.Empty) : string.Empty;
+            ScriptItem scriptitem = null;
 
-			//mxd. Set default label colors
-			arg1.ForeColor = SystemColors.ControlText;
-			arglbl1.ForeColor = SystemColors.ControlText;
+            //mxd. Set default label colors
+            arg1.ForeColor = SystemColors.ControlText;
+            arglbl1.ForeColor = SystemColors.ControlText;
 
-			// Named script?
-			if(isnamedacsscript && General.Map.NamedScripts.ContainsKey(scriptname.ToLowerInvariant()))
-			{
-				scriptitem = General.Map.NamedScripts[scriptname.ToLowerInvariant()];
-			}
-			// Script number?
-			else if(isacsscript && General.Map.NumberedScripts.ContainsKey(t.Args[0]))
-			{
-				scriptitem = General.Map.NumberedScripts[t.Args[0]];
-				scriptname = (scriptitem.HasCustomName ? scriptitem.Name : scriptitem.Index.ToString());
-			}
+            // Named script?
+            if (isacsscript && isarg0str && General.Map.NamedScripts.ContainsKey(arg0str.ToLowerInvariant()))
+            {
+                scriptitem = General.Map.NamedScripts[arg0str.ToLowerInvariant()];
+            }
+            // Script number?
+            else if (isacsscript && General.Map.NumberedScripts.ContainsKey(t.Args[0]))
+            {
+                scriptitem = General.Map.NumberedScripts[t.Args[0]];
+                arg0str = (scriptitem.HasCustomName ? scriptitem.Name : scriptitem.Index.ToString());
+            }
 
-			// Apply script args?
-			Label[] arglabels = { arglbl1, arglbl2, arglbl3, arglbl4, arglbl5 };
-			Label[] args = { arg1, arg2, arg3, arg4, arg5 };
+            // Apply script args?
+            Label[] arglabels = { arglbl1, arglbl2, arglbl3, arglbl4, arglbl5 };
+            Label[] args = { arg1, arg2, arg3, arg4, arg5 };
 
-			if(scriptitem != null)
-			{
-				string[] argnames = scriptitem.GetArgumentsDescriptions(t.Action);
-				for(int i = 0; i < argnames.Length; i++)
-				{
-					if(!string.IsNullOrEmpty(argnames[i]))
-					{
-						arglabels[i].Text = argnames[i] + ":";
-						arglabels[i].Enabled = true;
-						args[i].Enabled = true;
-					}
-					else
-					{
-						arglabels[i].Text = arginfo[i].Title + ":";
-						arglabels[i].Enabled = arginfo[i].Used;
-						args[i].Enabled = arginfo[i].Used;
-					}
-				}
-			}
-			else
-			{
-				for(int i = 0; i < arginfo.Length; i++)
-				{
-					arglabels[i].Text = arginfo[i].Title + ":";
-					arglabels[i].Enabled = arginfo[i].Used;
-					args[i].Enabled = arginfo[i].Used;
-				}
+            if (scriptitem != null)
+            {
+                int first;
+                string[] argnames = scriptitem.GetArgumentsDescriptions(t.Action, out first);
+                for (int i = 0; i < first; i++)
+                {
+                    arglabels[i].Text = (isarg0str ? arginfo[i].TitleStr : arginfo[i].Title) + ":";
+                    arglabels[i].Enabled = arginfo[i].Used;
+                    args[i].Enabled = arginfo[i].Used;
+                }
 
-				// Special cases: unknown script name/index
-				if(isacsscript || isnamedacsscript)
-				{
-					arglbl1.Text = "Unknown script " + (isnamedacsscript ? "name" : "number") + ":";
-					arg1.ForeColor = Color.DarkRed;
-					arglbl1.ForeColor = Color.DarkRed;
-				}
-			}
+                for (int i = first; i < argnames.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(argnames[i]))
+                    {
+                        arglabels[i].Text = argnames[i] + ":";
+                        arglabels[i].Enabled = true;
+                        args[i].Enabled = true;
+                    }
+                    else
+                    {
+                        arglabels[i].Text = (isarg0str ? arginfo[i].TitleStr : arginfo[i].Title) + ":";
+                        arglabels[i].Enabled = arginfo[i].Used;
+                        args[i].Enabled = arginfo[i].Used;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < arginfo.Length; i++)
+                {
+                    arglabels[i].Text = (isarg0str ? arginfo[i].TitleStr : arginfo[i].Title) + ":";
+                    arglabels[i].Enabled = arginfo[i].Used;
+                    args[i].Enabled = arginfo[i].Used;
+                }
 
-			//mxd. Set argument value and label
-			if(!string.IsNullOrEmpty(scriptname)) arg1.Text = scriptname;
-			else SetArgumentText(arginfo[0], arg1, t.Args[0]);
-			SetArgumentText(arginfo[1], arg2, t.Args[1]);
+                // Special cases: unknown script name/index
+                if (isacsscript)
+                {
+                    arglbl1.Text = "Unknown script " + (isarg0str ? "name" : "number") + ":";
+                    arg1.ForeColor = Color.DarkRed;
+                    arglbl1.ForeColor = Color.DarkRed;
+                }
+            }
+
+            //mxd. Set argument value and label
+            if (isarg0str) arg1.Text = arg0str;
+            else SetArgumentText(act.Args[0], arg1, t.Args[0]);
+            SetArgumentText(arginfo[1], arg2, t.Args[1]);
 			SetArgumentText(arginfo[2], arg3, t.Args[2]);
 			SetArgumentText(arginfo[3], arg4, t.Args[3]);
 			SetArgumentText(arginfo[4], arg5, t.Args[4]);
@@ -240,7 +248,7 @@ namespace CodeImp.DoomBuilder.Controls
 
 			// Show the whole thing
 			this.Show();
-			this.Update();
+			//this.Update(); // ano - don't think this is needed, and is slow
 		}
 
 		//mxd

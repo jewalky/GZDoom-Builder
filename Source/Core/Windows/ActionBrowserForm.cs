@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Config;
+using System.Drawing;
 
 #endregion
 
@@ -129,11 +130,81 @@ namespace CodeImp.DoomBuilder.Windows
 				// Remove generalized tab
 				tabs.TabPages.Remove(tabgeneralized);
 			}
+
+            // [ZZ] we are drawing nodes manually. we need nice number padding.
+            actions.DrawMode = TreeViewDrawMode.OwnerDrawText;
+            actions.DrawNode += Actions_DrawNode;
 		}
-		
-		// This browses for an action
-		// Returns the new action or the same action when cancelled
-		public static int BrowseAction(IWin32Window owner, int action) { return BrowseAction(owner, action, false); } //mxd
+
+        private void Actions_DrawNode(object sender, DrawTreeNodeEventArgs e)
+        {
+            Rectangle nodeRect = Rectangle.FromLTRB(e.Bounds.Left + 1, e.Bounds.Top, e.Bounds.Right + 1, e.Bounds.Bottom);
+            Rectangle nodeTextRect = Rectangle.FromLTRB(nodeRect.Left, nodeRect.Top + 1, nodeRect.Right, nodeRect.Bottom);
+            string nodeText = e.Node.Text;
+            string[] parts = nodeText.Split(new char[] { '\t' }, 2);
+
+            Font nodeFont = e.Node.NodeFont;
+            if (nodeFont == null) nodeFont = ((TreeView)sender).Font;
+
+            int wd = (int)e.Graphics.MeasureString(parts[parts.Length - 1], nodeFont).Width;
+            nodeRect.Width = wd;
+
+            SizeF tagSize = e.Graphics.MeasureString("999 ", nodeFont);
+            if (parts.Length == 2)
+                nodeRect.Width += (int)tagSize.Width;
+
+            Brush fgBrush = null;
+            if ((e.State & TreeNodeStates.Selected) != 0)
+            {
+                // fill selected bg
+                e.Graphics.FillRectangle(SystemBrushes.Highlight, nodeRect);
+                // draw the node text
+                fgBrush = SystemBrushes.HighlightText;
+            }
+            else
+            {
+                // fill non selected bg (winforms does weird things here)
+                // never understood the fact that "Window" color is actually white, but actual window background is counted as "3D element".
+                e.Graphics.FillRectangle(SystemBrushes.Window, nodeRect);
+                //
+                fgBrush = SystemBrushes.WindowText;
+            }
+
+            StringFormat nodeStringFmt = new StringFormat
+                {
+                    FormatFlags = StringFormatFlags.NoWrap,
+                    Trimming = StringTrimming.None
+                };
+
+            if (parts.Length == 2)
+            {
+                e.Graphics.DrawString(parts[0], nodeFont, fgBrush, nodeTextRect, nodeStringFmt);
+                nodeTextRect.X += (int)tagSize.Width;
+                e.Graphics.DrawString(parts[1], nodeFont, fgBrush, nodeTextRect, nodeStringFmt);
+            }
+            else
+            {
+                e.Graphics.DrawString(parts[0], nodeFont, fgBrush, nodeTextRect, nodeStringFmt);
+            }
+
+            /*
+            // If the node has focus, draw the focus rectangle large, making
+            // it large enough to include the text of the node tag, if present.
+            if ((e.State & TreeNodeStates.Focused) != 0)
+            {
+                using (Pen focusPen = SystemPens.In)
+                {
+                    focusPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+                    Rectangle focusBounds = nodeRect;
+                    focusBounds.Size = new Size(focusBounds.Width - 1, focusBounds.Height - 1);
+                    e.Graphics.DrawRectangle(focusPen, focusBounds);
+                }
+            }*/
+        }
+
+        // This browses for an action
+        // Returns the new action or the same action when cancelled
+        public static int BrowseAction(IWin32Window owner, int action) { return BrowseAction(owner, action, false); } //mxd
 		public static int BrowseAction(IWin32Window owner, int action, bool addanyaction)
 		{
 			ActionBrowserForm f = new ActionBrowserForm(action, addanyaction);
@@ -170,8 +241,8 @@ namespace CodeImp.DoomBuilder.Windows
 					TreeNode cn = actions.Nodes.Add(ac.Title);
 					foreach(LinedefActionInfo ai in ac.Actions) 
 					{
-						// Create action
-						TreeNode n = cn.Nodes.Add(ai.Title);
+                        // Create action
+                        TreeNode n = cn.Nodes.Add((ai.Index > 0) ? string.Format("{0}\t{1}", ai.Index, ai.Title) : ai.Title);
 						n.Tag = ai;
 
 						// This is the given action?
@@ -190,8 +261,8 @@ namespace CodeImp.DoomBuilder.Windows
 					foreach(LinedefActionInfo ai in ac.Actions) 
 					{
 						// Create action
-						TreeNode n = actions.Nodes.Add(ai.Title);
-						n.Tag = ai;
+						TreeNode n = actions.Nodes.Add((ai.Index > 0) ? string.Format("{0}\t{1}", ai.Index, ai.Title) : ai.Title);
+                        n.Tag = ai;
 					}
 				}
 			}

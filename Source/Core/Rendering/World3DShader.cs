@@ -38,11 +38,20 @@ namespace CodeImp.DoomBuilder.Rendering
 		private readonly EffectHandle highlightcolor;
 
 		//mxd
-		private readonly EffectHandle vertexColorHadle;
+		private readonly EffectHandle vertexColorHandle;
 		private readonly EffectHandle lightPositionAndRadiusHandle; //lights
+        private readonly EffectHandle lightOrientationHandle;
+        private readonly EffectHandle light2RadiusHandle;
 		private readonly EffectHandle lightColorHandle;
+        private readonly EffectHandle desaturationHandle;
+        private readonly EffectHandle ignoreNormalsHandle;
+        private readonly EffectHandle spotLightHandle;
 		private readonly EffectHandle world;
-		private readonly EffectHandle camPosHandle; //used for fog rendering
+        private readonly EffectHandle modelnormal;
+        private readonly EffectHandle camPosHandle; //used for fog rendering
+
+        // [ZZ]
+        private readonly EffectHandle stencilColorHandle;
 		
 		#endregion
 
@@ -72,12 +81,27 @@ namespace CodeImp.DoomBuilder.Rendering
 			{
 				if(vertexcolor != value)
 				{
-					effect.SetValue(vertexColorHadle, value);
+					effect.SetValue(vertexColorHandle, value);
 					vertexcolor = value;
 					settingschanged = true; 
 				}
 			} 
 		}
+
+        // [ZZ]
+        private Color4 stencilcolor;
+        public Color4 StencilColor
+        {
+            set
+            {
+                if (stencilcolor != value)
+                {
+                    effect.SetValue(stencilColorHandle, value);
+                    stencilcolor = value;
+                    settingschanged = true;
+                }
+            }
+        }
 		
 		//lights
 		private Color4 lightcolor;
@@ -94,6 +118,50 @@ namespace CodeImp.DoomBuilder.Rendering
 			}
 		}
 
+        // [ZZ] desaturation!
+        private float desaturation;
+        public float Desaturation
+        {
+            set
+            {
+                if (desaturation != value)
+                {
+                    effect.SetValue(desaturationHandle, value);
+                    desaturation = value;
+                    settingschanged = true;
+                }
+            }
+        }
+
+        // [ZZ] emulating broken gz lights
+        private bool ignorenormals;
+        public bool IgnoreNormals
+        {
+            set
+            {
+                if (ignorenormals != value)
+                {
+                    effect.SetValue(ignoreNormalsHandle, value ? 1f : 0f);
+                    ignorenormals = value;
+                    settingschanged = true;
+                }
+            }
+        }
+
+        private bool spotlight;
+        public bool SpotLight
+        {
+            set
+            {
+                if (spotlight != value)
+                {
+                    effect.SetValue(spotLightHandle, value ? 1f : 0f);
+                    spotlight = value;
+                    settingschanged = true;
+                }
+            }
+        }
+
 		private Vector4 lightpos;
 		public Vector4 LightPositionAndRadius
 		{
@@ -107,6 +175,34 @@ namespace CodeImp.DoomBuilder.Rendering
 				} 
 			}
 		}
+
+        private Vector3 lightori;
+        public Vector3 LightOrientation
+        {
+            set
+            {
+                if (lightori != value)
+                {
+                    effect.SetValue(lightOrientationHandle, value);
+                    lightori = value;
+                    settingschanged = true;
+                }
+            }
+        }
+
+        private Vector2 light2rad;
+        public Vector2 Light2Radius
+        {
+            set
+            {
+                if (light2rad != value)
+                {
+                    effect.SetValue(light2RadiusHandle, value);
+                    light2rad = value;
+                    settingschanged = true;
+                }
+            }
+        }
 		
 		//fog
 		private Vector4 campos;
@@ -135,10 +231,24 @@ namespace CodeImp.DoomBuilder.Rendering
 					settingschanged = true;
 				}
 			}
-		}
+        }
 
-		//mxd. This sets the highlight color
-		private Color4 hicolor;
+        private Matrix mmodelnormal;
+        public Matrix ModelNormal
+        {
+            set
+            {
+                if (mmodelnormal != value)
+                {
+                    effect.SetValue(modelnormal, value);
+                    mmodelnormal = value;
+                    settingschanged = true;
+                }
+            }
+        }
+
+        //mxd. This sets the highlight color
+        private Color4 hicolor;
 		public Color4 HighlightColor
 		{
 			set
@@ -174,15 +284,24 @@ namespace CodeImp.DoomBuilder.Rendering
 				maxanisotropysetting = effect.GetParameter(null, "maxanisotropysetting");
 
 				//mxd
-				vertexColorHadle = effect.GetParameter(null, "vertexColor");
+				vertexColorHandle = effect.GetParameter(null, "vertexColor");
 				//lights
 				lightPositionAndRadiusHandle = effect.GetParameter(null, "lightPosAndRadius");
-				lightColorHandle = effect.GetParameter(null, "lightColor");
-				//fog
-				camPosHandle = effect.GetParameter(null, "campos");
+                lightOrientationHandle = effect.GetParameter(null, "lightOrientation");
+                light2RadiusHandle = effect.GetParameter(null, "light2Radius");
+                lightColorHandle = effect.GetParameter(null, "lightColor");
+                desaturationHandle = effect.GetParameter(null, "desaturation");
+                ignoreNormalsHandle = effect.GetParameter(null, "ignoreNormals");
+                spotLightHandle = effect.GetParameter(null, "spotLight");
+                //fog
+                camPosHandle = effect.GetParameter(null, "campos");
+
+                // [ZZ]
+                stencilColorHandle = effect.GetParameter(null, "stencilColor");
 
 				world = effect.GetParameter(null, "world");
-			}
+                modelnormal = effect.GetParameter(null, "modelnormal");
+            }
 
 			// Initialize world vertex declaration
 			VertexElement[] ve = {
@@ -215,14 +334,20 @@ namespace CodeImp.DoomBuilder.Rendering
 				if(maxanisotropysetting != null) maxanisotropysetting.Dispose();
 
 				//mxd
-				if(vertexColorHadle != null) vertexColorHadle.Dispose();
+				if(vertexColorHandle != null) vertexColorHandle.Dispose();
 				if(lightColorHandle != null) lightColorHandle.Dispose();
-				if(lightPositionAndRadiusHandle != null) lightPositionAndRadiusHandle.Dispose();
+                if(desaturationHandle != null) desaturationHandle.Dispose();
+                if(ignoreNormalsHandle != null) ignoreNormalsHandle.Dispose();
+                if(light2RadiusHandle != null) light2RadiusHandle.Dispose();
+                if(lightOrientationHandle != null) lightOrientationHandle.Dispose();
+                if(lightPositionAndRadiusHandle != null) lightPositionAndRadiusHandle.Dispose();
 				if(camPosHandle != null) camPosHandle.Dispose();
+                if(stencilColorHandle != null) stencilColorHandle.Dispose();
 				if(world != null) world.Dispose();
+                if(modelnormal != null) modelnormal.Dispose();
 
-				// Done
-				base.Dispose();
+                // Done
+                base.Dispose();
 			}
 		}
 
@@ -237,7 +362,7 @@ namespace CodeImp.DoomBuilder.Rendering
 			TextureFilter magminfilter = (bilinear ? TextureFilter.Linear : TextureFilter.Point);
 			effect.SetValue(magfiltersettings, magminfilter);
 			effect.SetValue(minfiltersettings, (maxanisotropy > 1.0f ? TextureFilter.Anisotropic : magminfilter));
-			effect.SetValue(mipfiltersettings, TextureFilter.Linear);
+			effect.SetValue(mipfiltersettings, (bilinear ? TextureFilter.Linear : TextureFilter.None)); // [SB] use None, otherwise textures are still filtered
 			effect.SetValue(maxanisotropysetting, maxanisotropy);
 
 			settingschanged = true; //mxd

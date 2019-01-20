@@ -459,6 +459,14 @@ namespace CodeImp.DoomBuilder.IO
 				float x = GetCollectionEntry(c, "x", true, 0.0f, where);
 				float y = GetCollectionEntry(c, "y", true, 0.0f, where);
 
+                // [ZZ] Correct location if it's NaN. Note that there cannot be any meaningful value here, so I just reset it to 0,0 to avoid triggering the NaN exception
+                //      TODO: remove once the cause of NaN is reported
+                if (float.IsNaN(x) || float.IsNaN(y))
+                {
+                    x = y = 0f;
+                    General.ErrorLogger.Add(ErrorType.Warning, string.Format("Vertex {0} has NaN coordinates, resetting to 0,0", i));
+                }
+
 				// Create new item
 				Vertex v = map.CreateVertex(new Vector2D(x, y));
 				if(v != null)

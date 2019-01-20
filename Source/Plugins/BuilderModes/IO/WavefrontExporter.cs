@@ -96,7 +96,10 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 
 							if(!id.IsImageLoaded) id.LoadImage();
 							Bitmap bmp = id.GetBitmap();
-							bmp.Save(Path.Combine(settings.ObjPath, Path.GetFileNameWithoutExtension(s) + ".PNG"), ImageFormat.Png);
+                            lock (bmp)
+                            {
+                                bmp.Save(Path.Combine(settings.ObjPath, Path.GetFileNameWithoutExtension(s) + ".PNG"), ImageFormat.Png);
+                            }
 						} 
 						else 
 						{
@@ -127,7 +130,10 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 							if(settings.Textures != null && Array.IndexOf(settings.Textures, s) != -1)
 								flatname += "_FLAT";
 
-							bmp.Save(Path.Combine(settings.ObjPath, Path.GetFileNameWithoutExtension(flatname) + ".PNG"), ImageFormat.Png);
+                            lock (bmp)
+                            {
+                                bmp.Save(Path.Combine(settings.ObjPath, Path.GetFileNameWithoutExtension(flatname) + ".PNG"), ImageFormat.Png);
+                            }
 
 						} 
 						else 

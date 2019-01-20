@@ -9,9 +9,9 @@ using System.Net;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-using SharpCompress.Archive.SevenZip;
-using SharpCompress.Common;
-using SharpCompress.Reader;
+using SharpCompress.Archives.SevenZip;
+//using SharpCompress.Common;
+using SharpCompress.Readers;
 
 #endregion
 
@@ -38,7 +38,7 @@ namespace CodeImp.DoomBuilder
 			// Check if we have write access...
 			if(!General.CheckWritePremissions(General.AppPath))
 			{
-				string msg = "Cannot perform update: your user account does not have write access to the destination folder \"" + General.AppPath + "\"" 
+				string msg = "Cannot perform update: your user account does not have write access to the destination folder \"" + General.AppPath + "\"\n" 
 					+ "Move the editor to a folder with write access, or run it as Administrator.";
 
 				if(verbosemode) General.ShowWarningMessage(msg, MessageBoxButtons.OK);
@@ -79,8 +79,9 @@ namespace CodeImp.DoomBuilder
 			string[] inilines = File.ReadAllLines(inipath);
 			foreach(string line in inilines)
 			{
+                string cplatform = (Environment.Is64BitProcess ? "x64" : "x86");
 				if(line.StartsWith("URL")) url = line.Substring(3).Trim();
-				else if(line.StartsWith("UpdaterName")) updaterpackname = line.Substring(11).Trim();
+				else if(line.StartsWith("UpdaterName")) updaterpackname = line.Substring(11).Trim().Replace("[PLATFORM]", cplatform);
 			}
 
 			if(string.IsNullOrEmpty(url))
@@ -214,7 +215,7 @@ namespace CodeImp.DoomBuilder
 						while(reader.MoveToNextEntry())
 						{
 							if(reader.Entry.IsDirectory) continue; // Shouldn't be there, but who knows...
-							reader.WriteEntryToDirectory(General.AppPath, ExtractOptions.ExtractFullPath | ExtractOptions.Overwrite);
+							reader.WriteEntryToDirectory(General.AppPath, new ExtractionOptions() { ExtractFullPath = true, Overwrite = true });
 						}
 					}
 				}
@@ -308,8 +309,9 @@ namespace CodeImp.DoomBuilder
 			{
 				response = request.GetResponse();
 			}
-			catch(WebException)
+			catch(WebException /*e*/)
 			{
+                //General.ErrorLogger.Add(ErrorType.Warning, e.ToString());
 				return null;
 			}
 			

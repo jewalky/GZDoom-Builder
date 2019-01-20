@@ -34,13 +34,13 @@ namespace CodeImp.DoomBuilder.ZDoom.Scripting
 			// Continue until at the end of the stream
 			while(SkipWhitespace(true)) 
 			{
-				string token = ReadToken();
+                int startpos = (int)datastream.Position;
+                string token = ReadToken();
 				if(string.IsNullOrEmpty(token) || token.ToUpperInvariant() != "ACTOR") continue;
 
 				SkipWhitespace(true);
-				int startpos = (int)datastream.Position;
-
 				List<string> definition = new List<string>();
+                definition.Add(token); // actor ... ..., not just class name
 
 				do
 				{

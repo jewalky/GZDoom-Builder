@@ -39,6 +39,7 @@ using CodeImp.DoomBuilder.ZDoom;
 using SlimDX;
 using SlimDX.Direct3D9;
 using Matrix = SlimDX.Matrix;
+using CodeImp.DoomBuilder.Controls;
 
 #endregion
 
@@ -136,6 +137,8 @@ namespace CodeImp.DoomBuilder.Data
 		
 		// Things combined with things created from Decorate
 		private DecorateParser decorate;
+        private ZScriptParser zscript;
+        private Dictionary<string, ActorStructure> zdoomclasses;
 		private List<ThingCategory> thingcategories;
 		private Dictionary<int, ThingTypeInfo> thingtypes;
 		
@@ -178,6 +181,7 @@ namespace CodeImp.DoomBuilder.Data
 		public bool IsDisposed { get { return isdisposed; } }
 		public ImageData MissingTexture3D { get { return missingtexture3d; } }
 		public ImageData UnknownTexture3D { get { return unknowntexture3d; } }
+        public ImageData UnknownImage {  get { return unknownimage; } }
 		public ImageData Hourglass3D { get { return hourglass3d; } }
 		public ImageData Crosshair3D { get { return crosshair; } }
 		public ImageData CrosshairBusy3D { get { return crosshairbusy; } }
@@ -191,6 +195,7 @@ namespace CodeImp.DoomBuilder.Data
 		public List<ThingCategory> ThingCategories { get { return thingcategories; } }
 		public ICollection<ThingTypeInfo> ThingTypes { get { return thingtypes.Values; } }
 		public DecorateParser Decorate { get { return decorate; } }
+        public ZScriptParser ZScript { get { return zscript; } }
 		internal ICollection<MatchingTextureSet> TextureSets { get { return texturesets; } }
 		internal ICollection<ResourceTextureSet> ResourceTextureSets { get { return resourcetextures; } }
 		internal AllTextureSet AllTextureSet { get { return alltextures; } }
@@ -204,13 +209,33 @@ namespace CodeImp.DoomBuilder.Data
 				return false;
 			}
 		}
-		
-		#endregion
 
-		#region ================== Constructor / Disposer
+        internal const float DOOM_PIXEL_RATIO = 1.2f;
 
-		// Constructor
-		internal DataManager()
+        public float VerticalViewStretch
+        {
+            get
+            {
+                if (mapinfo == null)
+                    return DOOM_PIXEL_RATIO;
+                return mapinfo.PixelRatio;
+            }
+        }
+
+        public float InvertedVerticalViewStretch
+        {
+            get
+            {
+                return 1.0f / VerticalViewStretch;
+            }
+        }
+
+        #endregion
+
+        #region ================== Constructor / Disposer
+
+        // Constructor
+        internal DataManager()
 		{
 			// We have no destructor
 			GC.SuppressFinalize(this);
@@ -444,7 +469,9 @@ namespace CodeImp.DoomBuilder.Data
 			//mxd. Load Script Editor-only stuff...
 			LoadExtraTextLumps();
 
-			int thingcount = LoadDecorateThings(spawnnums, doomednums);
+            LoadZScriptThings();
+            LoadDecorateThings();
+            int thingcount = ApplyZDoomThings(spawnnums, doomednums);
 			int spritecount = LoadThingSprites();
 			LoadInternalSprites();
 			LoadInternalTextures(); //mxd
@@ -583,6 +610,9 @@ namespace CodeImp.DoomBuilder.Data
 
 			//mxd. Create skybox texture(s)
 			SetupSkybox();
+
+            // [ZZ] clear texture/flat cache in ImageSelectorPanel
+            ImageSelectorPanel.ClearCachedPreviews();
 			
 			// Start background loading
 			StartBackgroundLoader();
@@ -758,7 +788,7 @@ namespace CodeImp.DoomBuilder.Data
 				// Done
 				notifiedbusy = false;
 				backgroundloader = null;
-				General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+				General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 			}
 		}
 		
@@ -803,7 +833,7 @@ namespace CodeImp.DoomBuilder.Data
 						if(!notifiedbusy)
 						{
 							notifiedbusy = true;
-							General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+							General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 						}
 						Thread.Sleep(0);
 					}
@@ -817,7 +847,7 @@ namespace CodeImp.DoomBuilder.Data
 							if(!notifiedbusy)
 							{
 								notifiedbusy = true;
-								General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+								General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 							}
 							Thread.Sleep(0);
 						}
@@ -842,13 +872,13 @@ namespace CodeImp.DoomBuilder.Data
 								{
 									notifiedbusy = false;
 									IntPtr strptr = Marshal.StringToCoTaskMemAuto(deltatimesec);
-									General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.ResourcesLoaded, strptr.ToInt32(), 0);
+									General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.ResourcesLoaded, strptr, IntPtr.Zero);
 								}
 							}
 							else if(notifiedbusy) //mxd. Sould never happen (?)
 							{
 								notifiedbusy = false;
-								General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+								General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 							}
 							
 							// Wait longer to release CPU resources
@@ -881,7 +911,7 @@ namespace CodeImp.DoomBuilder.Data
 			}
 			
 			// Update icon
-			General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, 0, 0);
+			General.SendMessage(General.MainWindow.Handle, (int)MainForm.ThreadMessages.UpdateStatus, IntPtr.Zero, IntPtr.Zero);
 		}
 
 		//mxd. This loads a model
@@ -1158,7 +1188,10 @@ namespace CodeImp.DoomBuilder.Data
 				{
 					// HiResImage will not give us it's actual scale
 					Bitmap texture = img.GetBitmap();
-					scale = new Vector2D((float)img.Width / texture.Width, (float)img.Height / texture.Height);
+                    lock (texture)
+                    {
+                        scale = new Vector2D((float)img.Width / texture.Width, (float)img.Height / texture.Height);
+                    }
 					return texture;
 				}
 			}
@@ -1329,11 +1362,21 @@ namespace CodeImp.DoomBuilder.Data
 			return GetFlatExists(Lump.MakeLongName(name)); //mxd
 		}
 
-		// This checks if a flat is known
-		public bool GetFlatExists(long longname)
-		{
-			return flats.ContainsKey(longname) || flatnamesshorttofull.ContainsKey(longname);
-		}
+        // This checks if a flat is known
+        public bool GetFlatExists(long longname)
+        {
+            // [ZZ] return nonexistent name for bad flats.
+            if (flats.ContainsKey(longname))
+            {
+                // [ZZ] long name is long. a doom flat with a long name is invalid.
+                ImageData id = flats[longname];
+                if (id is PK3FileImage && ((PK3FileImage)id).IsBadForLongTextureNames)
+                    return false;
+                return true;
+            }
+
+            return flatnamesshorttofull.ContainsKey(longname);
+        }
 		
 		// This returns an image by string
 		public ImageData GetFlatImage(string name)
@@ -1349,8 +1392,17 @@ namespace CodeImp.DoomBuilder.Data
 			// Does this flat exist?
 			if(flats.ContainsKey(longname) && (flats[longname] is TEXTURESImage || flats[longname] is HiResImage))
 				return flats[longname]; //TEXTURES and HiRes flats should still override regular ones...
-			if(flatnamesshorttofull.ContainsKey(longname)) return flats[flatnamesshorttofull[longname]]; //mxd
-			if(flats.ContainsKey(longname)) return flats[longname];
+			if(flatnamesshorttofull.ContainsKey(longname))
+                return flats[flatnamesshorttofull[longname]]; //mxd
+            if (flats.ContainsKey(longname))
+            {
+                // [ZZ] long name is long. a doom flat with a long name is invalid.
+                ImageData id = flats[longname];
+                if (id is PK3FileImage && ((PK3FileImage)id).IsBadForLongTextureNames)
+                    return unknownimage;
+
+                return id;
+            }
 			
 			// Return null image
 			return unknownimage; //mxd
@@ -1528,11 +1580,22 @@ namespace CodeImp.DoomBuilder.Data
 		{
 			//mxd. Get all sprite names
 			HashSet<string> spritenames = new HashSet<string>(StringComparer.Ordinal);
-			foreach(DataReader dr in containers)
-			{
-				IEnumerable<string> result = dr.GetSpriteNames();
-				if(result != null) spritenames.UnionWith(result);
-			}
+            // [ZZ] in order to properly replace different rotation count, we need more complex processing here.
+            HashSet<string> loadedspritenames = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = containers.Count-1; i >= 0; i--)
+            {
+                IEnumerable<string> result = containers[i].GetSpriteNames();
+                if (result != null)
+                {
+                    // remove old sprites with this name
+                    result = result.Where(str => !loadedspritenames.Contains(str.Substring(0, 4))); // only sprites that we still don't have. remember, reverse iteration!
+                    // add new sprites with this name
+                    spritenames.UnionWith(result);
+                    // remember
+                    foreach (string spr in result)
+                        loadedspritenames.Add(spr.Substring(0, 4));
+                }
+            }
 
 			//mxd. Add sprites from sprites collection (because GetSpriteNames() doesn't return TEXTURES sprites)
 			foreach(ImageData data in sprites.Values) spritenames.Add(data.Name);
@@ -1604,7 +1667,8 @@ namespace CodeImp.DoomBuilder.Data
 							}
 							else
 							{
-								General.ErrorLogger.Add(ErrorType.Error, "Unable to find sprite lump \"" + info.Sprite + "\" used by actor \"" + ti.Title + "\":" + ti.Index + ". Forgot to include required resources?");
+                                if (!ti.Optional)
+								    General.ErrorLogger.Add(ErrorType.Error, "Unable to find sprite lump \"" + info.Sprite + "\" used by actor \"" + ti.Title + "\":" + ti.Index + ". Forgot to include required resources?");
 							}
 						}
 						else
@@ -1632,7 +1696,8 @@ namespace CodeImp.DoomBuilder.Data
 				{
 					// This container provides this sprite?
 					Stream spritedata = containers[i].GetSpriteData(pname, ref spritelocation);
-					if(spritedata != null) return spritedata;
+					if(spritedata != null)
+                        return spritedata;
 				}
 			}
 			
@@ -1819,13 +1884,54 @@ namespace CodeImp.DoomBuilder.Data
 
 		#region ================== Things
 		
+        private void LoadZScriptThings()
+        {
+            // Create new parser
+            zscript = new ZScriptParser { OnInclude = LoadZScriptFromLocation };
+
+            // Only load these when the game configuration supports the use of decorate
+            if (!string.IsNullOrEmpty(General.Map.Config.DecorateGames))
+            {
+                // Go for all opened containers
+                foreach (DataReader dr in containers)
+                {
+                    // Load Decorate info cumulatively (the last Decorate is added to the previous)
+                    // I'm not sure if this is the right thing to do though.
+                    currentreader = dr;
+                    IEnumerable<TextResourceData> streams = dr.GetDecorateData("ZSCRIPT");
+                    foreach (TextResourceData data in streams)
+                    {
+                        // Parse the data
+                        data.Stream.Seek(0, SeekOrigin.Begin);
+                        zscript.Parse(data, true);
+
+                        //mxd. DECORATE lumps are interdepandable. Can't carry on...
+                        if (zscript.HasError)
+                        {
+                            zscript.LogError();
+                            break;
+                        }
+                    }
+                }
+
+                zscript.Finalize();
+                if (zscript.HasError)
+                    zscript.LogError();
+
+                //mxd. Add to text resources collection
+                scriptresources[zscript.ScriptType] = new HashSet<ScriptResource>(zscript.ScriptResources.Values);
+                currentreader = null;
+            }
+
+            if (zscript.HasError)
+                zscript.ClearActors();
+        }
+
 		// This loads the things from Decorate
-		private int LoadDecorateThings(Dictionary<int, string> spawnnumsoverride, Dictionary<int, string> doomednumsoverride)
+		private void LoadDecorateThings()
 		{
-			int counter = 0;
-			
 			// Create new parser
-			decorate = new DecorateParser { OnInclude = LoadDecorateFromLocation };
+			decorate = new DecorateParser(zscript.AllActorsByClass) { OnInclude = LoadDecorateFromLocation };
 
 			// Only load these when the game configuration supports the use of decorate
 			if(!string.IsNullOrEmpty(General.Map.Config.DecorateGames))
@@ -1855,206 +1961,225 @@ namespace CodeImp.DoomBuilder.Data
 				//mxd. Add to text resources collection
 				scriptresources[decorate.ScriptType] = new HashSet<ScriptResource>(decorate.ScriptResources.Values);
 				currentreader = null;
-				
-				if(!decorate.HasError)
-				{
-					//mxd. Create DamageTypes list
-					// Combine damage types from config and decorate
-					HashSet<string> dtset = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-					dtset.UnionWith(General.Map.Config.DamageTypes);
-					dtset.UnionWith(decorate.DamageTypes);
-
-					// Sort values
-					List<string> dtypes = new List<string>(dtset);
-					dtypes.Sort();
-					
-					// Apply to collection
-					damagetypes = new string[dtypes.Count];
-					dtypes.CopyTo(damagetypes);
-
-					// Step 0. Create ThingTypeInfo by classname collection...
-					Dictionary<string, ThingTypeInfo> thingtypesbyclass = new Dictionary<string, ThingTypeInfo>(thingtypes.Count, StringComparer.OrdinalIgnoreCase);
-					foreach(ThingTypeInfo info in thingtypes.Values)
-						if(!string.IsNullOrEmpty(info.ClassName)) thingtypesbyclass[info.ClassName] = info;
-					
-					// Step 1. Go for all actors in the decorate to make things or update things
-					foreach(ActorStructure actor in decorate.Actors)
-					{
-						//mxd. Apply "replaces" DECORATE override...
-						if(!string.IsNullOrEmpty(actor.ReplacesClass) && thingtypesbyclass.ContainsKey(actor.ReplacesClass))
-						{
-							// Update info
-							thingtypesbyclass[actor.ReplacesClass].ModifyByDecorateActor(actor, true);
-							
-							// Count
-							counter++;
-						}
-						// Check if we want to add this actor
-						else if(actor.DoomEdNum > 0)
-						{
-							// Check if we can find this thing in our existing collection
-							if(thingtypes.ContainsKey(actor.DoomEdNum))
-							{
-								// Update the thing
-								thingtypes[actor.DoomEdNum].ModifyByDecorateActor(actor);
-							}
-							else
-							{
-								// Find the category to put the actor in
-								ThingCategory cat = GetThingCategory(null, thingcategories, GetCategoryInfo(actor)); //mxd
-								
-								// Add new thing
-								ThingTypeInfo t = new ThingTypeInfo(cat, actor);
-								cat.AddThing(t);
-								thingtypes.Add(t.Index, t);
-							}
-							
-							// Count
-							counter++;
-						}
-					}
-
-					//mxd. Step 2. Apply DoomEdNum MAPINFO overrides, remove actors disabled in MAPINFO
-					if(doomednumsoverride.Count > 0) 
-					{
-						List<int> toremove = new List<int>();
-						foreach(KeyValuePair<int, string> group in doomednumsoverride) 
-						{
-							// Remove thing from the list?
-							if(group.Value == "none") 
-							{
-								toremove.Add(group.Key);
-								continue;
-							}
-
-							// Skip if already added.
-							if(thingtypes.ContainsKey(group.Key) && thingtypes[group.Key].ClassName.ToLowerInvariant() == group.Value) 
-							{
-								continue;
-							}
-
-							// Try to find the actor...
-							ActorStructure actor = null;
-
-							//... in ActorsByClass
-							if(decorate.ActorsByClass.ContainsKey(group.Value))
-							{
-								actor = decorate.ActorsByClass[group.Value];
-							}
-							// Try finding in ArchivedActors
-							else if(decorate.AllActorsByClass.ContainsKey(group.Value))
-							{
-								actor = decorate.AllActorsByClass[group.Value];
-							}
-
-							if(actor != null)
-							{
-								// Find the category to put the actor in
-								ThingCategory cat = GetThingCategory(null, thingcategories, GetCategoryInfo(actor)); //mxd
-
-								// Add a new ThingTypeInfo, replacing already existing one if necessary
-								ThingTypeInfo info = new ThingTypeInfo(cat, actor, group.Key);
-								thingtypes[group.Key] = info;
-								cat.AddThing(info);
-							}
-							// Check thingtypes...
-							else if(thingtypesbyclass.ContainsKey(group.Value))
-							{
-								ThingTypeInfo t = new ThingTypeInfo(group.Key, thingtypesbyclass[group.Value]);
-
-								// Add new thing, replacing already existing one if necessary
-								t.Category.AddThing(t);
-								thingtypes[group.Key] = t;
-							}
-							// Loudly give up...
-							else
-							{
-								General.ErrorLogger.Add(ErrorType.Warning, "Failed to apply MAPINFO DoomEdNum override \"" + group.Key + " = " + group.Value + "\": failed to find corresponding actor class...");
-							}
-						}
-
-						// Remove items
-						foreach(int id in toremove) 
-						{
-							if(thingtypes.ContainsKey(id))
-							{
-								thingtypes[id].Category.RemoveThing(thingtypes[id]);
-								thingtypes.Remove(id);
-							}
-						}
-					}
-
-					//mxd. Step 3. Gather DECORATE SpawnIDs
-					Dictionary<int, EnumItem> configspawnnums = new Dictionary<int, EnumItem>();
-
-					// Update or create the main enums list
-					if(General.Map.Config.Enums.ContainsKey("spawnthing")) 
-					{
-						foreach(EnumItem item in General.Map.Config.Enums["spawnthing"])
-							configspawnnums.Add(item.GetIntValue(), item);
-					}
-
-					bool spawnidschanged = false;
-					foreach(ActorStructure actor in decorate.Actors)
-					{
-						int spawnid = actor.GetPropertyValueInt("spawnid", 0);
-						if(spawnid != 0)
-						{
-							configspawnnums[spawnid] = new EnumItem(spawnid.ToString(), (actor.HasPropertyWithValue("$title") ? actor.GetPropertyAllValues("$title") : actor.ClassName));
-							spawnidschanged = true;
-						}
-					}
-
-					//mxd. Step 4. Update SpawnNums using MAPINFO overrides
-					if(spawnnumsoverride.Count > 0)
-					{
-						// Modify by MAPINFO data
-						foreach(KeyValuePair<int, string> group in spawnnumsoverride) 
-							configspawnnums[group.Key] = new EnumItem(group.Key.ToString(), (thingtypes.ContainsKey(group.Key) ? thingtypes[group.Key].Title : group.Value));
-
-						spawnidschanged = true;
-					}
-
-					if(spawnidschanged)
-					{
-						// Update the main collection
-						EnumList newenums = new EnumList();
-						newenums.AddRange(configspawnnums.Values);
-						newenums.Sort((a, b) => a.Title.CompareTo(b.Title));
-						General.Map.Config.Enums["spawnthing"] = newenums;
-
-						// Update all ArgumentInfos...
-						foreach(ThingTypeInfo info in thingtypes.Values)
-						{
-							foreach(ArgumentInfo ai in info.Args) 
-								if(ai.Enum.Name == "spawnthing") ai.Enum = newenums;
-						}
-
-						foreach(LinedefActionInfo info in General.Map.Config.LinedefActions.Values)
-						{
-							foreach(ArgumentInfo ai in info.Args)
-								if(ai.Enum.Name == "spawnthing") ai.Enum = newenums;
-						}
-					}
-				}
-				else
-				{
-					// Return after adding parsed resources
-					return counter;
-				}
 			}
-			
-			// Output info
-			return counter;
+
+            if (decorate.HasError)
+                decorate.ClearActors();
 		}
 
-		//mxd
-		private static ThingCategory GetThingCategory(ThingCategory parent, List<ThingCategory> categories, DecorateCategoryInfo catinfo) 
+        // [ZZ] this retrieves ZDoom actor structure by class name.
+        public ActorStructure GetZDoomActor(string classname)
+        {
+            classname = classname.ToLowerInvariant();
+            ActorStructure outv;
+            if (!zdoomclasses.TryGetValue(classname, out outv))
+                return null;
+            return outv;
+        }
+
+        // [ZZ] this merges in the parsed actor lists from zscript+decorate using the original DECORATE merging code
+        private int ApplyZDoomThings(Dictionary<int, string> spawnnumsoverride, Dictionary<int, string> doomednumsoverride)
+        {
+            int counter = 0;
+
+            /////////////// ====================== DAMAGETYPES
+            //mxd. Create DamageTypes list
+            // Combine damage types from config and decorate
+            HashSet<string> dtset = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            dtset.UnionWith(General.Map.Config.DamageTypes);
+            if (!decorate.HasError) dtset.UnionWith(decorate.DamageTypes);
+
+            // Sort values
+            List<string> dtypes = new List<string>(dtset);
+            dtypes.Sort();
+
+            // Apply to collection
+            damagetypes = new string[dtypes.Count];
+            dtypes.CopyTo(damagetypes);
+            /////////////// ====================== /DAMAGETYPES
+
+            // Step 0. Create ThingTypeInfo by classname collection...
+            Dictionary<string, ThingTypeInfo> thingtypesbyclass = new Dictionary<string, ThingTypeInfo>(thingtypes.Count, StringComparer.OrdinalIgnoreCase);
+            foreach (ThingTypeInfo info in thingtypes.Values)
+                if (!string.IsNullOrEmpty(info.ClassName)) thingtypesbyclass[info.ClassName] = info;
+
+            // [ZZ] create combined array of actors to process.
+            IEnumerable<ActorStructure> mergedActors = zscript.Actors.Union(decorate.Actors);
+            IEnumerable<ActorStructure> mergedAllActors = zscript.AllActors.Union(decorate.AllActors);
+            Dictionary<string, ActorStructure> mergedActorsByClass = decorate.ActorsByClass.Concat(zscript.ActorsByClass.Where(x => !decorate.ActorsByClass.ContainsKey(x.Key))).ToDictionary(k => k.Key, v => v.Value);
+            Dictionary<string, ActorStructure> mergedAllActorsByClass = decorate.AllActorsByClass.Concat(zscript.AllActorsByClass.Where(x => !decorate.AllActorsByClass.ContainsKey(x.Key))).ToDictionary(k => k.Key, v => v.Value);
+            zdoomclasses = mergedAllActorsByClass;
+
+            // Step 1. Go for all actors in the decorate to make things or update things
+            foreach (ActorStructure actor in mergedActors)
+            {
+                //mxd. Apply "replaces" DECORATE override...
+                if (!string.IsNullOrEmpty(actor.ReplacesClass) && thingtypesbyclass.ContainsKey(actor.ReplacesClass))
+                {
+                    // Update info
+                    thingtypesbyclass[actor.ReplacesClass].ModifyByDecorateActor(actor, true);
+
+                    // Count
+                    counter++;
+                }
+                // Check if we want to add this actor
+                else if (actor.DoomEdNum > 0)
+                {
+                    // Check if we can find this thing in our existing collection
+                    if (thingtypes.ContainsKey(actor.DoomEdNum))
+                    {
+                        // Update the thing
+                        thingtypes[actor.DoomEdNum].ModifyByDecorateActor(actor);
+                    }
+                    else
+                    {
+                        // Find the category to put the actor in
+                        ThingCategory cat = GetThingCategory(null, thingcategories, GetCategoryInfo(actor)); //mxd
+
+                        // Add new thing
+                        ThingTypeInfo t = new ThingTypeInfo(cat, actor);
+                        cat.AddThing(t);
+                        thingtypes.Add(t.Index, t);
+                    }
+
+                    // Count
+                    counter++;
+                }
+            }
+
+            //mxd. Step 2. Apply DoomEdNum MAPINFO overrides, remove actors disabled in MAPINFO
+            if (doomednumsoverride.Count > 0)
+            {
+                List<int> toremove = new List<int>();
+                foreach (KeyValuePair<int, string> group in doomednumsoverride)
+                {
+                    // Remove thing from the list?
+                    if (group.Value == "none")
+                    {
+                        toremove.Add(group.Key);
+                        continue;
+                    }
+
+                    // Skip if already added.
+                    if (thingtypes.ContainsKey(group.Key) && thingtypes[group.Key].ClassName.ToLowerInvariant() == group.Value)
+                    {
+                        continue;
+                    }
+
+                    // Try to find the actor...
+                    ActorStructure actor = null;
+
+                    //... in ActorsByClass
+                    if (mergedActorsByClass.ContainsKey(group.Value))
+                    {
+                        actor = mergedActorsByClass[group.Value];
+                    }
+                    // Try finding in ArchivedActors
+                    else if (mergedAllActorsByClass.ContainsKey(group.Value))
+                    {
+                        actor = mergedAllActorsByClass[group.Value];
+                    }
+
+                    if (actor != null)
+                    {
+                        // Find the category to put the actor in
+                        ThingCategory cat = GetThingCategory(null, thingcategories, GetCategoryInfo(actor)); //mxd
+
+                        // Add a new ThingTypeInfo, replacing already existing one if necessary
+                        ThingTypeInfo info = new ThingTypeInfo(cat, actor, group.Key);
+                        thingtypes[group.Key] = info;
+                        cat.AddThing(info);
+                    }
+                    // Check thingtypes...
+                    else if (thingtypesbyclass.ContainsKey(group.Value))
+                    {
+                        ThingTypeInfo t = new ThingTypeInfo(group.Key, thingtypesbyclass[group.Value]);
+
+                        // Add new thing, replacing already existing one if necessary
+                        t.Category.AddThing(t);
+                        thingtypes[group.Key] = t;
+                    }
+                    // Loudly give up...
+                    else
+                    {
+                        General.ErrorLogger.Add(ErrorType.Warning, "Failed to apply MAPINFO DoomEdNum override \"" + group.Key + " = " + group.Value + "\": failed to find corresponding actor class...");
+                    }
+                }
+
+                // Remove items
+                foreach (int id in toremove)
+                {
+                    if (thingtypes.ContainsKey(id))
+                    {
+                        thingtypes[id].Category.RemoveThing(thingtypes[id]);
+                        thingtypes.Remove(id);
+                    }
+                }
+            }
+
+            //mxd. Step 3. Gather DECORATE SpawnIDs
+            Dictionary<int, EnumItem> configspawnnums = new Dictionary<int, EnumItem>();
+
+            // Update or create the main enums list
+            if (General.Map.Config.Enums.ContainsKey("spawnthing"))
+            {
+                foreach (EnumItem item in General.Map.Config.Enums["spawnthing"])
+                    configspawnnums.Add(item.GetIntValue(), item);
+            }
+
+            bool spawnidschanged = false;
+            foreach (ActorStructure actor in mergedActors)
+            {
+                int spawnid = actor.GetPropertyValueInt("spawnid", 0);
+                if (spawnid != 0)
+                {
+                    configspawnnums[spawnid] = new EnumItem(spawnid.ToString(), (actor.HasPropertyWithValue("$title") ? actor.GetPropertyAllValues("$title") : actor.ClassName));
+                    spawnidschanged = true;
+                }
+            }
+
+            //mxd. Step 4. Update SpawnNums using MAPINFO overrides
+            if (spawnnumsoverride.Count > 0)
+            {
+                // Modify by MAPINFO data
+                foreach (KeyValuePair<int, string> group in spawnnumsoverride)
+                    configspawnnums[group.Key] = new EnumItem(group.Key.ToString(), (thingtypes.ContainsKey(group.Key) ? thingtypes[group.Key].Title : group.Value));
+
+                spawnidschanged = true;
+            }
+
+            if (spawnidschanged)
+            {
+                // Update the main collection
+                EnumList newenums = new EnumList();
+                newenums.AddRange(configspawnnums.Values);
+                newenums.Sort((a, b) => a.Title.CompareTo(b.Title));
+                General.Map.Config.Enums["spawnthing"] = newenums;
+
+                // Update all ArgumentInfos...
+                foreach (ThingTypeInfo info in thingtypes.Values)
+                {
+                    foreach (ArgumentInfo ai in info.Args)
+                        if (ai.Enum.Name == "spawnthing") ai.Enum = newenums;
+                }
+
+                foreach (LinedefActionInfo info in General.Map.Config.LinedefActions.Values)
+                {
+                    foreach (ArgumentInfo ai in info.Args)
+                        if (ai.Enum.Name == "spawnthing") ai.Enum = newenums;
+                }
+            }
+
+            return counter;
+        }
+
+        //mxd
+        private static ThingCategory GetThingCategory(ThingCategory parent, List<ThingCategory> categories, DecorateCategoryInfo catinfo) 
 		{
 			// Find the category to put the actor in
 			ThingCategory cat = null;
 			string catname = (catinfo.Category.Count > 0 ? catinfo.Category[0].Trim().ToLowerInvariant() : string.Empty); //catnames[0].ToLowerInvariant().Trim();
-			if(string.IsNullOrEmpty(catname)) catname = "decorate";
+			if(string.IsNullOrEmpty(catname)) catname = "custom";
 
 			// First search by Title...
 			foreach(ThingCategory c in categories) 
@@ -2086,7 +2211,7 @@ namespace CodeImp.DoomBuilder.Data
 			if(cat == null)
 			{
 				string cattitle = (catinfo.Category.Count > 0 ? catinfo.Category[0].Trim() : string.Empty);
-				if(string.IsNullOrEmpty(cattitle)) cattitle = "Decorate";
+				if(string.IsNullOrEmpty(cattitle)) cattitle = "User-defined";
 				cat = new ThingCategory(parent, catname, cattitle, catinfo);
 				categories.Add(cat); // ^.^
 			}
@@ -2116,7 +2241,7 @@ namespace CodeImp.DoomBuilder.Data
 				}
 				else
 				{
-					catinfo.Category = new List<string> { "Decorate" };
+					catinfo.Category = new List<string> { "User-defined" };
 				}
 			}
 			else
@@ -2145,6 +2270,41 @@ namespace CodeImp.DoomBuilder.Data
 				}
 			}
 		}
+
+        private void LoadZScriptFromLocation(ZScriptParser parser, string location)
+        {
+            IEnumerable<TextResourceData> streams = currentreader.GetZScriptData(location);
+            foreach (TextResourceData data in streams)
+            {
+                // Parse this data
+                parser.Parse(data, false);
+
+                //mxd. DECORATE lumps are interdepandable. Can't carry on...
+                if (parser.HasError)
+                {
+                    parser.LogError();
+                    return;
+                }
+            }
+        }
+
+        // This loads MODELDEF data from a specific file or lump name
+        private void LoadModeldefFromLocation(ModeldefParser parser, string location)
+        {
+            IEnumerable<TextResourceData> streams = currentreader.GetModeldefData(location);
+            foreach (TextResourceData data in streams)
+            {
+                // Parse this data
+                parser.Parse(data, false);
+
+                //mxd. DECORATE lumps are interdepandable. Can't carry on...
+                if (parser.HasError)
+                {
+                    parser.LogError();
+                    return;
+                }
+            }
+        }
 		
 		// This gets thing information by index
 		public ThingTypeInfo GetThingInfo(int thingtype)
@@ -2265,7 +2425,7 @@ namespace CodeImp.DoomBuilder.Data
 			// Abort if no classnames are defined in DECORATE or game config...
 			if(actorsbyclass.Count == 0) return;
 
-			ModeldefParser parser = new ModeldefParser(actorsbyclass);
+			ModeldefParser parser = new ModeldefParser(actorsbyclass) { OnInclude = LoadModeldefFromLocation };
 			foreach(DataReader dr in containers)
 			{
 				currentreader = dr;
@@ -3154,7 +3314,12 @@ namespace CodeImp.DoomBuilder.Data
 				{
 					ImageData tex = LoadInternalTexture("MissingSky3D.png");
 					tex.CreateTexture();
-					Bitmap sky = new Bitmap(tex.GetBitmap());
+                    Bitmap bmp = tex.GetBitmap();
+                    Bitmap sky;
+                    lock (bmp)
+                    {
+                        sky = new Bitmap(bmp);
+                    }
 					sky.RotateFlip(RotateFlipType.RotateNoneFlipX); // We don't want our built-in image mirrored...
 					skybox = MakeClassicSkyBox(sky);
 					tex.Dispose();

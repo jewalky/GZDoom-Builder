@@ -7,10 +7,19 @@ namespace CodeImp.DoomBuilder.Controls
 	{
 		public ColoredComboBox() 
 		{ 
-			this.DrawMode = DrawMode.OwnerDrawFixed; 
+			this.DrawMode = DrawMode.OwnerDrawFixed;
+            this.KeyPress += ColoredComboBox_KeyPress;
 		}
 
-		protected override void OnDrawItem(DrawItemEventArgs e)
+        private void ColoredComboBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == (char)13)
+            {
+                e.Handled = true;
+            }
+        }
+
+        protected override void OnDrawItem(DrawItemEventArgs e)
 		{
 			base.OnDrawItem(e);
 			e.DrawBackground();

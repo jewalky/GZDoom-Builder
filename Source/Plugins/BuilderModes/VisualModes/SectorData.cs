@@ -39,6 +39,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		internal GlowingFlatData FloorGlow; //mxd
 		internal Plane FloorGlowPlane; //mxd
 		internal Plane CeilingGlowPlane; //mxd
+
+        // [ZZ] Doom64 lighting system
+        internal PixelColor ColorCeiling;
+        internal PixelColor ColorFloor;
+        internal PixelColor ColorWallBottom;
+        internal PixelColor ColorWallTop;
+        internal PixelColor ColorSprites;
 		
 		// Sectors that must be updated when this sector is changed
 		// The boolean value is the 'includeneighbours' of the UpdateSectorGeometry function which
@@ -105,7 +112,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			lightlevels.Add(floor);
 			lightlevels.Add(ceiling);
 
-			BasicSetup();
+            BasicSetup();
 		}
 		
 		#endregion
@@ -298,24 +305,33 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			lightfloorabsolute = sector.Fields.GetValue("lightfloorabsolute", false);
 			lightceiling = sector.Fields.GetValue("lightceiling", 0);
 			lightceilingabsolute = sector.Fields.GetValue("lightceilingabsolute", false);
+            if (!lightfloorabsolute) lightfloor = sector.Brightness + lightfloor;
+            if (!lightceilingabsolute) lightceiling = sector.Brightness + lightceiling;
 
-			// Determine colors & light levels
-			PixelColor lightcolor = PixelColor.FromInt(color);
-			if(!lightfloorabsolute) lightfloor = sector.Brightness + lightfloor;
-			if(!lightceilingabsolute) lightceiling = sector.Brightness + lightceiling;
-			PixelColor floorbrightness = PixelColor.FromInt(mode.CalculateBrightness(lightfloor));
-			PixelColor ceilingbrightness = PixelColor.FromInt(mode.CalculateBrightness(lightceiling));
-			PixelColor floorcolor = PixelColor.Modulate(lightcolor, floorbrightness);
-			PixelColor ceilingcolor = PixelColor.Modulate(lightcolor, ceilingbrightness);
-			floor.color = floorcolor.WithAlpha(255).ToInt();
-			floor.brightnessbelow = sector.Brightness;
-			floor.colorbelow = lightcolor.WithAlpha(255);
-			ceiling.color = ceilingcolor.WithAlpha(255).ToInt();
-			ceiling.brightnessbelow = sector.Brightness;
-			ceiling.colorbelow = lightcolor.WithAlpha(255);
+            // Determine colors & light levels
+            // [ZZ] Doom64 lighting
+            //
+            // ceiling/floor
+            ColorCeiling = PixelColor.FromInt(sector.Fields.GetValue("color_ceiling", PixelColor.INT_WHITE));
+            ColorFloor = PixelColor.FromInt(sector.Fields.GetValue("color_floor", PixelColor.INT_WHITE));
+            ColorSprites = PixelColor.FromInt(sector.Fields.GetValue("color_sprites", PixelColor.INT_WHITE));
+            ColorWallTop = PixelColor.FromInt(sector.Fields.GetValue("color_walltop", PixelColor.INT_WHITE));
+            ColorWallBottom = PixelColor.FromInt(sector.Fields.GetValue("color_wallbottom", PixelColor.INT_WHITE));
 
-			//mxd. Store a copy of initial settings
-			floor.CopyProperties(floorbase);
+            PixelColor floorbrightness = PixelColor.FromInt(mode.CalculateBrightness(lightfloor));
+            PixelColor ceilingbrightness = PixelColor.FromInt(mode.CalculateBrightness(lightceiling));
+            PixelColor lightcolor = PixelColor.FromInt(color);
+            PixelColor floorcolor = PixelColor.Modulate(ColorFloor, PixelColor.Modulate(lightcolor, floorbrightness));
+            PixelColor ceilingcolor = PixelColor.Modulate(ColorCeiling, PixelColor.Modulate(lightcolor, ceilingbrightness));
+            floor.color = floorcolor.WithAlpha(255).ToInt();
+            floor.brightnessbelow = sector.Brightness;
+            floor.colorbelow = lightcolor.WithAlpha(255);
+            ceiling.color = ceilingcolor.WithAlpha(255).ToInt();
+            ceiling.brightnessbelow = sector.Brightness;
+            ceiling.colorbelow = lightcolor.WithAlpha(255);
+
+            //mxd. Store a copy of initial settings
+            floor.CopyProperties(floorbase);
 			ceiling.CopyProperties(ceilingbase);
 
 			//mxd. We need sector brightness here, unaffected by custom ceiling brightness...
@@ -324,7 +340,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 			//mxd
 			glowingflateffect.Update();
-		}
+        }
 
 		//mxd
 		public void UpdateForced() 

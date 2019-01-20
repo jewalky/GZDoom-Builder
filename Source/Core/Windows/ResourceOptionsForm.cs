@@ -29,9 +29,11 @@ namespace CodeImp.DoomBuilder.Windows
 	{
 		// Variables
 		private DataLocation res;
-		
-		// Properties
-		public DataLocation ResourceLocation { get { return res; } }
+        private string startPath;
+        private Controls.FolderSelectDialog dirdialog;
+
+        // Properties
+        public DataLocation ResourceLocation { get { return res; } }
 		
 		// Constructor
 		public ResourceOptionsForm(DataLocation settings, string caption, string startPath) //mxd. added startPath
@@ -71,12 +73,7 @@ namespace CodeImp.DoomBuilder.Windows
 			// Checkbox
 			notfortesting.Checked = res.notfortesting;
 
-			//mxd
-			if(!string.IsNullOrEmpty(startPath)) 
-			{
-				string startDir = Path.GetDirectoryName(startPath);
-				if(Directory.Exists(startDir)) dirdialog.SelectedPath = startDir;
-			}
+            this.startPath = startPath;
 		}
 		
 		// OK clicked
@@ -184,11 +181,29 @@ namespace CodeImp.DoomBuilder.Windows
 		// Browse Directory clicked
 		private void browsedir_Click(object sender, EventArgs e)
 		{
-			// Browse for Directory
-			if(dirdialog.ShowDialog(this) == DialogResult.OK)
+            // Browse for Directory
+            dirdialog = new Controls.FolderSelectDialog();
+            dirdialog.Title = "Select Resource Folder";
+
+            if (string.IsNullOrEmpty(dirlocation.Text) || !Directory.Exists(dirlocation.Text))
+            {
+                //mxd
+                if (!string.IsNullOrEmpty(startPath))
+                {
+                    string startDir = Path.GetDirectoryName(startPath);
+                    if (Directory.Exists(startDir)) dirdialog.InitialDirectory = startDir + '\\';
+                }
+            }
+            else
+            {
+                dirdialog.InitialDirectory = dirlocation.Text;
+            }
+
+            if (dirdialog.ShowDialog(this.Handle))
 			{
-				// Use this directory
-				dirlocation.Text = dirdialog.SelectedPath;
+                // Use this directory
+                dirlocation.Text = dirdialog.FileName;
+                dirdialog = null;
 			}
 		}
 

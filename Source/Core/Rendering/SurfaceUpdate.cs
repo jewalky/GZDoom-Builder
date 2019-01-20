@@ -25,7 +25,7 @@ namespace CodeImp.DoomBuilder.Rendering
 	internal class SurfaceUpdate
 	{
 		public readonly int numvertices;
-		
+
 		// Sector geometry (local copy used to quickly refill buffers)
 		// The sector must set these!
 		public FlatVertex[] floorvertices;
@@ -35,6 +35,9 @@ namespace CodeImp.DoomBuilder.Rendering
 		// The sector must set these!
 		public long floortexture;
 		public long ceiltexture;
+
+        //
+        public float desaturation;
 		
 		// Constructor
 		internal SurfaceUpdate(int numvertices, bool updatefloor, bool updateceiling)
@@ -45,6 +48,8 @@ namespace CodeImp.DoomBuilder.Rendering
 			
 			this.floorvertices = (updatefloor ? new FlatVertex[numvertices] : null);
 			this.ceilvertices = (updateceiling ? new FlatVertex[numvertices] : null);
+
+            this.desaturation = 0f;
 		}
 	}
 }

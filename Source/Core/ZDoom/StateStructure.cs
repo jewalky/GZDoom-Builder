@@ -16,6 +16,7 @@
 
 #region ================== Namespaces
 
+using CodeImp.DoomBuilder.Data;
 using System.Collections.Generic;
 using System.IO;
 
@@ -23,7 +24,7 @@ using System.IO;
 
 namespace CodeImp.DoomBuilder.ZDoom
 {
-	public sealed class StateStructure
+	public class StateStructure
 	{
 		#region ================== FrameInfo (mxd)
 
@@ -32,6 +33,12 @@ namespace CodeImp.DoomBuilder.ZDoom
 			public string Sprite;
 			public string LightName;
 			public bool Bright;
+            public int Duration; // this is used for TrimLeft
+
+            public bool IsEmpty()
+            {
+                return (Sprite.StartsWith("TNT1") || Duration == 0);
+            }
 		}
 		
 		#endregion
@@ -39,9 +46,8 @@ namespace CodeImp.DoomBuilder.ZDoom
 		#region ================== Variables
 		
 		// All we care about is the first sprite in the sequence
-		private readonly List<FrameInfo> sprites;
-		private readonly StateGoto gotostate;
-		private readonly DecorateParser parser;
+		internal List<FrameInfo> sprites;
+		internal StateGoto gotostate;
 		
 		#endregion
 
@@ -54,196 +60,10 @@ namespace CodeImp.DoomBuilder.ZDoom
 		#region ================== Constructor / Disposer
 
 		// Constructor
-		internal StateStructure(ActorStructure actor, DecorateParser parser)
+		internal StateStructure()
 		{
-			string lasttoken = "";
-			
 			this.gotostate = null;
-			this.parser = parser;
 			this.sprites = new List<FrameInfo>();
-			
-			// Skip whitespace
-			while(parser.SkipWhitespace(true))
-			{
-				// Read first token
-				string token = parser.ReadToken().ToLowerInvariant();
-				
-				// One of the flow control statements?
-				if((token == "loop") || (token == "stop") || (token == "wait") || (token == "fail"))
-				{
-					// Ignore flow control
-				}
-				// Goto?
-				else if(token == "goto")
-				{
-					gotostate = new StateGoto(actor, parser);
-					if(parser.HasError) return;
-				}
-				// Label?
-				else if(token == ":")
-				{
-					// Rewind so that this label can be read again
-					if(!string.IsNullOrEmpty(lasttoken)) 
-						parser.DataStream.Seek(-(lasttoken.Length + 1), SeekOrigin.Current);
-					
-					// Done here
-					return;
-				}
-				//mxd. Start of inner scope?
-				else if(token == "{")
-				{
-					int bracelevel = 1;
-					while(!string.IsNullOrEmpty(token) && bracelevel > 0)
-					{
-						parser.SkipWhitespace(false);
-						token = parser.ReadToken();
-						switch(token)
-						{
-							case "{": bracelevel++; break;
-							case "}": bracelevel--; break;
-						}
-					}
-				}
-				// End of scope?
-				else if(token == "}")
-				{
-					// Rewind so that this scope end can be read again
-					parser.DataStream.Seek(-1, SeekOrigin.Current);
-
-					// Done here
-					return;
-				}
-				else
-				{
-					// First part of the sprite name
-					token = parser.StripTokenQuotes(token); //mxd. First part of the sprite name can be quoted
-					if(string.IsNullOrEmpty(token)) 
-					{
-						parser.ReportError("Expected sprite name");
-						return;
-					}
-					
-					// Frames of the sprite name
-					parser.SkipWhitespace(true);
-					string spriteframes = parser.StripTokenQuotes(parser.ReadToken()); //mxd. Frames can be quoted
-					if(string.IsNullOrEmpty(spriteframes))
-					{
-						parser.ReportError("Expected sprite frame");
-						return;
-					}
-					
-					// Label?
-					if(spriteframes == ":")
-					{
-						// Rewind so that this label can be read again
-						parser.DataStream.Seek(-(token.Length + 1), SeekOrigin.Current);
-
-						// Done here
-						return;
-					}
-					
-					// No first sprite yet?
-					FrameInfo info = new FrameInfo(); //mxd
-					if(spriteframes.Length > 0)
-					{
-						//mxd. I'm not even 50% sure the parser handles all bizzare cases without shifting sprite name / frame blocks,
-						// so let's log it as a warning, not an error...
-						if(token.Length != 4)
-						{
-							parser.LogWarning("Invalid sprite name \"" + token.ToUpperInvariant() + "\". Sprite names must be exactly 4 characters long");
-						}
-						else
-						{
-							// Make the sprite name
-							string spritename = (token + spriteframes[0]).ToUpperInvariant();
-
-							// Ignore some odd ZDoom things
-							if(!spritename.StartsWith("TNT1") && !spritename.StartsWith("----") && !spritename.Contains("#"))
-							{
-								info.Sprite = spritename; //mxd
-								sprites.Add(info);
-							}
-						}
-					}
-					
-					// Continue until the end of the line
-					parser.SkipWhitespace(false);
-					string t = parser.ReadToken();
-					while(!string.IsNullOrEmpty(t) && t != "\n")
-					{
-						//mxd. Bright keyword support...
-						if(t == "bright")
-						{
-							info.Bright = true;
-						}
-						//mxd. Light() expression support...
-						else if(t == "light")
-						{
-							if(!parser.NextTokenIs("(")) return;
-
-							if(!parser.SkipWhitespace(true))
-							{
-								parser.ReportError("Unexpected end of the structure");
-								return;
-							}
-							
-							info.LightName = parser.StripTokenQuotes(parser.ReadToken());
-							if(string.IsNullOrEmpty(info.LightName))
-							{
-								parser.ReportError("Expected dynamic light name");
-								return;
-							}
-
-							if(!parser.SkipWhitespace(true))
-							{
-								parser.ReportError("Unexpected end of the structure");
-								return;
-							}
-
-							if(!parser.NextTokenIs(")")) return;
-						}
-						//mxd. Inner scope start. Step back and reparse using parent loop
-						else if(t == "{")
-						{
-							// Rewind so that this scope end can be read again
-							parser.DataStream.Seek(-1, SeekOrigin.Current);
-
-							// Break out of this loop
-							break;
-						}
-						//mxd. Function params start (those can span multiple lines)
-						else if(t == "(")
-						{
-							int bracelevel = 1;
-							while(!string.IsNullOrEmpty(token) && bracelevel > 0)
-							{
-								parser.SkipWhitespace(true);
-								token = parser.ReadToken();
-								switch(token)
-								{
-									case "(": bracelevel++; break;
-									case ")": bracelevel--; break;
-								}
-							}
-						}
-						//mxd. Because stuff like this is also valid: "Actor Oneliner { States { Spawn: WOOT A 1 A_FadeOut(0.1) Loop }}"
-						else if(t == "}")
-						{
-							// Rewind so that this scope end can be read again
-							parser.DataStream.Seek(-1, SeekOrigin.Current);
-
-							// Done here
-							return;
-						}
-
-						// Read next token
-						parser.SkipWhitespace(false);
-						t = parser.ReadToken().ToLowerInvariant();
-					}
-				}
-				
-				lasttoken = token;
-			}
 		}
 
 		//mxd
@@ -256,6 +76,24 @@ namespace CodeImp.DoomBuilder.ZDoom
 		#endregion
 
 		#region ================== Methods
+
+        // This removes useless images from the start of the state (TNT1)
+        protected void TrimLeft() // :)
+        {
+            // postprocess: if there are only TNT1 sprites, do nothing. however, if there were normal sprites as well, use these.
+            int firstNonEmpty = -1;
+            for (int i = 0; i < sprites.Count; i++)
+            {
+                if (!sprites[i].IsEmpty())
+                {
+                    firstNonEmpty = i;
+                    break;
+                }
+            }
+
+            if (firstNonEmpty > 0)
+                sprites.RemoveRange(0, firstNonEmpty);
+        }
 		
 		// This finds the first valid sprite and returns it
 		public FrameInfo GetSprite(int index)
@@ -273,7 +111,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 			if(gotostate != null)
 			{
 				// Find the class
-				ActorStructure a = parser.GetArchivedActorByName(gotostate.ClassName);
+				ActorStructure a = General.Map.Data.GetZDoomActor(gotostate.ClassName);
 				if(a != null)
 				{
 					StateStructure s = a.GetState(gotostate.StateName);

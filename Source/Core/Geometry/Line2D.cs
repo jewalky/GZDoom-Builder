@@ -17,6 +17,8 @@
 #region ================== Namespaces
 
 using System;
+using System.Drawing;
+using System.Windows.Forms;
 using CodeImp.DoomBuilder.Map;
 
 #endregion
@@ -223,6 +225,71 @@ namespace CodeImp.DoomBuilder.Geometry
 			// Calculate and return intersection offset
 			return new Vector2D(v1.x + u * (v2.x - v1.x), v1.y + u * (v2.y - v1.y));
 		}
+
+		// Cohen-Sutherland algorithm
+		public static Line2D ClipToRectangle(Line2D line, RectangleF rect, out bool intersects)
+		{
+			int flags1 = MapSet.GetCSFieldBits(line.v1, rect);
+			int flags2 = MapSet.GetCSFieldBits(line.v2, rect);
+			intersects = false;
+
+			Line2D result = line;
+			while (true)
+			{
+				if (flags1 == 0 && flags2 == 0)
+				{
+					// Line is fully inside the box
+					intersects = true;
+					return result;
+				}
+				
+				if ((flags1 & flags2) != 0)
+				{
+					// Both points are in the same outer area
+					intersects = false;
+					return new Line2D();
+				}
+
+				float x, y;
+				int outFlags = flags1 != 0 ? flags1 : flags2;
+				if ((outFlags & 0x1) > 0) // Top
+				{
+					x = result.v1.x + (result.v2.x - result.v1.x) * (rect.Top - result.v1.y) / (result.v2.y - result.v1.y);
+					y = rect.Top;
+				}
+				else if ((outFlags & 0x2) > 0) // Bottom
+				{
+					x = result.v1.x + (result.v2.x - result.v1.x) * (rect.Bottom - result.v1.y) / (result.v2.y - result.v1.y);
+					y = rect.Bottom;
+				}
+				else if ((outFlags & 0x4) > 0) // Left
+				{
+					y = result.v1.y + (result.v2.y - result.v1.y) * (rect.Left - result.v1.x) / (result.v2.x - result.v1.x);
+					x = rect.Left;
+				}
+				else if ((outFlags & 0x8) > 0) // Right
+				{
+					y = result.v1.y + (result.v2.y - result.v1.y) * (rect.Right - result.v1.x) / (result.v2.x - result.v1.x);
+					x = rect.Right;
+				} 
+				else
+				{
+					intersects = true;
+					return result;
+				}
+
+				if (outFlags == flags1)
+				{
+					result.v1 = new Vector2D(x, y);
+					flags1 = MapSet.GetCSFieldBits(result.v1, rect);
+				}
+				else
+				{
+					result.v2 = new Vector2D(x, y);
+					flags2 = MapSet.GetCSFieldBits(result.v2, rect);
+				}
+			}
+		}
 		
 		#endregion
 
@@ -317,6 +384,19 @@ namespace CodeImp.DoomBuilder.Geometry
 		public Vector2D GetCoordinatesAt(float u)
 		{
 			return Line2D.GetCoordinatesAt(v1, v2, u);
+		}
+
+		public Line2D GetTransformed(float offsetx, float offsety, float scalex, float scaley)
+		{
+			return new Line2D(v1.GetTransformed(offsetx, offsety, scalex, scaley),
+				v2.GetTransformed(offsetx, offsety, scalex, scaley));
+		}
+
+		// Inverse Transform
+		public Line2D GetInvTransformed(float invoffsetx, float invoffsety, float invscalex, float invscaley)
+		{
+			return new Line2D(v1.GetInvTransformed(invoffsetx, invoffsety, invscalex, invscaley), 
+				v2.GetInvTransformed(invoffsetx, invoffsety, invscalex, invscaley));
 		}
 		
 		#endregion

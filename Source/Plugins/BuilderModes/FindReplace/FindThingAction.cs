@@ -111,19 +111,19 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					replaceargs = new[] { int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue };
 					int i = 1;
 
-					//mxd. Named script search support...
-					if(General.Map.UDMF && Array.IndexOf(GZGeneral.ACS_SPECIALS, replaceaction) != -1) 
-					{
-						string possiblescriptname = replaceparts[1].Trim().Replace("\"", "").ToLowerInvariant();
-						int tmp;
-						if(!string.IsNullOrEmpty(possiblescriptname) && possiblescriptname != "*" && !int.TryParse(possiblescriptname, out tmp)) 
-						{
-							replacearg0str = possiblescriptname;
-							i = 2;
-						}
-					}
+                    //mxd. Named script search support...
+                    if (General.Map.UDMF)
+                    {
+                        string possiblescriptname = replaceparts[1].Trim();
+                        int tmp;
+                        if (!string.IsNullOrEmpty(possiblescriptname) && possiblescriptname != "*" && !int.TryParse(possiblescriptname, out tmp))
+                        {
+                            replacearg0str = possiblescriptname.Replace("\"", "");
+                            i = 2;
+                        }
+                    }
 
-					for(; i < replaceparts.Length && i < replaceargs.Length + 1; i++) 
+                    for (; i < replaceparts.Length && i < replaceargs.Length + 1; i++) 
 					{
 						int argout;
 						if(replaceparts[i].Trim() == "*") continue; //mxd. Any arg value support
@@ -154,19 +154,21 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					args = new[] { int.MinValue, int.MinValue, int.MinValue, int.MinValue, int.MinValue };
 					int i = 1;
 
-					//mxd. Named script search support...
-					if(General.Map.UDMF && Array.IndexOf(GZGeneral.ACS_SPECIALS, action) != -1) 
-					{
-						string possiblescriptname = parts[1].Trim().Replace("\"", "").ToLowerInvariant();
-						int tmp;
-						if(!string.IsNullOrEmpty(possiblescriptname) && possiblescriptname != "*" && !int.TryParse(possiblescriptname, out tmp)) 
-						{
-							arg0str = possiblescriptname;
-							i = 2;
-						}
-					}
+                    //mxd. Named script search support...
+                    if (General.Map.UDMF)
+                    {
+                        // [ZZ] edit: we can enclose number with "" to signify a named script called "1".
+                        //      this is achieved by trying to parse the number before removing "'s.
+                        string possiblescriptname = parts[1].Trim();
+                        int tmp;
+                        if (!string.IsNullOrEmpty(possiblescriptname) && possiblescriptname != "*" && !int.TryParse(possiblescriptname, out tmp))
+                        {
+                            arg0str = possiblescriptname.Replace("\"", "").ToLowerInvariant();
+                            i = 2;
+                        }
+                    }
 
-					for(; i < parts.Length && i < args.Length + 1; i++) 
+                    for (; i < parts.Length && i < args.Length + 1; i++) 
 					{
 						int argout;
 						if(parts[i].Trim() == "*") continue; //mxd. Any arg value support
@@ -227,7 +229,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						}
 
 						// Process arg0str...
-						if(Array.IndexOf(GZGeneral.ACS_SPECIALS, t.Action) != -1)
+						//if(Array.IndexOf(GZGeneral.ACS_SPECIALS, t.Action) != -1)
 						{
 							string s = t.Fields.GetValue("arg0str", string.Empty);
 							if(!string.IsNullOrEmpty(s))
@@ -248,16 +250,20 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 					if(match) 
 					{
-						// Replace
-						if(replace) 
+                        // Replace
+                        ThingTypeInfo ti = General.Map.Data.GetThingInfo(t.Type);
+
+                        if (replace) 
 						{
 							t.Action = replaceaction;
+                            LinedefActionInfo info = (t.Action > 0) ? General.Map.Config.GetLinedefActionInfo(t.Action) : null;
+                            ArgumentInfo[] arginfo = (info != null) ? info.Args : ti.Args;
 
-							//mxd. Replace args as well?
-							if(replaceargs != null) 
+                            //mxd. Replace args as well?
+                            if (replaceargs != null) 
 							{
 								int i = 0;
-								if(!string.IsNullOrEmpty(replacearg0str)) 
+								if(!string.IsNullOrEmpty(replacearg0str) && arginfo[0].Str) 
 								{
 									t.Fields["arg0str"] = new UniValue(UniversalType.String, replacearg0str);
 									i = 1;
@@ -271,7 +277,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						}
 
 						// Add to list
-						ThingTypeInfo ti = General.Map.Data.GetThingInfo(t.Type);
 						objs.Add(new FindReplaceObject(t, "Thing " + t.Index + " (" + ti.Title + argtext + ")"));
 					}
 				}

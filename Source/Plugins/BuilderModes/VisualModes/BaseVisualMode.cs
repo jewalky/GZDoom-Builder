@@ -48,6 +48,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		#region ================== Constants
 		// Object picking
 		private const long PICK_INTERVAL = 80;
+		private const long PICK_INTERVAL_PAINT_SELECT = 10; // biwa
 		private const float PICK_RANGE = 0.98f;
 
 		// Gravity
@@ -93,6 +94,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		//mxd. Used in Cut/PasteSelection actions
 		private readonly List<ThingCopyData> copybuffer;
 		private Type lasthighlighttype;
+
+		// biwa. Info for paint selection
+		protected bool paintselectpressed;
+		protected Type paintselecttype = null;
+		protected IVisualPickable highlighted; // biwa
 
 		//mxd. Moved here from Tools
 		private struct SidedefAlignJob
@@ -158,6 +164,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		
 		public bool IsSingleSelection { get { return singleselection; } }
 		public bool SelectionChanged { get { return selectionchanged; } set { selectionchanged |= value; } }
+
+		public bool PaintSelectPressed { get { return paintselectpressed; } } // biwa
+		public Type PaintSelectType { get { return paintselecttype; } set { paintselecttype = value; } } // biwa
+		public IVisualPickable Highlighted { get { return highlighted; } } // biwa
 
 		#endregion
 		
@@ -756,10 +766,14 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				// Remove all vertex handles from selection
 				if(vertices != null && vertices.Count > 0) 
 				{
-					foreach(IVisualEventReceiver i in selectedobjects)
-					{
-						if(i is BaseVisualVertex) RemoveSelectedObject(i);
-					}
+                    for (int i = 0; i < selectedobjects.Count; i++)
+                    {
+                        if (selectedobjects[i] is BaseVisualVertex)
+                        {
+                            RemoveSelectedObject(selectedobjects[i]);
+                            i--;
+                        }
+                    }
 				}
 			}
 
@@ -1045,8 +1059,6 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// When entering this mode
 		public override void OnEngage()
 		{
-			base.OnEngage();
-
 			//mxd
 			useSelectionFromClassicMode = BuilderPlug.Me.SyncSelection ? !General.Interface.ShiftState : General.Interface.ShiftState;
 			if(useSelectionFromClassicMode)	UpdateSelectionInfo();
@@ -1055,15 +1067,19 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			cameraflooroffset = General.Map.Config.ReadSetting("cameraflooroffset", cameraflooroffset);
 			cameraceilingoffset = General.Map.Config.ReadSetting("cameraceilingoffset", cameraceilingoffset);
 
-			//mxd. Update fog color (otherwise FogBoundaries won't be setup correctly)
-			foreach(Sector s in General.Map.Map.Sectors) s.UpdateFogColor();
+            //mxd. Update fog color (otherwise FogBoundaries won't be setup correctly)
+            foreach (Sector s in General.Map.Map.Sectors)
+                s.UpdateFogColor();
 
-			// (Re)create special effects
-			RebuildElementData();
+            // (Re)create special effects
+            RebuildElementData();
 
-			//mxd. Update event lines
-			renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
-		}
+            //mxd. Update event lines
+            renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
+
+            // [ZZ] this enables calling of this object from the outside world. Only after properly initialized pls.
+            base.OnEngage();
+        }
 
 		// When returning to another mode
 		public override void OnDisengage()
@@ -1124,6 +1140,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// Processing
 		public override void OnProcess(long deltatime)
 		{
+			long pickinterval = PICK_INTERVAL; // biwa
 			// Process things?
 			base.ProcessThings = (BuilderPlug.Me.ShowVisualThings != 0);
 			
@@ -1197,9 +1214,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				g.OnProcess(deltatime);
 			}
+
+			// biwa. Use a lower pick interval for paint selection, to make it more reliable
+			if (paintselectpressed)
+				pickinterval = PICK_INTERVAL_PAINT_SELECT;
 			
 			// Time to pick a new target?
-			if(Clock.CurrentTime > (lastpicktime + PICK_INTERVAL))
+			if(Clock.CurrentTime > (lastpicktime + pickinterval))
 			{
 				PickTargetUnlocked();
 				lastpicktime = Clock.CurrentTime;
@@ -1437,6 +1458,14 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 				lasthighlighttype = o.GetType();
 			}
+
+			// biwa
+			if (o is NullVisualEventReceiver)
+				highlighted = null;
+			else if (o is VisualGeometry)
+				highlighted = (VisualGeometry)o;
+			else if (o is VisualThing)
+				highlighted = (VisualThing)o;
 		}
 		
 		// Undo performed
@@ -1688,8 +1717,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 		}
 
-		// This returns all selected objects
-		internal List<IVisualEventReceiver> GetSelectedObjects(bool includesectors, bool includesidedefs, bool includethings, bool includevertices)
+        // This returns all selected objects
+        internal List<IVisualEventReceiver> GetSelectedObjects(bool includesectors, bool includesidedefs, bool includethings, bool includevertices)
 		{
 			List<IVisualEventReceiver> objs = new List<IVisualEventReceiver>();
 			foreach(IVisualEventReceiver i in selectedobjects)
@@ -1951,54 +1980,82 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			return t;
-		}
+        }
 		
 		#endregion
 
 		#region ================== Actions
 
-		[BeginAction("clearselection", BaseAction = true)]
+        // [ZZ] I moved this out of ClearSelection because "cut selection" action needs this to only affect things.
+        private void ClearSelection(bool clearsectors, bool clearsidedefs, bool clearthings, bool clearvertices, bool displaystatus)
+        {
+            selectedobjects.RemoveAll(obj =>
+            {
+                return ((obj is BaseVisualGeometrySector && clearsectors) ||
+                        (obj is BaseVisualGeometrySidedef && clearsidedefs) ||
+                        (obj is BaseVisualThing && clearthings) ||
+                        (obj is BaseVisualVertex && clearvertices));
+            });
+
+            //
+            foreach (KeyValuePair<Sector, VisualSector> vs in allsectors)
+            {
+                if (vs.Value != null)
+                {
+                    BaseVisualSector bvs = (BaseVisualSector)vs.Value;
+                    if (clearsectors)
+                    {
+                        if (bvs.Floor != null) bvs.Floor.Selected = false;
+                        if (bvs.Ceiling != null) bvs.Ceiling.Selected = false;
+                        foreach (VisualFloor vf in bvs.ExtraFloors) vf.Selected = false;
+                        foreach (VisualCeiling vc in bvs.ExtraCeilings) vc.Selected = false;
+                        foreach (VisualFloor vf in bvs.ExtraBackFloors) vf.Selected = false; //mxd
+                        foreach (VisualCeiling vc in bvs.ExtraBackCeilings) vc.Selected = false; //mxd
+                    }
+
+                    if (clearsidedefs)
+                    {
+                        foreach (Sidedef sd in vs.Key.Sidedefs)
+                        {
+                            //mxd. VisualSidedefParts can contain references to visual geometry, which is not present in VisualSector.sidedefgeometry
+                            bvs.GetSidedefParts(sd).DeselectAllParts();
+                        }
+                    }
+                }
+            }
+
+            if (clearthings)
+            {
+                foreach (KeyValuePair<Thing, VisualThing> vt in allthings)
+                {
+                    if (vt.Value != null)
+                    {
+                        BaseVisualThing bvt = (BaseVisualThing)vt.Value;
+                        bvt.Selected = false;
+                    }
+                }
+            }
+
+            //mxd
+            if (clearvertices)
+            {
+                if (General.Map.UDMF)
+                {
+                    foreach (KeyValuePair<Vertex, VisualVertexPair> pair in vertices) pair.Value.Deselect();
+                }
+            }
+
+            //mxd
+            if (displaystatus)
+            {
+                General.Interface.DisplayStatus(StatusType.Selection, string.Empty);
+            }
+        }
+
+        [BeginAction("clearselection", BaseAction = true)]
 		public void ClearSelection()
 		{
-			selectedobjects = new List<IVisualEventReceiver>();
-			
-			foreach(KeyValuePair<Sector, VisualSector> vs in allsectors)
-			{
-				if(vs.Value != null)
-				{
-					BaseVisualSector bvs = (BaseVisualSector)vs.Value;
-					if(bvs.Floor != null) bvs.Floor.Selected = false;
-					if(bvs.Ceiling != null) bvs.Ceiling.Selected = false;
-					foreach(VisualFloor vf in bvs.ExtraFloors) vf.Selected = false;
-					foreach(VisualCeiling vc in bvs.ExtraCeilings) vc.Selected = false;
-					foreach(VisualFloor vf in bvs.ExtraBackFloors) vf.Selected = false; //mxd
-					foreach(VisualCeiling vc in bvs.ExtraBackCeilings) vc.Selected = false; //mxd
-
-					foreach(Sidedef sd in vs.Key.Sidedefs)
-					{
-						//mxd. VisualSidedefParts can contain references to visual geometry, which is not present in VisualSector.sidedefgeometry
-						bvs.GetSidedefParts(sd).DeselectAllParts();
-					}
-				}
-			}
-
-			foreach(KeyValuePair<Thing, VisualThing> vt in allthings)
-			{
-				if(vt.Value != null)
-				{
-					BaseVisualThing bvt = (BaseVisualThing)vt.Value;
-					bvt.Selected = false;
-				}
-			}
-
-			//mxd
-			if(General.Map.UDMF) 
-			{
-				foreach(KeyValuePair<Vertex, VisualVertexPair> pair in vertices) pair.Value.Deselect();
-			}
-
-			//mxd
-			General.Interface.DisplayStatus(StatusType.Selection, string.Empty);
+            ClearSelection(true, true, true, true, true);
 		}
 
 		[BeginAction("visualselect", BaseAction = true)]
@@ -2072,26 +2129,45 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			PostAction();
 		}
 
-		[BeginAction("raisesector1")]
-		public void RaiseSector1()
-		{
-			PreAction(UndoGroup.SectorHeightChange);
-			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-			foreach(IVisualEventReceiver i in objs) i.OnChangeTargetHeight(1);
-			PostAction();
-		}
+	    [BeginAction("raisesector1")]
+	    public void RaiseSector1() {
+	        PreAction(UndoGroup.SectorHeightChange);
+	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+	        foreach (IVisualEventReceiver i in objs)
+	            i.OnChangeTargetHeight(1);
+	        PostAction();
+	    }
 
-		[BeginAction("lowersector1")]
-		public void LowerSector1()
-		{
-			PreAction(UndoGroup.SectorHeightChange);
-			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-			foreach(IVisualEventReceiver i in objs) i.OnChangeTargetHeight(-1);
-			PostAction();
-		}
+	    [BeginAction("lowersector1")]
+	    public void LowerSector1() {
+	        PreAction(UndoGroup.SectorHeightChange);
+	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+	        foreach (IVisualEventReceiver i in objs)
+	            i.OnChangeTargetHeight(-1);
+	        PostAction();
+	    }
 
-		//mxd
-		[BeginAction("raisesectortonearest")]
+	    [BeginAction("raisesector128")]
+	    public void RaiseSector128() {
+	        PreAction(UndoGroup.SectorHeightChange);
+	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+	        foreach (IVisualEventReceiver i in objs)
+	            i.OnChangeTargetHeight(128);
+	        PostAction();
+	    }
+
+	    [BeginAction("lowersector128")]
+	    public void LowerSector128() {
+	        PreAction(UndoGroup.SectorHeightChange);
+	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+	        foreach (IVisualEventReceiver i in objs)
+	            i.OnChangeTargetHeight(-128);
+	        PostAction();
+	    }
+
+
+        //mxd
+        [BeginAction("raisesectortonearest")]
 		public void RaiseSectorToNearest() 
 		{
 			Dictionary<Sector, VisualFloor> floors = new Dictionary<Sector, VisualFloor>();
@@ -3111,8 +3187,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			PreAction(UndoGroup.None);
 			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-			foreach(IVisualEventReceiver i in objs) i.OnDelete();
-			PostAction();
+            foreach (IVisualEventReceiver i in objs)
+            {
+                if (i is BaseVisualThing)
+                    visiblethings.Remove(((BaseVisualThing)i).Thing); // [ZZ] if any
+                i.OnDelete();
+            }
+            PostAction();
 
 			ClearSelection();
 		}
@@ -3150,7 +3231,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			foreach(IVisualEventReceiver i in objs) 
 			{
 				BaseVisualThing thing = (BaseVisualThing)i;
-				thing.Thing.Fields.BeforeFieldsChange();
+                visiblethings.Remove(thing.Thing); // [ZZ] if any
+                thing.Thing.Fields.BeforeFieldsChange();
 				thing.Thing.Dispose();
 				thing.Dispose();
 			}
@@ -3158,8 +3240,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			General.Map.IsChanged = true;
 			General.Map.ThingsFilter.Update();
 
-			// Update event lines
-			renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
+            // [ZZ] Clear selected things.
+            ClearSelection(false, false, true, false, false);
+
+            // Update event lines
+            renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
 		}
 
 		//mxd. We'll just use currently selected objects 
@@ -3677,6 +3762,23 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			BuilderPlug.Me.AlphaBasedTextureHighlighting = !BuilderPlug.Me.AlphaBasedTextureHighlighting;
 			General.Interface.DisplayStatus(StatusType.Info, "Alpha-based textures highlighting is " + (BuilderPlug.Me.AlphaBasedTextureHighlighting ? "ENABLED" : "DISABLED"));
+		}
+
+		// biwa
+		[BeginAction("visualpaintselect")]
+		protected virtual void OnPaintSelectBegin()
+		{
+			paintselectpressed = true;
+			GetTargetEventReceiver(true).OnPaintSelectBegin();
+		}
+
+		// biwa
+		[EndAction("visualpaintselect")]
+		protected virtual void OnPaintSelectEnd()
+		{
+			paintselectpressed = false;
+			paintselecttype = null;
+			GetTargetEventReceiver(true).OnPaintSelectEnd();
 		}
 
 		#endregion
@@ -4220,10 +4322,15 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// This adds the matching, unmarked sidedefs from a vertex for texture alignment
 		private void AddSidedefsForAlignment(Stack<SidedefAlignJob> stack, Vertex v, bool forward, float offsetx, float scaleY, HashSet<long> texturelongnames, bool udmf) 
 		{
-			foreach(Linedef ld in v.Linedefs) 
+			foreach(Linedef ld in v.Linedefs)
 			{
 				Sidedef side1 = forward ? ld.Front : ld.Back;
 				Sidedef side2 = forward ? ld.Back : ld.Front;
+
+                // [ZZ] I don't know what logic here is.
+                //      I'm going to check if any side is marked, and if so, don't add.
+                if ((side1 != null && side1.Marked) ||
+                    (side2 != null && side2.Marked)) continue;
 
 				if((ld.Start == v) && (side1 != null) && !side1.Marked) 
 				{

@@ -22,10 +22,10 @@ using System.IO;
 using CodeImp.DoomBuilder.Compilers;
 using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.IO;
-using SharpCompress.Archive;
-using SharpCompress.Archive.Zip;
+using SharpCompress.Archives;
+using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
-using SharpCompress.Reader;
+using SharpCompress.Readers;
 
 #endregion
 
@@ -35,10 +35,10 @@ namespace CodeImp.DoomBuilder.Data
 	{
 		#region ================== Variables
 
-		private readonly DirectoryFilesList files;
+		private /*readonly*/ DirectoryFilesList files;
 		private IArchive archive; //mxd
-		private readonly ArchiveType archivetype; //mxd
-		private readonly Dictionary<string, byte[]> sevenzipentries; //mxd
+		private /*readonly*/ ArchiveType archivetype; //mxd
+		private /*readonly*/ Dictionary<string, byte[]> sevenzipentries; //mxd
 		private bool bathmode = true; //mxd
 
 		#endregion
@@ -54,57 +54,62 @@ namespace CodeImp.DoomBuilder.Data
 		// Constructor
 		public PK3Reader(DataLocation dl, bool asreadonly) : base(dl, asreadonly)
 		{
-			General.WriteLogLine("Opening " + Path.GetExtension(location.location).ToUpper().Replace(".", "") + " resource \"" + location.location + "\"");
-
-			if(!File.Exists(location.location))
-				throw new FileNotFoundException("Could not find the file \"" + location.location + "\"", location.location);
-
-			// Make list of all files
-			List<DirectoryFileEntry> fileentries = new List<DirectoryFileEntry>();
-
-			// Create archive
-			archive = ArchiveFactory.Open(location.location, Options.KeepStreamsOpen);
-			archivetype = archive.Type;
-
-			// Random access of 7z archives works TERRIBLY slow in SharpCompress
-			if(archivetype == ArchiveType.SevenZip) 
-			{
-				isreadonly = true; // Unsaveable...
-				sevenzipentries = new Dictionary<string, byte[]>(StringComparer.Ordinal);
-
-				IReader reader = archive.ExtractAllEntries();
-				while(reader.MoveToNextEntry()) 
-				{
-					if(reader.Entry.IsDirectory || !CheckInvalidPathChars(reader.Entry.Key)) continue;
-
-					MemoryStream s = new MemoryStream();
-					reader.WriteEntryTo(s);
-					sevenzipentries.Add(reader.Entry.Key.ToLowerInvariant(), s.ToArray());
-					fileentries.Add(new DirectoryFileEntry(reader.Entry.Key));
-				}
-			} 
-			else 
-			{
-				foreach(IArchiveEntry entry in archive.Entries) 
-				{
-					if(!entry.IsDirectory && CheckInvalidPathChars(entry.Key))
-						fileentries.Add(new DirectoryFileEntry(entry.Key));
-				}
-			}
-
-			// Get rid of archive
-			archive.Dispose();
-			archive = null;
-
-			// Make files list
-			files = new DirectoryFilesList(dl.GetDisplayName(), fileentries);
-			
-			// Initialize without path (because we use paths relative to the PK3 file)
-			Initialize();
-
-			// We have no destructor
-			GC.SuppressFinalize(this);
+            LoadFrom(dl, asreadonly);
 		}
+
+        private void LoadFrom(DataLocation dl, bool asreadonly)
+        {
+            General.WriteLogLine("Opening " + Path.GetExtension(location.location).ToUpper().Replace(".", "") + " resource \"" + location.location + "\"");
+
+            if (!File.Exists(location.location))
+                throw new FileNotFoundException("Could not find the file \"" + location.location + "\"", location.location);
+
+            // Make list of all files
+            List<DirectoryFileEntry> fileentries = new List<DirectoryFileEntry>();
+
+            // Create archive
+            archive = ArchiveFactory.Open(location.location);
+            archivetype = archive.Type;
+
+            // Random access of 7z archives works TERRIBLY slow in SharpCompress
+            if (archivetype == ArchiveType.SevenZip)
+            {
+                isreadonly = true; // Unsaveable...
+                sevenzipentries = new Dictionary<string, byte[]>(StringComparer.Ordinal);
+
+                IReader reader = archive.ExtractAllEntries();
+                while (reader.MoveToNextEntry())
+                {
+                    if (reader.Entry.IsDirectory || !CheckInvalidPathChars(reader.Entry.Key)) continue;
+
+                    MemoryStream s = new MemoryStream();
+                    reader.WriteEntryTo(s);
+                    sevenzipentries.Add(reader.Entry.Key.ToLowerInvariant(), s.ToArray());
+                    fileentries.Add(new DirectoryFileEntry(reader.Entry.Key));
+                }
+            }
+            else
+            {
+                foreach (IArchiveEntry entry in archive.Entries)
+                {
+                    if (!entry.IsDirectory && CheckInvalidPathChars(entry.Key))
+                        fileentries.Add(new DirectoryFileEntry(entry.Key));
+                }
+            }
+
+            // Get rid of archive
+            archive.Dispose();
+            archive = null;
+
+            // Make files list
+            files = new DirectoryFilesList(dl.GetDisplayName(), fileentries);
+
+            // Initialize without path (because we use paths relative to the PK3 file)
+            Initialize();
+
+            // We have no destructor
+            GC.SuppressFinalize(this);
+        }
 
 		// Disposer
 		public override void Dispose()
@@ -149,12 +154,25 @@ namespace CodeImp.DoomBuilder.Data
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region ================== Textures
+        #region ================== Management
 
-		// This finds and returns a patch stream
-		public override Stream GetPatchData(string pname, bool longname, ref string patchlocation)
+        // [ZZ]
+        // This reloads the resource
+        public override void Reload(bool newreadonly)
+        {
+            if (archive != null)
+                archive.Dispose();
+            LoadFrom(location, newreadonly);
+        }
+
+        #endregion
+
+        #region ================== Textures
+
+        // This finds and returns a patch stream
+        public override Stream GetPatchData(string pname, bool longname, ref string patchlocation)
 		{
 			// Error when suspended
 			if(issuspended) throw new Exception("Data reader is suspended");

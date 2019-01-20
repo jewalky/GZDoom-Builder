@@ -58,7 +58,7 @@ namespace CodeImp.DoomBuilder.Controls
 
 			// Show the whole thing
 			this.Show();
-			this.Update();
-		}
-	}
+            //this.Update(); // ano - don't think this is needed, and is slow
+        }
+    }
 }

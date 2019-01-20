@@ -243,12 +243,28 @@ namespace CodeImp.DoomBuilder.Windows
 		#region ================== Methods
 
 		// This sets up the form to edit the given lines
-		public void Setup(ICollection<Linedef> lines)
+		public void Setup(ICollection<Linedef> lines, bool selectfront, bool selectback)
 		{
-			preventchanges = true;
-			
-			// Keep this list
-			this.lines = lines;
+            // Window setup
+            // ano - moved this here because we don't reinstantiate the thing every time anymore
+            if (General.Settings.StoreSelectedEditTab)
+            {
+                int activetab = General.Settings.ReadSetting("windows." + configname + ".activetab", 0);
+
+                // When front or back tab was previously selected, switch to appropriate side (selectfront/selectback are set in BaseVisualGeometrySidedef.OnEditEnd)
+                if ((selectfront || selectback) && (activetab == 1 || activetab == 2))
+                    tabs.SelectTab(selectfront ? 1 : 2);
+                else
+                    tabs.SelectTab(activetab);
+            }
+
+            preventchanges = true;
+            undocreated = false;
+            argscontrol.Reset();
+            tagsselector.Reset();
+
+            // Keep this list
+            this.lines = lines;
 			if(lines.Count > 1) this.Text = "Edit Linedefs (" + lines.Count + ")";
 			linedefprops = new List<LinedefProperties>();
 			

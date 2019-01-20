@@ -369,11 +369,11 @@ namespace CodeImp.DoomBuilder.Controls
 
 			// Show the whole thing
 			this.Show();
-			this.Update();
-		}
+            //this.Update(); // ano - don't think this is needed, and is slow
+        }
 
-		//mxd
-		private static void UpdateTexturePanel(GroupBox panel, Label texturename, List<Label> proplabels, Panel image, int sizeref, bool extendedinfoshown)
+        //mxd
+        private static void UpdateTexturePanel(GroupBox panel, Label texturename, List<Label> proplabels, Panel image, int sizeref, bool extendedinfoshown)
 		{
 			//Reposition texture name label?
 			if(texturename.Width < image.Width + 2) 

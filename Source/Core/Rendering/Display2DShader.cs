@@ -33,19 +33,35 @@ namespace CodeImp.DoomBuilder.Rendering
 		private readonly EffectHandle rendersettings;
 		private readonly EffectHandle transformsettings;
 		private readonly EffectHandle filtersettings;
-		
-		#endregion
+        private readonly EffectHandle desaturationHandle;
 
-		#region ================== Properties
+        #endregion
 
-		public Texture Texture1 { set { effect.SetTexture(texture1, value); settingschanged = true; } }
-		
-		#endregion
+        #region ================== Properties
 
-		#region ================== Constructor / Disposer
+        public Texture Texture1 { set { effect.SetTexture(texture1, value); settingschanged = true; } }
 
-		// Constructor
-		public Display2DShader(ShaderManager manager) : base(manager)
+        // [ZZ]
+        private float desaturation;
+        public float Desaturation
+        {
+            set
+            {
+                if (desaturation != value)
+                {
+                    effect.SetValue(desaturationHandle, value);
+                    desaturation = value;
+                    settingschanged = true;
+                }
+            }
+        }
+
+        #endregion
+
+        #region ================== Constructor / Disposer
+
+        // Constructor
+        public Display2DShader(ShaderManager manager) : base(manager)
 		{
 			// Load effect from file
 			effect = LoadEffect("display2d.fx");
@@ -57,7 +73,8 @@ namespace CodeImp.DoomBuilder.Rendering
 				rendersettings = effect.GetParameter(null, "rendersettings");
 				transformsettings = effect.GetParameter(null, "transformsettings");
 				filtersettings = effect.GetParameter(null, "filtersettings");
-			}
+                desaturationHandle = effect.GetParameter(null, "desaturation"); // [ZZ]
+            }
 			
 			// Initialize world vertex declaration
 			VertexElement[] elements = new[]
@@ -84,6 +101,7 @@ namespace CodeImp.DoomBuilder.Rendering
 				if(rendersettings != null) rendersettings.Dispose();
 				if(transformsettings != null) transformsettings.Dispose();
 				if(filtersettings != null) filtersettings.Dispose();
+                if(desaturationHandle != null) desaturationHandle.Dispose();
 				
 				// Done
 				base.Dispose();

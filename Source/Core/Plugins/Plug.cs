@@ -9,16 +9,17 @@ using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Windows;
 using CodeImp.DoomBuilder.Config;
+using System.Runtime.CompilerServices;
 
 #endregion
 
 namespace CodeImp.DoomBuilder.Plugins
 {
-	/// <summary>
-	/// This is the key link between the Doom Builder core and the plugin.
-	/// Every plugin must expose a single class that inherits this class.
-	/// </summary>
-	public class Plug : IDisposable
+    /// <summary>
+    /// This is the key link between the Doom Builder core and the plugin.
+    /// Every plugin must expose a single class that inherits this class.
+    /// </summary>
+    public class Plug : IDisposable
 	{
 		#region ================== Constants
 
@@ -156,10 +157,10 @@ namespace CodeImp.DoomBuilder.Plugins
 		/// </summary>
 		public virtual void OnMapCloseBegin() { }
 
-		/// <summary>
-		/// Occurs after a the map is closed.
-		/// </summary>
-		public virtual void OnMapCloseEnd() { }
+        /// <summary>
+        /// Occurs after a the map is closed.
+        /// </summary>
+        public virtual void OnMapCloseEnd() { }
 
 		/// <summary>
 		/// Occurs before a map is saved.

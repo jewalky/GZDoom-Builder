@@ -141,9 +141,11 @@ namespace CodeImp.DoomBuilder.Windows
 		public void Setup(ICollection<Thing> things)
 		{
 			preventchanges = true;
+            undocreated = false;
+            argscontrol.Reset();
 
-			// Keep this list
-			this.things = things;
+            // Keep this list
+            this.things = things;
 			if(things.Count > 1) this.Text = "Edit Things (" + things.Count + ")";
 			hint.Visible = things.Count > 1; //mxd
 			hintlabel.Visible = things.Count > 1; //mxd

@@ -158,9 +158,9 @@ namespace CodeImp.DoomBuilder.VisualModes
 			}
 
 			this.sector.UpdateFogColor(); //mxd
-			
-			// Done
-			updategeo = false;
+
+            // Done
+            updategeo = false;
 		}
 
 		/// <summary>

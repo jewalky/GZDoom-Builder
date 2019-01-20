@@ -763,7 +763,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				Sidedef side1 = (forward ? ld.Front : ld.Back);
 				Sidedef side2 = (forward ? ld.Back : ld.Front);
-				if((ld.Start == v) && (side1 != null) && !side1.Marked)
+
+                // [ZZ] don't iterate the same linedef twice.
+                //      
+                if ((side1 != null && side1.Marked) ||
+                    (side2 != null && side2.Marked)) continue;
+
+                if ((ld.Start == v) && (side1 != null) && !side1.Marked)
 				{
 					if(SidedefTextureMatch(mode, side1, texturelongnames))
 						stack.Push(new Tools.SidedefFillJob { forward = forward, sidedef = side1 });

@@ -27,10 +27,12 @@
 		private void InitializeComponent() {
 			this.labelhorizrepeat = new System.Windows.Forms.Label();
 			this.repeatgroup = new System.Windows.Forms.GroupBox();
+			this.vertrepeat = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
+			this.horizrepeat = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
+			this.cbautoheight = new System.Windows.Forms.CheckBox();
+			this.cbautowidth = new System.Windows.Forms.CheckBox();
 			this.resetvert = new System.Windows.Forms.Button();
 			this.resethoriz = new System.Windows.Forms.Button();
-			this.vertrepeat = new System.Windows.Forms.NumericUpDown();
-			this.horizrepeat = new System.Windows.Forms.NumericUpDown();
 			this.labelvertrepeat = new System.Windows.Forms.Label();
 			this.cbfitwidth = new System.Windows.Forms.CheckBox();
 			this.accept = new System.Windows.Forms.Button();
@@ -38,9 +40,11 @@
 			this.cbfitheight = new System.Windows.Forms.CheckBox();
 			this.cbfitconnected = new System.Windows.Forms.CheckBox();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
+			this.patternheight = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
+			this.patternwidth = new CodeImp.DoomBuilder.Controls.ButtonsNumericTextbox();
+			this.labelpatternheight = new System.Windows.Forms.Label();
+			this.labelpatternwidth = new System.Windows.Forms.Label();
 			this.repeatgroup.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.vertrepeat)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.horizrepeat)).BeginInit();
 			this.groupBox2.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -55,18 +59,80 @@
 			// 
 			// repeatgroup
 			// 
-			this.repeatgroup.Controls.Add(this.resetvert);
-			this.repeatgroup.Controls.Add(this.resethoriz);
 			this.repeatgroup.Controls.Add(this.vertrepeat);
 			this.repeatgroup.Controls.Add(this.horizrepeat);
+			this.repeatgroup.Controls.Add(this.cbautoheight);
+			this.repeatgroup.Controls.Add(this.cbautowidth);
+			this.repeatgroup.Controls.Add(this.resetvert);
+			this.repeatgroup.Controls.Add(this.resethoriz);
 			this.repeatgroup.Controls.Add(this.labelvertrepeat);
 			this.repeatgroup.Controls.Add(this.labelhorizrepeat);
-			this.repeatgroup.Location = new System.Drawing.Point(12, 107);
+			this.repeatgroup.Location = new System.Drawing.Point(12, 118);
 			this.repeatgroup.Name = "repeatgroup";
-			this.repeatgroup.Size = new System.Drawing.Size(183, 80);
+			this.repeatgroup.Size = new System.Drawing.Size(251, 80);
 			this.repeatgroup.TabIndex = 1;
 			this.repeatgroup.TabStop = false;
 			this.repeatgroup.Text = " Texture Repeating ";
+			// 
+			// vertrepeat
+			// 
+			this.vertrepeat.AllowDecimal = true;
+			this.vertrepeat.AllowExpressions = false;
+			this.vertrepeat.AllowNegative = true;
+			this.vertrepeat.AllowRelative = false;
+			this.vertrepeat.ButtonStep = 1;
+			this.vertrepeat.ButtonStepBig = 10F;
+			this.vertrepeat.ButtonStepFloat = 1F;
+			this.vertrepeat.ButtonStepSmall = 1F;
+			this.vertrepeat.ButtonStepsUseModifierKeys = true;
+			this.vertrepeat.ButtonStepsWrapAround = false;
+			this.vertrepeat.Location = new System.Drawing.Point(84, 44);
+			this.vertrepeat.Name = "vertrepeat";
+			this.vertrepeat.Size = new System.Drawing.Size(63, 24);
+			this.vertrepeat.StepValues = null;
+			this.vertrepeat.TabIndex = 16;
+			this.vertrepeat.WhenTextChanged += new System.EventHandler(this.vertrepeat_ValueChanged);
+			// 
+			// horizrepeat
+			// 
+			this.horizrepeat.AllowDecimal = true;
+			this.horizrepeat.AllowExpressions = false;
+			this.horizrepeat.AllowNegative = true;
+			this.horizrepeat.AllowRelative = false;
+			this.horizrepeat.ButtonStep = 1;
+			this.horizrepeat.ButtonStepBig = 10F;
+			this.horizrepeat.ButtonStepFloat = 1F;
+			this.horizrepeat.ButtonStepSmall = 1F;
+			this.horizrepeat.ButtonStepsUseModifierKeys = true;
+			this.horizrepeat.ButtonStepsWrapAround = false;
+			this.horizrepeat.Location = new System.Drawing.Point(84, 19);
+			this.horizrepeat.Name = "horizrepeat";
+			this.horizrepeat.Size = new System.Drawing.Size(63, 24);
+			this.horizrepeat.StepValues = null;
+			this.horizrepeat.TabIndex = 15;
+			this.horizrepeat.WhenTextChanged += new System.EventHandler(this.horizrepeat_ValueChanged);
+			// 
+			// cbautoheight
+			// 
+			this.cbautoheight.AutoSize = true;
+			this.cbautoheight.Location = new System.Drawing.Point(180, 51);
+			this.cbautoheight.Name = "cbautoheight";
+			this.cbautoheight.Size = new System.Drawing.Size(48, 17);
+			this.cbautoheight.TabIndex = 11;
+			this.cbautoheight.Text = "Auto";
+			this.cbautoheight.UseVisualStyleBackColor = true;
+			this.cbautoheight.CheckedChanged += new System.EventHandler(this.cb_CheckedChanged);
+			// 
+			// cbautowidth
+			// 
+			this.cbautowidth.AutoSize = true;
+			this.cbautowidth.Location = new System.Drawing.Point(180, 24);
+			this.cbautowidth.Name = "cbautowidth";
+			this.cbautowidth.Size = new System.Drawing.Size(48, 17);
+			this.cbautowidth.TabIndex = 10;
+			this.cbautowidth.Text = "Auto";
+			this.cbautowidth.UseVisualStyleBackColor = true;
+			this.cbautowidth.CheckedChanged += new System.EventHandler(this.cb_CheckedChanged);
 			// 
 			// resetvert
 			// 
@@ -87,52 +153,6 @@
 			this.resethoriz.TabIndex = 4;
 			this.resethoriz.UseVisualStyleBackColor = true;
 			this.resethoriz.Click += new System.EventHandler(this.resethoriz_Click);
-			// 
-			// vertrepeat
-			// 
-			this.vertrepeat.Location = new System.Drawing.Point(84, 48);
-			this.vertrepeat.Maximum = new decimal(new int[] {
-            512,
-            0,
-            0,
-            0});
-			this.vertrepeat.Minimum = new decimal(new int[] {
-            512,
-            0,
-            0,
-            -2147483648});
-			this.vertrepeat.Name = "vertrepeat";
-			this.vertrepeat.Size = new System.Drawing.Size(60, 20);
-			this.vertrepeat.TabIndex = 3;
-			this.vertrepeat.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			this.vertrepeat.ValueChanged += new System.EventHandler(this.vertrepeat_ValueChanged);
-			// 
-			// horizrepeat
-			// 
-			this.horizrepeat.Location = new System.Drawing.Point(84, 22);
-			this.horizrepeat.Maximum = new decimal(new int[] {
-            512,
-            0,
-            0,
-            0});
-			this.horizrepeat.Minimum = new decimal(new int[] {
-            512,
-            0,
-            0,
-            -2147483648});
-			this.horizrepeat.Name = "horizrepeat";
-			this.horizrepeat.Size = new System.Drawing.Size(60, 20);
-			this.horizrepeat.TabIndex = 2;
-			this.horizrepeat.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-			this.horizrepeat.ValueChanged += new System.EventHandler(this.horizrepeat_ValueChanged);
 			// 
 			// labelvertrepeat
 			// 
@@ -156,8 +176,8 @@
 			// 
 			// accept
 			// 
-			this.accept.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.accept.Location = new System.Drawing.Point(12, 194);
+			this.accept.Anchor = System.Windows.Forms.AnchorStyles.None;
+			this.accept.Location = new System.Drawing.Point(51, 204);
 			this.accept.Name = "accept";
 			this.accept.Size = new System.Drawing.Size(88, 24);
 			this.accept.TabIndex = 6;
@@ -167,8 +187,8 @@
 			// 
 			// cancel
 			// 
-			this.cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.cancel.Location = new System.Drawing.Point(106, 194);
+			this.cancel.Anchor = System.Windows.Forms.AnchorStyles.None;
+			this.cancel.Location = new System.Drawing.Point(145, 204);
 			this.cancel.Name = "cancel";
 			this.cancel.Size = new System.Drawing.Size(88, 24);
 			this.cancel.TabIndex = 7;
@@ -179,7 +199,7 @@
 			// cbfitheight
 			// 
 			this.cbfitheight.AutoSize = true;
-			this.cbfitheight.Location = new System.Drawing.Point(10, 42);
+			this.cbfitheight.Location = new System.Drawing.Point(10, 44);
 			this.cbfitheight.Name = "cbfitheight";
 			this.cbfitheight.Size = new System.Drawing.Size(69, 17);
 			this.cbfitheight.TabIndex = 8;
@@ -190,7 +210,7 @@
 			// cbfitconnected
 			// 
 			this.cbfitconnected.AutoSize = true;
-			this.cbfitconnected.Location = new System.Drawing.Point(10, 65);
+			this.cbfitconnected.Location = new System.Drawing.Point(10, 69);
 			this.cbfitconnected.Name = "cbfitconnected";
 			this.cbfitconnected.Size = new System.Drawing.Size(168, 17);
 			this.cbfitconnected.TabIndex = 9;
@@ -200,38 +220,100 @@
 			// 
 			// groupBox2
 			// 
+			this.groupBox2.Controls.Add(this.patternheight);
+			this.groupBox2.Controls.Add(this.patternwidth);
+			this.groupBox2.Controls.Add(this.labelpatternheight);
+			this.groupBox2.Controls.Add(this.labelpatternwidth);
 			this.groupBox2.Controls.Add(this.cbfitwidth);
 			this.groupBox2.Controls.Add(this.cbfitconnected);
 			this.groupBox2.Controls.Add(this.cbfitheight);
 			this.groupBox2.Location = new System.Drawing.Point(12, 12);
 			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(183, 89);
+			this.groupBox2.Size = new System.Drawing.Size(251, 100);
 			this.groupBox2.TabIndex = 10;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = " Options ";
+			// 
+			// patternheight
+			// 
+			this.patternheight.AllowDecimal = true;
+			this.patternheight.AllowExpressions = false;
+			this.patternheight.AllowNegative = false;
+			this.patternheight.AllowRelative = false;
+			this.patternheight.ButtonStep = 8;
+			this.patternheight.ButtonStepBig = 16F;
+			this.patternheight.ButtonStepFloat = 8F;
+			this.patternheight.ButtonStepSmall = 8F;
+			this.patternheight.ButtonStepsUseModifierKeys = true;
+			this.patternheight.ButtonStepsWrapAround = false;
+			this.patternheight.Location = new System.Drawing.Point(177, 40);
+			this.patternheight.Name = "patternheight";
+			this.patternheight.Size = new System.Drawing.Size(63, 24);
+			this.patternheight.StepValues = null;
+			this.patternheight.TabIndex = 18;
+			this.patternheight.WhenTextChanged += new System.EventHandler(this.patternsize_ValueChanged);
+			// 
+			// patternwidth
+			// 
+			this.patternwidth.AllowDecimal = true;
+			this.patternwidth.AllowExpressions = false;
+			this.patternwidth.AllowNegative = false;
+			this.patternwidth.AllowRelative = false;
+			this.patternwidth.ButtonStep = 8;
+			this.patternwidth.ButtonStepBig = 16F;
+			this.patternwidth.ButtonStepFloat = 8F;
+			this.patternwidth.ButtonStepSmall = 8F;
+			this.patternwidth.ButtonStepsUseModifierKeys = true;
+			this.patternwidth.ButtonStepsWrapAround = false;
+			this.patternwidth.Location = new System.Drawing.Point(177, 15);
+			this.patternwidth.Name = "patternwidth";
+			this.patternwidth.Size = new System.Drawing.Size(63, 24);
+			this.patternwidth.StepValues = null;
+			this.patternwidth.TabIndex = 17;
+			this.patternwidth.WhenTextChanged += new System.EventHandler(this.patternsize_ValueChanged);
+			// 
+			// labelpatternheight
+			// 
+			this.labelpatternheight.AutoSize = true;
+			this.labelpatternheight.Location = new System.Drawing.Point(98, 45);
+			this.labelpatternheight.Name = "labelpatternheight";
+			this.labelpatternheight.Size = new System.Drawing.Size(76, 13);
+			this.labelpatternheight.TabIndex = 11;
+			this.labelpatternheight.Text = "Pattern height:";
+			// 
+			// labelpatternwidth
+			// 
+			this.labelpatternwidth.AutoSize = true;
+			this.labelpatternwidth.Location = new System.Drawing.Point(102, 20);
+			this.labelpatternwidth.Name = "labelpatternwidth";
+			this.labelpatternwidth.Size = new System.Drawing.Size(72, 13);
+			this.labelpatternwidth.TabIndex = 10;
+			this.labelpatternwidth.Text = "Pattern width:";
 			// 
 			// FitTexturesForm
 			// 
 			this.AcceptButton = this.accept;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-			this.ClientSize = new System.Drawing.Size(206, 223);
+			this.CancelButton = this.cancel;
+			this.ClientSize = new System.Drawing.Size(275, 233);
 			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.cancel);
 			this.Controls.Add(this.accept);
 			this.Controls.Add(this.repeatgroup);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.Name = "FitTexturesForm";
-			this.Opacity = 0;
+			this.Opacity = 0D;
 			this.ShowIcon = false;
 			this.ShowInTaskbar = false;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Fit Textures";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FitTexturesForm_FormClosing);
+			this.TextChanged += new System.EventHandler(this.vertrepeat_ValueChanged);
 			this.repeatgroup.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.vertrepeat)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.horizrepeat)).EndInit();
+			this.repeatgroup.PerformLayout();
 			this.groupBox2.ResumeLayout(false);
 			this.groupBox2.PerformLayout();
 			this.ResumeLayout(false);
@@ -243,8 +325,6 @@
 		private System.Windows.Forms.Label labelhorizrepeat;
 		private System.Windows.Forms.GroupBox repeatgroup;
 		private System.Windows.Forms.Button resethoriz;
-		private System.Windows.Forms.NumericUpDown vertrepeat;
-		private System.Windows.Forms.NumericUpDown horizrepeat;
 		private System.Windows.Forms.Label labelvertrepeat;
 		private System.Windows.Forms.Button resetvert;
 		private System.Windows.Forms.CheckBox cbfitwidth;
@@ -253,5 +333,13 @@
 		private System.Windows.Forms.CheckBox cbfitheight;
 		private System.Windows.Forms.CheckBox cbfitconnected;
 		private System.Windows.Forms.GroupBox groupBox2;
+		private System.Windows.Forms.CheckBox cbautowidth;
+		private System.Windows.Forms.CheckBox cbautoheight;
+		private System.Windows.Forms.Label labelpatternheight;
+		private System.Windows.Forms.Label labelpatternwidth;
+		private Controls.ButtonsNumericTextbox horizrepeat;
+		private Controls.ButtonsNumericTextbox vertrepeat;
+		private Controls.ButtonsNumericTextbox patternwidth;
+		private Controls.ButtonsNumericTextbox patternheight;
 	}
 }

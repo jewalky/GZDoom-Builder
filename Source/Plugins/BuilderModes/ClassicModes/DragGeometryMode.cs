@@ -266,7 +266,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						if(snapgrid || snapgridincrement)
 						{
 							// Get grid intersection coordinates
-							List<Vector2D> coords = nl.GetGridIntersections(snapgridincrement ? dragstartoffset : new Vector2D());
+							List<Vector2D> coords = nl.GetGridIntersections(snapgridincrement ? dragstartoffset : new Vector2D(),
+								General.Map.Grid.GridRotate, General.Map.Grid.GridOriginX, General.Map.Grid.GridOriginY);
 
 							// mxd. Do the rest only if we actually have some coordinates
 							if(coords.Count > 0) 

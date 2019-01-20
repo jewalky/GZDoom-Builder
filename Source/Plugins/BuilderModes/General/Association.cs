@@ -29,10 +29,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private HashSet<int> tags;
 		private Vector2D center;
 		private UniversalType type;
+		private int directlinktype;
 
 		public HashSet<int> Tags { get { return tags; } }
 		public Vector2D Center { get { return center; } }
 		public UniversalType Type { get { return type; } }
+		public int DirectLinkType { get { return directlinktype; } }
 
 		//mxd. This sets up the association
 		public Association()
@@ -75,33 +77,50 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// This sets up the association
 		public void Set(Vector2D center, int tag, int type)
 		{
+			this.Set(center, tag, type, 0);
+		}
+
+		public void Set(Vector2D center, int tag, int type, int directlinktype)
+		{
 			this.tags = new HashSet<int> { tag }; //mxd
 			this.type = (UniversalType)type;
 			this.center = center;
+			this.directlinktype = directlinktype;
 		}
 
 		// This sets up the association
 		public void Set(Vector2D center, int tag, UniversalType type)
 		{
+			this.Set(center, tag, type, 0);
+		}
+
+		public void Set(Vector2D center, int tag, UniversalType type, int directlinktype)
+		{
 			this.tags = new HashSet<int> { tag }; //mxd
 			this.type = type;
 			this.center = center;
+			this.directlinktype = directlinktype;
 		}
 
 		//mxd. This also sets up the association
 		public void Set(Vector2D center, IEnumerable<int> tags, int type)
 		{
-			this.tags = new HashSet<int>(tags); //mxd
-			this.type = (UniversalType)type;
-			this.center = center;
+			this.Set(center, tags, (UniversalType)type, 0);
 		}
 
 		//mxd. This also sets up the association
 		public void Set(Vector2D center, IEnumerable<int> tags, UniversalType type)
 		{
+			this.Set(center, tags, type, 0);
+		}
+
+		//mxd. This also sets up the association
+		public void Set(Vector2D center, IEnumerable<int> tags, UniversalType type, int directlinktype)
+		{
 			this.tags = new HashSet<int>(tags); //mxd
 			this.type = type;
 			this.center = center;
+			this.directlinktype = directlinktype;
 		}
 
 		// This compares an association

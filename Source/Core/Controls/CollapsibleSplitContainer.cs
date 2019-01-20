@@ -405,8 +405,8 @@ namespace CodeImp.DoomBuilder.Controls
 		}
 
 		// ISupportInitialize methods. Not needed for .Net 4 and higher
-		public void BeginInit() { }
-		public void EndInit() { }
+		//public void BeginInit() { }
+		//public void EndInit() { }
 
 		#endregion
 	}

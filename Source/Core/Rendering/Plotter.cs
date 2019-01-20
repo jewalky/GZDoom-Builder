@@ -209,7 +209,7 @@ namespace CodeImp.DoomBuilder.Rendering
 
 		// This draws a line normally
 		// See: http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
-		public void DrawLineSolid(int x1, int y1, int x2, int y2, ref PixelColor c)
+		public void DrawLineSolid(int x1, int y1, int x2, int y2, ref PixelColor c, uint mask = 0xffffffff)
 		{
 			// Check if the line is outside the screen for sure.
 			// This is quickly done by checking in which area both points are. When this
@@ -262,7 +262,9 @@ namespace CodeImp.DoomBuilder.Rendering
 						px += sdx;
 
 						// Draw pixel
-						pixels[py * width + px] = c;
+						if ((mask & (1 << (i & 0x7))) != 0) {
+							pixels[py * width + px] = c;
+						}
 					}
 				}
 				// Else the line is more vertical than horizontal
@@ -279,7 +281,9 @@ namespace CodeImp.DoomBuilder.Rendering
 						py += sdy;
 
 						// Draw pixel
-						pixels[py * width + px] = c;
+						if ((mask & (1 << (i & 0x7))) != 0) {
+							pixels[py * width + px] = c;
+						}
 					}
 				}
 			}
@@ -303,8 +307,10 @@ namespace CodeImp.DoomBuilder.Rendering
 						px += sdx;
 						
 						// Draw pixel
-						if((px >= 0) && (px < visiblewidth) && (py >= 0) && (py < visibleheight))
-							pixels[py * width + px] = c;
+						if ((mask & (1 << (i & 0x7))) != 0) {
+							if((px >= 0) && (px < visiblewidth) && (py >= 0) && (py < visibleheight))
+								pixels[py * width + px] = c;
+						}
 					}
 				}
 				// Else the line is more vertical than horizontal
@@ -321,8 +327,10 @@ namespace CodeImp.DoomBuilder.Rendering
 						py += sdy;
 						
 						// Draw pixel
-						if((px >= 0) && (px < visiblewidth) && (py >= 0) && (py < visibleheight))
-							pixels[py * width + px] = c;
+						if ((mask & (1 << (i & 0x7))) != 0) {
+							if((px >= 0) && (px < visiblewidth) && (py >= 0) && (py < visibleheight))
+								pixels[py * width + px] = c;
+						}
 					}
 				}
 			}

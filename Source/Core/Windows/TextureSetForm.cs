@@ -36,7 +36,10 @@ namespace CodeImp.DoomBuilder.Windows
 		public TextureSetForm()
 		{
 			InitializeComponent();
-			matcheslist.ApplySettings();
+            // [ZZ] change default texture size
+            matcheslist.ImageSize = 64;
+            //
+            matcheslist.ApplySettings();
 			
 			// Show/hide components
 			matchesbutton.Visible = (General.Map != null);

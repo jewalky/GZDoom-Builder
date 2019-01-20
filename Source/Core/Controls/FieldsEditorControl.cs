@@ -256,14 +256,20 @@ namespace CodeImp.DoomBuilder.Controls
 		}
 
 		//mxd
-		public void SetUserVars(Dictionary<string, UniversalType> vars, UniFields fromfields, bool first)
+		public void SetUserVars(Dictionary<string, UniversalType> vars, Dictionary<string, object> defaults, UniFields fromfields, bool first)
 		{
 			foreach(KeyValuePair<string, UniversalType> group in vars)
 			{
-				// Go for all rows
-				bool foundrow = false;
+                // Go for all rows
+                bool foundrow = false;
 				TypeHandler vartype = General.Types.GetFieldHandler((int)group.Value, 0);
-				object value = fromfields.ContainsKey(group.Key) ? fromfields[group.Key].Value : vartype.GetDefaultValue();
+
+                object defaultvalue;
+                if (defaults.ContainsKey(group.Key))
+                    defaultvalue = defaults[group.Key];
+                else defaultvalue = vartype.GetDefaultValue();
+
+                object value = fromfields.ContainsKey(group.Key) ? fromfields[group.Key].Value : defaultvalue;
 				
 				foreach(DataGridViewRow row in fieldslist.Rows)
 				{
@@ -298,8 +304,8 @@ namespace CodeImp.DoomBuilder.Controls
 				// Row not found?
 				if(!foundrow)
 				{
-					// Make new row
-					object defaultvalue = vartype.GetDefaultValue();
+                    // Make new row
+                    // [ZZ] 24.07.08: add support for custom defaults for user vars. ZScript only for now.
 					FieldsEditorRow frow = new FieldsEditorRow(fieldslist, group.Key, (int)group.Value, defaultvalue, true);
 					if(!value.Equals(defaultvalue)) frow.Define(value);
 					fieldslist.Rows.Insert(fieldslist.Rows.Count - 1, frow);
@@ -592,7 +598,7 @@ namespace CodeImp.DoomBuilder.Controls
 						enumscombo.Location = new Point(cellrect.Left, cellrect.Top);
 						enumscombo.Width = cellrect.Width;
 						int internalheight = cellrect.Height - (enumscombo.Height - enumscombo.ClientRectangle.Height) - 6;
-						General.SendMessage(enumscombo.Handle, General.CB_SETITEMHEIGHT, -1, internalheight);
+						General.SendMessage(enumscombo.Handle, General.CB_SETITEMHEIGHT, new IntPtr(-1), new IntPtr(internalheight));
 						
 						// Select the value of this field (for DropDownList style combo)
 						foreach(EnumItem i in enumscombo.Items)

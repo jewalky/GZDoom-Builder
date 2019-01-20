@@ -74,12 +74,14 @@ namespace CodeImp.DoomBuilder.ZDoom
 					return false;
 				}
 
+                /*
 				// Camera texture names are limited to 8 chars
 				if(texturename.Length > DataManager.CLASIC_IMAGE_NAME_LENGTH)
 				{
 					ReportError("Camera texture names must be no longer than " + DataManager.CLASIC_IMAGE_NAME_LENGTH + " chars");
 					return false;
-				}
+				}*/
+                // [ZZ] not really. I've successfully tried it with >8 chars and it works.
 
 				// Width
 				int width = -1;

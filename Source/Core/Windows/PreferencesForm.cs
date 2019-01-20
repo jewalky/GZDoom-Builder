@@ -88,6 +88,7 @@ namespace CodeImp.DoomBuilder.Windows
 			toolbar_geometry.Checked = General.Settings.ToolbarGeometry;
 			toolbar_testing.Checked = General.Settings.ToolbarTesting;
 			showtexturesizes.Checked = General.Settings.ShowTextureSizes;
+            texturesizesbelow.Checked = General.Settings.TextureSizesBelow;
 
 			//mxd
 			locatetexturegroup.Checked = General.Settings.LocateTextureGroup;
@@ -95,7 +96,7 @@ namespace CodeImp.DoomBuilder.Windows
 			checkforupdates.Checked = General.Settings.CheckForUpdates;
 			toolbar_gzdoom.Checked = General.Settings.GZToolbarGZDoom;
 			cbSynchCameras.Checked = General.Settings.GZSynchCameras;
-			tbDynLightCount.Value = General.Clamp(General.Settings.GZMaxDynamicLights / 8, tbDynLightCount.Minimum, tbDynLightCount.Maximum);
+			tbDynLightCount.Value = General.Clamp(General.Settings.GZMaxDynamicLights / 16, tbDynLightCount.Minimum, tbDynLightCount.Maximum);
 			labelDynLightCount.Text = General.Settings.GZMaxDynamicLights.ToString();
 			cbStretchView.Checked = General.Settings.GZStretchView;
 			cbOldHighlightMode.Checked = General.Settings.GZOldHighlightMode;
@@ -318,6 +319,7 @@ namespace CodeImp.DoomBuilder.Windows
 			General.Settings.ToolbarTesting = toolbar_testing.Checked;
 			General.Settings.GZToolbarGZDoom = toolbar_gzdoom.Checked; //mxd
 			General.Settings.ShowTextureSizes = showtexturesizes.Checked;
+            General.Settings.TextureSizesBelow = texturesizesbelow.Checked; // [ZZ]
 			General.Settings.StoreSelectedEditTab = cbStoreEditTab.Checked; //mxd
 			General.Settings.CheckForUpdates = checkforupdates.Checked; //mxd
 			General.Settings.LocateTextureGroup = locatetexturegroup.Checked; //mxd
@@ -400,7 +402,7 @@ namespace CodeImp.DoomBuilder.Windows
 
 			//mxd
 			General.Settings.GZSynchCameras = cbSynchCameras.Checked;
-			General.Settings.GZMaxDynamicLights = tbDynLightCount.Value * 8;
+			General.Settings.GZMaxDynamicLights = tbDynLightCount.Value * 16;
 			General.Settings.FilterAnisotropy = D3DDevice.AF_STEPS[anisotropicfiltering.Value];
 			General.Settings.AntiAliasingSamples = D3DDevice.AA_STEPS[antialiasing.Value];
 			General.Settings.GZStretchView = cbStretchView.Checked;
@@ -594,7 +596,9 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				actioncontrol.Items.Add(new KeyControl(SpecialKeys.MScrollUp, "ScrollUp"));
 				actioncontrol.Items.Add(new KeyControl(SpecialKeys.MScrollDown, "ScrollDown"));
-			}
+                actioncontrol.Items.Add(new KeyControl(SpecialKeys.MScrollLeft, "ScrollLeft"));
+                actioncontrol.Items.Add(new KeyControl(SpecialKeys.MScrollRight, "ScrollRight"));
+            }
 
 			//mxd. Alt
 			if(a.AllowMouse && !a.DisregardAlt) 
@@ -609,7 +613,9 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollUp | (int)Keys.Alt, "Alt+ScrollUp"));
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollDown | (int)Keys.Alt, "Alt+ScrollDown"));
-			}
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollLeft | (int)Keys.Alt, "Alt+ScrollLeft"));
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollRight | (int)Keys.Alt, "Alt+ScrollRight"));
+            }
 
 			//Ctrl
 			if(a.AllowMouse && !a.DisregardControl) 
@@ -625,7 +631,9 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollUp | (int)Keys.Control, "Ctrl+ScrollUp"));
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollDown | (int)Keys.Control, "Ctrl+ScrollDown"));
-			}
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollLeft | (int)Keys.Control, "Ctrl+ScrollLeft"));
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollRight | (int)Keys.Control, "Ctrl+ScrollRight"));
+            }
 
 			//Shift
 			if(a.AllowMouse && !a.DisregardShift)
@@ -640,7 +648,9 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollUp | (int)Keys.Shift, "Shift+ScrollUp"));
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollDown | (int)Keys.Shift, "Shift+ScrollDown"));
-			}
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollLeft | (int)Keys.Shift, "Shift+ScrollLeft"));
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollRight | (int)Keys.Shift, "Shift+ScrollRight"));
+            }
 
 			//mxd. Alt-Shift
 			if(a.AllowMouse && !a.DisregardShift && !a.DisregardAlt) 
@@ -655,7 +665,9 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollUp | (int)Keys.Shift | (int)Keys.Alt, "Alt+Shift+ScrollUp"));
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollDown | (int)Keys.Shift | (int)Keys.Alt, "Alt+Shift+ScrollDown"));
-			}
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollLeft | (int)Keys.Shift | (int)Keys.Alt, "Alt+Shift+ScrollLeft"));
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollRight | (int)Keys.Shift | (int)Keys.Alt, "Alt+Shift+ScrollRight"));
+            }
 
 			//mxd. Ctrl-Alt
 			if(a.AllowMouse && !a.DisregardAlt && !a.DisregardControl) 
@@ -670,7 +682,9 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollUp | (int)Keys.Control | (int)Keys.Alt, "Ctrl+Alt+ScrollUp"));
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollDown | (int)Keys.Control | (int)Keys.Alt, "Ctrl+Alt+ScrollDown"));
-			}
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollLeft | (int)Keys.Control | (int)Keys.Alt, "Ctrl+Alt+ScrollLeft"));
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollRight | (int)Keys.Control | (int)Keys.Alt, "Ctrl+Alt+ScrollRight"));
+            }
 			
 			//Ctrl-Shift
 			if(a.AllowMouse && !a.DisregardShift && !a.DisregardControl)
@@ -685,7 +699,9 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollUp | (int)Keys.Shift | (int)Keys.Control, "Ctrl+Shift+ScrollUp"));
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollDown | (int)Keys.Shift | (int)Keys.Control, "Ctrl+Shift+ScrollDown"));
-			}
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollLeft | (int)Keys.Shift | (int)Keys.Control, "Ctrl+Shift+ScrollLeft"));
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollRight | (int)Keys.Shift | (int)Keys.Control, "Ctrl+Shift+ScrollRight"));
+            }
 
 			//mxd. Ctrl-Alt-Shift
 			if(a.AllowMouse && !a.DisregardShift && !a.DisregardControl && !a.DisregardAlt) 
@@ -700,7 +716,9 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollUp | (int)Keys.Shift | (int)Keys.Control | (int)Keys.Alt, "Ctrl+Alt+Shift+ScrollUp"));
 				actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollDown | (int)Keys.Shift | (int)Keys.Control | (int)Keys.Alt, "Ctrl+Alt+Shift+ScrollDown"));
-			}
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollLeft | (int)Keys.Shift | (int)Keys.Control | (int)Keys.Alt, "Ctrl+Alt+Shift+ScrollLeft"));
+                actioncontrol.Items.Add(new KeyControl((int)SpecialKeys.MScrollRight | (int)Keys.Shift | (int)Keys.Control | (int)Keys.Alt, "Ctrl+Alt+Shift+ScrollRight"));
+            }
 		}
 		
 		// Item selected
@@ -989,7 +1007,7 @@ namespace CodeImp.DoomBuilder.Windows
 		//mxd
 		private void tbDynLightCount_ValueChanged(object sender, EventArgs e) 
 		{
-			labelDynLightCount.Text = (tbDynLightCount.Value * 8).ToString();
+			labelDynLightCount.Text = (tbDynLightCount.Value * 16).ToString();
 		}
 
 		//mxd
@@ -1255,8 +1273,8 @@ namespace CodeImp.DoomBuilder.Windows
 				hlpevent.Handled = true;
 			}
 		}
-		
-		/*
+
+        /*
 		// This writes all action help files using a template and some basic info from the actions.
 		// Also writes actioncontents.txt with all files to be inserted into Contents.hhc.
 		// Only used during development. Actual button to call this has been removed.
@@ -1288,5 +1306,5 @@ namespace CodeImp.DoomBuilder.Windows
 			File.WriteAllText(filename, contents.ToString());
 		}
 		*/
-	}
+    }
 }

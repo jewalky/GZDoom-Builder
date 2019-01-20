@@ -49,6 +49,8 @@ namespace CodeImp.DoomBuilder.Editing
 		private int gridsize;
 		private float gridsizef;
 		private float gridsizefinv;
+		private float gridrotate;
+		private float gridoriginx, gridoriginy;
 
 		// Background
 		private string background = "";
@@ -66,6 +68,9 @@ namespace CodeImp.DoomBuilder.Editing
 
 		public int GridSize { get { return gridsize; } } //mxd
 		public float GridSizeF { get { return gridsizef; } }
+		public float GridRotate { get { return gridrotate; }}
+		public float GridOriginX { get { return gridoriginx; }}
+		public float GridOriginY { get { return gridoriginy; }}
 		internal string BackgroundName { get { return background; } }
 		internal int BackgroundSource { get { return backsource; } }
 		internal ImageData Background { get { return backimage; } }
@@ -86,6 +91,9 @@ namespace CodeImp.DoomBuilder.Editing
 			SetGridSize(DEFAULT_GRID_SIZE);
 			backscalex = 1.0f;
 			backscaley = 1.0f;
+			gridrotate = 0.0f;
+			gridoriginx = 0;
+			gridoriginy = 0;
 			
 			// Register actions
 			General.Actions.BindMethods(this);
@@ -128,6 +136,9 @@ namespace CodeImp.DoomBuilder.Editing
 			cfg.WriteSetting(path + ".backscalex", (int)(backscalex * 100.0f));
 			cfg.WriteSetting(path + ".backscaley", (int)(backscaley * 100.0f));
 			cfg.WriteSetting(path + ".gridsize", gridsizef);
+			cfg.WriteSetting(path + ".gridrotate", gridrotate);
+			cfg.WriteSetting(path + ".gridoriginx", gridoriginx);
+			cfg.WriteSetting(path + ".gridoriginy", gridoriginy);
 		}
 
 		// Read settings from configuration
@@ -141,6 +152,9 @@ namespace CodeImp.DoomBuilder.Editing
 			backscalex = cfg.ReadSetting(path + ".backscalex", 100) / 100.0f;
 			backscaley = cfg.ReadSetting(path + ".backscaley", 100) / 100.0f;
 			gridsizef = cfg.ReadSetting(path + ".gridsize", DEFAULT_GRID_SIZE);
+			gridoriginx = cfg.ReadSetting(path + ".gridoriginx", 0);
+			gridoriginy = cfg.ReadSetting(path + ".gridoriginy", 0);
+			gridrotate = cfg.ReadSetting(path + ".gridrotate", 0.0f);
 
 			// Setup
 			SetGridSize(gridsizef);
@@ -160,6 +174,19 @@ namespace CodeImp.DoomBuilder.Editing
 
 			// Update in main window
 			General.MainWindow.UpdateGrid(gridsizef);
+		}
+
+		// Set the rotation angle of the grid
+		internal void SetGridRotation(float angle)
+		{
+			gridrotate = angle;
+		}
+
+		// Set the origin of the grid
+		internal void SetGridOrigin(float x, float y)
+		{
+			gridoriginx = x;
+			gridoriginy = y;
 		}
 
 		// This sets the background
@@ -226,14 +253,28 @@ namespace CodeImp.DoomBuilder.Editing
 		// This snaps to the nearest grid coordinate
 		public Vector2D SnappedToGrid(Vector2D v)
 		{
-			return SnappedToGrid(v, gridsizef, gridsizefinv);
+			return SnappedToGrid(v, gridsizef, gridsizefinv, gridrotate, gridoriginx, gridoriginy);
 		}
 
 		// This snaps to the nearest grid coordinate
-		public static Vector2D SnappedToGrid(Vector2D v, float gridsize, float gridsizeinv)
+		public static Vector2D SnappedToGrid(Vector2D v, float gridsize, float gridsizeinv, float gridrotate = 0.0f, float gridoriginx = 0, float gridoriginy = 0)
 		{
+			Vector2D origin = new Vector2D(gridoriginx, gridoriginy);
+			bool transformed = Math.Abs(gridrotate) > 1e-4 || gridoriginx != 0 || gridoriginx != 0;
+			if (transformed)
+			{
+				// Grid is transformed, so reverse the transformation first
+				v = ((v - origin).GetRotated(-gridrotate));
+			}
+		
 			Vector2D sv = new Vector2D((float)Math.Round(v.x * gridsizeinv) * gridsize,
 								(float)Math.Round(v.y * gridsizeinv) * gridsize);
+
+			if (transformed)
+			{
+				// Put back into original frame
+				sv = sv.GetRotated(gridrotate) + origin;
+			}
 
 			if(sv.x < General.Map.Config.LeftBoundary) sv.x = General.Map.Config.LeftBoundary;
 			else if(sv.x > General.Map.Config.RightBoundary) sv.x = General.Map.Config.RightBoundary;

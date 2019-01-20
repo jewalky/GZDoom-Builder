@@ -16,7 +16,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private readonly Linedef linedef;
 		
 		// Floor and ceiling planes
+        public PixelColor ColorFloor { get; private set; }
 		private SectorLevel floor;
+        public PixelColor ColorCeiling { get; private set; }
 		private SectorLevel ceiling;
 
 		// Alpha transparency
@@ -197,6 +199,18 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					ceiling.colorbelow = PixelColor.FromInt(0);
 				}
 			}
+
+            if (VavoomType)
+            {
+                ColorFloor = sd.ColorCeiling;
+                ColorCeiling = sd.ColorFloor;
+                
+            }
+            else
+            {
+                ColorFloor = sd.ColorFloor;
+                ColorCeiling = sd.ColorCeiling;
+            }
 		}
 	}
 }

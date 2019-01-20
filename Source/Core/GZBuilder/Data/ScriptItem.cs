@@ -82,23 +82,33 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 		}
 
 		// God awful, but will do...
-		internal string[] GetArgumentsDescriptions(int action)
+        // [ZZ] for backwards compatibility with broken maxed's code
+        internal string[] GetArgumentsDescriptions(int action)
+        {
+            int first;
+            return GetArgumentsDescriptions(action, out first);
+        }
+		internal string[] GetArgumentsDescriptions(int action, out int first)
 		{
 			string[] result = new[] { index == int.MinValue ? "Script Name" : "Script Number", string.Empty, string.Empty, string.Empty, string.Empty };
+            first = 0;
 			switch(action)
 			{
 				case 80:        //ACS_Execute (script, map, s_arg1, s_arg2, s_arg3)
 				case 226: //ACS_ExecuteAlways (script, map, s_arg1, s_arg2, s_arg3)
 					argnames.CopyTo(0, result, 2, argnames.Count < 3 ? argnames.Count : 3);
+                    first = 2;
 					break;
 
 				case 83:     //ACS_LockedExecute (script, map, s_arg1, s_arg2, lock)
 				case 85: //ACS_LockedExecuteDoor (script, map, s_arg1, s_arg2, lock)
 					argnames.CopyTo(0, result, 2, argnames.Count < 2 ? argnames.Count : 2);
+                    first = 2;
 					break;
 
 				case 84: //ACS_ExecuteWithResult (script, s_arg1, s_arg2, s_arg3, s_arg4)
 					argnames.CopyTo(0, result, 1, argnames.Count < 4 ? argnames.Count : 4);
+                    first = 1;
 					break;
 
 				case 81:   //ACS_Suspend (script, map)

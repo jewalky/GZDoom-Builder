@@ -160,7 +160,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 
 				case "color":
 					PixelColor cv = new PixelColor();
-					if(!string.IsNullOrEmpty(value) && !GetColorFromString(value, ref cv))
+					if(!string.IsNullOrEmpty(value) && !GetColorFromString(value, out cv))
 					{
 						ReportError("Cvar \"" + name + "\" has invalid color value: \"" + value + "\"");
 						return false;

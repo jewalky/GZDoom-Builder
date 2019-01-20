@@ -130,7 +130,7 @@ namespace CodeImp.DoomBuilder.Controls
 				// Not defined
 				this.DefaultCellStyle.ForeColor = SystemColors.GrayText;
 				isdefined = false;
-				fieldtype.ApplyDefaultValue();
+				//fieldtype.ApplyDefaultValue(); // [ZZ] don't do this. this is only done for int, and not a very good place to do it...
 
 				// Setup property cell
 				this.Cells[0].Value = name;

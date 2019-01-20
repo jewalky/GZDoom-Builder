@@ -24,6 +24,9 @@ float4 rendersettings;
 //mxd. solid fill color. used in model wireframe rendering
 float4 fillColor;
 
+//[ZZ]
+float desaturation;
+
 // Transform settings
 float4x4 transformsettings;
 
@@ -68,6 +71,13 @@ PixelData vs_transform(VertexData vd)
 	return pd;
 }
 
+// [ZZ] desaturation routine. almost literal quote from GZDoom's GLSL
+float3 desaturate(float3 texel)
+{
+	float gray = (texel.r * 0.3 + texel.g * 0.56 + texel.b * 0.14);	
+	return lerp(texel, float3(gray,gray,gray), desaturation);
+}
+
 //mxd. Pixel shader for sprite drawing
 float4 ps_sprite(PixelData pd) : COLOR
 {
@@ -77,11 +87,12 @@ float4 ps_sprite(PixelData pd) : COLOR
 	// Modulate it by selection color
 	if(pd.color.a > 0)
 	{
-		return float4((c.r + pd.color.r) / 2.0f, (c.g + pd.color.g) / 2.0f, (c.b + pd.color.b) / 2.0f, c.a * rendersettings.w * pd.color.a);
+		float3 cr = desaturate(c.rgb);
+		return float4((cr.r + pd.color.r) / 2.0f, (cr.g + pd.color.g) / 2.0f, (cr.b + pd.color.b) / 2.0f, c.a * rendersettings.w * pd.color.a);
 	}
 
 	// Or leave it as it is
-	return float4(c.rgb, c.a * rendersettings.w);
+	return float4(desaturate(c.rgb), c.a * rendersettings.w);
 }
 
 //mxd. Pixel shader for thing box and arrow drawing
@@ -89,7 +100,7 @@ float4 ps_thing(PixelData pd) : COLOR
 {
 	// Take this pixel's color
 	float4 c = tex2D(texture1samp, pd.uv);
-	return float4(c.rgb, c.a * rendersettings.w) * pd.color;
+	return float4(desaturate(c.rgb), c.a * rendersettings.w) * pd.color;
 }
 
 //mxd. Pretty darn simple pixel shader for wireframe rendering :)

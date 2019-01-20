@@ -151,9 +151,11 @@ namespace CodeImp.DoomBuilder.Windows
 		public void Setup(ICollection<Linedef> lines)
 		{
 			preventchanges = true;
-			
-			// Keep this list
-			this.lines = lines;
+
+            argscontrol.Reset();
+            undocreated = false;
+            // Keep this list
+            this.lines = lines;
 			if(lines.Count > 1) this.Text = "Edit Linedefs (" + lines.Count + ")";
 			linedefprops = new List<LinedefProperties>();
 			

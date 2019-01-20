@@ -41,12 +41,7 @@ namespace CodeImp.DoomBuilder.Controls
 		public TagsSelector()
 		{
 			InitializeComponent();
-
-			tagspermapelement = new List<List<int>>();
-			usedtags = new List<int>();
-			rangemodes = new List<int>();
-			offsetmodes = new List<int>();
-			infos = new List<TagInfo>();
+            Reset();
 		}
 
 		#endregion
@@ -154,7 +149,6 @@ namespace CodeImp.DoomBuilder.Controls
 				else
 					infos.Add(new TagInfo(tag, string.Empty));
 			}
-
 			foreach(TagInfo info in infos) tagpicker.Items.Add(info);
 			tagpicker.DropDownWidth = DoomBuilder.Geometry.Tools.GetDropDownWidth(tagpicker);
 		}
@@ -216,9 +210,21 @@ namespace CodeImp.DoomBuilder.Controls
 			}
 		}
 
-		#endregion
+        #endregion
 
-		#region ================== Methods
+        #region ================== Methods
+        public void Reset()
+        {
+            tagspermapelement = new List<List<int>>();
+            usedtags = new List<int>();
+            rangemodes = new List<int>();
+            offsetmodes = new List<int>();
+            infos = new List<TagInfo>();
+            tagslist.Links.Clear();
+            infos.Clear();
+            tagpicker.Items.Clear();
+            usedtags.Clear();
+        }
 
 		// Creates a single tag collection to display. int.MinValue means "mixed tag"
 		private List<int> GetDisplayTags()
@@ -248,10 +254,10 @@ namespace CodeImp.DoomBuilder.Controls
 		{
 			string[] displaytags = new string[tags.Count];
 			int displaytagslen = 0;
-			tagslist.Links.Clear();
+            tagslist.Links.Clear();
 
-			// Gather tags into a single string collection
-			for(int i = 0; i < tags.Count; i++)
+            // Gather tags into a single string collection
+            for (int i = 0; i < tags.Count; i++)
 			{
 				displaytags[i] = (tags[i] == int.MinValue ? "???" : tags[i].ToString());
 

@@ -72,8 +72,10 @@ namespace CodeImp.DoomBuilder.Data
 		// Call this to initialize this class
 		protected virtual void Initialize()
 		{
-			// Load all WAD files in the root as WAD resources
-			string[] wadfiles = GetWadFiles();
+            // [ZZ] we can have wad files already. dispose if any.
+            if (wads != null) foreach (WADReader wr in wads) wr.Dispose();
+            // Load all WAD files in the root as WAD resources
+            string[] wadfiles = GetWadFiles();
 			wads = new List<WADReader>(wadfiles.Length);
 			foreach(string w in wadfiles)
 			{
@@ -114,13 +116,13 @@ namespace CodeImp.DoomBuilder.Data
 			foreach(WADReader wr in wads) wr.Resume();
 			base.Resume();
 		}
-		
-		#endregion
-		
-		#region ================== Palette
 
-		// This loads the PLAYPAL palette
-		public override Playpal LoadPalette()
+        #endregion
+
+        #region ================== Palette
+
+        // This loads the PLAYPAL palette
+        public override Playpal LoadPalette()
 		{
 			// Error when suspended
 			if(issuspended) throw new Exception("Data reader is suspended");
@@ -524,12 +526,100 @@ namespace CodeImp.DoomBuilder.Data
 			return result;
 		}
 
-		#endregion
+        #endregion
 
-		#region ================== VOXELDEF (mxd)
+        #region ================== ZSCRIPT
 
-		//mxd. This returns the list of voxels, which can be used without VOXELDEF definition
-		public override HashSet<string> GetVoxelNames() 
+        // This finds and returns ZSCRIPT streams
+        public override IEnumerable<TextResourceData> GetZScriptData(string pname)
+        {
+            // Error when suspended
+            if (issuspended) throw new Exception("Data reader is suspended");
+
+            List<TextResourceData> result = new List<TextResourceData>();
+            string[] allfilenames;
+
+            // Find in root directory
+            string filename = Path.GetFileName(pname);
+            string pathname = Path.GetDirectoryName(pname);
+
+            if (filename.IndexOf('.') > -1)
+            {
+                string fullname = Path.Combine(pathname, filename);
+                if (FileExists(fullname))
+                {
+                    allfilenames = new string[1];
+                    allfilenames[0] = Path.Combine(pathname, filename);
+                }
+                else
+                {
+                    allfilenames = new string[0];
+                    General.ErrorLogger.Add(ErrorType.Warning, "Unable to load ZSCRIPT file \"" + fullname + "\"");
+                }
+            }
+            else
+                allfilenames = GetAllFilesWithTitle(pathname, filename, false);
+
+            foreach (string foundfile in allfilenames)
+                result.Add(new TextResourceData(this, LoadFile(foundfile), foundfile, true));
+
+            // Find in any of the wad files
+            for (int i = wads.Count - 1; i >= 0; i--)
+                result.AddRange(wads[i].GetZScriptData(pname));
+
+            return result;
+        }
+
+        #endregion
+
+        #region ================== MODELDEF
+
+        // This finds and returns MODELDEF streams
+        public override IEnumerable<TextResourceData> GetModeldefData(string pname)
+        {
+            // Error when suspended
+            if (issuspended) throw new Exception("Data reader is suspended");
+
+            List<TextResourceData> result = new List<TextResourceData>();
+            string[] allfilenames;
+
+            // Find in root directory
+            string filename = Path.GetFileName(pname);
+            string pathname = Path.GetDirectoryName(pname);
+
+            if (filename.IndexOf('.') > -1)
+            {
+                string fullname = Path.Combine(pathname, filename);
+                if (FileExists(fullname))
+                {
+                    allfilenames = new string[1];
+                    allfilenames[0] = Path.Combine(pathname, filename);
+                }
+                else
+                {
+                    allfilenames = new string[0];
+                    General.ErrorLogger.Add(ErrorType.Warning, "Unable to load MODELDEF file \"" + fullname + "\"");
+                }
+            }
+            else
+                allfilenames = GetAllFilesWithTitle(pathname, filename, false);
+
+            foreach (string foundfile in allfilenames)
+                result.Add(new TextResourceData(this, LoadFile(foundfile), foundfile, true));
+
+            // Find in any of the wad files
+            for (int i = wads.Count - 1; i >= 0; i--)
+                result.AddRange(wads[i].GetModeldefData(pname));
+
+            return result;
+        }
+
+        #endregion
+
+        #region ================== VOXELDEF (mxd)
+
+        //mxd. This returns the list of voxels, which can be used without VOXELDEF definition
+        public override HashSet<string> GetVoxelNames() 
 		{
 			// Error when suspended
 			if(issuspended) throw new Exception("Data reader is suspended");

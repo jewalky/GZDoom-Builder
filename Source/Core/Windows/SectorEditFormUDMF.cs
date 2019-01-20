@@ -95,7 +95,14 @@ namespace CodeImp.DoomBuilder.Windows
 			public readonly float CeilSlopeAngleZ;
 			public readonly float CeilSlopeOffset;
 
-			public SectorProperties(Sector s) 
+            //[ZZ] UDMF Doom64 sector colors
+            public readonly int D64ColorCeiling;
+            public readonly int D64ColorWallTop;
+            public readonly int D64ColorWallBottom;
+            public readonly int D64ColorFloor;
+            public readonly int D64ColorThings;
+
+            public SectorProperties(Sector s) 
 			{
 				Brightness = s.Brightness;
 				FloorHeight = s.FloorHeight;
@@ -159,8 +166,15 @@ namespace CodeImp.DoomBuilder.Windows
 					CeilSlopeAngleZ = 0;
 					CeilSlopeOffset = s.CeilHeight;
 				}
-				CeilSlope = s.CeilSlope;
-			}
+
+                CeilSlope = s.CeilSlope;
+
+                D64ColorCeiling = s.Fields.GetValue("color_ceiling", PixelColor.INT_WHITE_NO_ALPHA);
+                D64ColorWallTop = s.Fields.GetValue("color_walltop", PixelColor.INT_WHITE_NO_ALPHA);
+                D64ColorThings = s.Fields.GetValue("color_sprites", PixelColor.INT_WHITE_NO_ALPHA);
+                D64ColorWallBottom = s.Fields.GetValue("color_wallbottom", PixelColor.INT_WHITE_NO_ALPHA);
+                D64ColorFloor = s.Fields.GetValue("color_floor", PixelColor.INT_WHITE_NO_ALPHA);
+            }
 		}
 
 		#endregion
@@ -292,9 +306,9 @@ namespace CodeImp.DoomBuilder.Windows
 		public void Setup(ICollection<Sector> sectors) 
 		{
 			preventchanges = true; //mxd
-
-			// Keep this list
-			this.sectors = sectors;
+            undocreated = false;
+            // Keep this list
+            this.sectors = sectors;
 			if(sectors.Count > 1) this.Text = "Edit Sectors (" + sectors.Count + ")";
 			sectorprops = new Dictionary<Sector, SectorProperties>(sectors.Count); //mxd
 
@@ -403,8 +417,15 @@ namespace CodeImp.DoomBuilder.Windows
 			fadeColor.SetValueFrom(sc.Fields, true);
 			lightColor.SetValueFrom(sc.Fields, true);
 
-			// Slopes
-			SetupFloorSlope(sc, true);
+            // [ZZ]
+            ceilingColor.SetValueFrom(sc.Fields, true);
+            upperWallColor.SetValueFrom(sc.Fields, true);
+            thingsColor.SetValueFrom(sc.Fields, true);
+            lowerWallColor.SetValueFrom(sc.Fields, true);
+            floorColor.SetValueFrom(sc.Fields, true);
+
+            // Slopes
+            SetupFloorSlope(sc, true);
 			SetupCeilingSlope(sc, true);
 
 			// Custom fields
@@ -537,8 +558,15 @@ namespace CodeImp.DoomBuilder.Windows
 				fadeColor.SetValueFrom(s.Fields, false);
 				lightColor.SetValueFrom(s.Fields, false);
 
-				// Slopes
-				SetupFloorSlope(s, false);
+                // [ZZ]
+                ceilingColor.SetValueFrom(s.Fields, false);
+                upperWallColor.SetValueFrom(s.Fields, false);
+                thingsColor.SetValueFrom(s.Fields, false);
+                lowerWallColor.SetValueFrom(s.Fields, false);
+                floorColor.SetValueFrom(s.Fields, false);
+
+                // Slopes
+                SetupFloorSlope(s, false);
 				SetupCeilingSlope(s, false);
 
 				// Custom fields
@@ -560,26 +588,15 @@ namespace CodeImp.DoomBuilder.Windows
 				}
 			}
 
-			//mxd. Glow is disabled?
-			if(floorglowcolorval == -1)
-			{
-				disablefloorglow.Checked = true;
-				floorglowcolor.Enabled = false;
-				floorglowheight.Enabled = false;
-				floorglowheightlabel.Enabled = false;
-				resetfloorglowheight.Visible = false;
-			}
-			if(ceilingglowcolorval == -1)
-			{
-				disableceilingglow.Checked = true;
-				ceilingglowcolor.Enabled = false;
-				ceilingglowheight.Enabled = false;
-				ceilingglowheightlabel.Enabled = false;
-				resetceilingglowheight.Visible = false;
-			}
+            //mxd. Glow is disabled?
+            if (floorglowcolorval == -1)
+                floorGlowEnabled.Checked = false;
 
-			//mxd. Update "Reset" buttons...
-			if(ceiling_reflect.Text == "0") reset_ceiling_reflect.Visible = false;
+            if (ceilingglowcolorval == -1)
+                ceilingGlowEnabled.Checked = false;
+
+            //mxd. Update "Reset" buttons...
+            if(ceiling_reflect.Text == "0") reset_ceiling_reflect.Visible = false;
 			if(floor_reflect.Text == "0") reset_floor_reflect.Visible = false;
 			if(ceilingglowheight.Text == "0") resetceilingglowheight.Visible = false;
 			if(floorglowheight.Text == "0") resetfloorglowheight.Visible = false;
@@ -1845,7 +1862,7 @@ namespace CodeImp.DoomBuilder.Windows
 
 		#endregion
 
-		#region ================== Glow relatime events (mxd)
+		#region ================== Glow realtime events (mxd)
 
 		private void UpdateCeilingGlowHeightWarning()
 		{
@@ -1893,72 +1910,6 @@ namespace CodeImp.DoomBuilder.Windows
 
 			General.Map.IsChanged = true;
 			if(OnValuesChanged != null) OnValuesChanged(this, EventArgs.Empty);
-		}
-
-		private void disableceilingglow_CheckedChanged(object sender, EventArgs e)
-		{
-			if(preventchanges) return;
-			MakeUndo();
-
-			// Update controls
-			ceilingglowcolor.Enabled = !disableceilingglow.Checked;
-			ceilingglowheight.Enabled = !disableceilingglow.Checked;
-			ceilingglowheightlabel.Enabled = !disableceilingglow.Checked;
-
-			if(disableceilingglow.Checked)
-			{
-				// Set glow color to -1
-				foreach(Sector s in sectors)
-				{
-					UniFields.SetInteger(s.Fields, "ceilingglowcolor", -1, 0);
-					s.UpdateNeeded = true;
-				}
-
-				// Hide height warning
-				ceilingglowheightrequired.Visible = false;
-
-				// Trigger update
-				General.Map.IsChanged = true;
-				if(OnValuesChanged != null) OnValuesChanged(this, EventArgs.Empty);
-			}
-			else
-			{
-				// Trigger update to restore/update values
-				ceilingglowcolor_OnValueChanged(this, EventArgs.Empty);
-			}
-		}
-
-		private void disablefloorglow_CheckedChanged(object sender, EventArgs e)
-		{
-			if(preventchanges) return;
-			MakeUndo();
-
-			// Update controls
-			floorglowcolor.Enabled = !disablefloorglow.Checked;
-			floorglowheight.Enabled = !disablefloorglow.Checked;
-			floorglowheightlabel.Enabled = !disablefloorglow.Checked;
-
-			if(disablefloorglow.Checked)
-			{
-				// Set glow color to -1
-				foreach(Sector s in sectors)
-				{
-					UniFields.SetInteger(s.Fields, "floorglowcolor", -1, 0);
-					s.UpdateNeeded = true;
-				}
-
-				// Hide height warning
-				floorglowheightrequired.Visible = false;
-
-				// Trigger update
-				General.Map.IsChanged = true;
-				if(OnValuesChanged != null) OnValuesChanged(this, EventArgs.Empty);
-			}
-			else
-			{
-				// Trigger glow color update to restore/update values
-				floorglowcolor_OnValueChanged(this, EventArgs.Empty);
-			}
 		}
 
 		private void ceilingglowheight_WhenTextChanged(object sender, EventArgs e)
@@ -2029,7 +1980,76 @@ namespace CodeImp.DoomBuilder.Windows
 			if(OnValuesChanged != null) OnValuesChanged(this, EventArgs.Empty);
 		}
 
-		private void resetceilingglowheight_Click(object sender, EventArgs e)
+
+        private void ceilingGlowEnabled_CheckedChanged(object sender, EventArgs e)
+        {
+            if (preventchanges) return;
+            MakeUndo();
+
+            // Update controls
+            ceilingglowcolor.Enabled = ceilingGlowEnabled.Checked;
+            ceilingglowcolor.Color = PixelColor.FromInt(0);
+            ceilingglowheight.Enabled = ceilingGlowEnabled.Checked;
+            ceilingglowheightlabel.Enabled = ceilingGlowEnabled.Checked;
+
+            if (!ceilingGlowEnabled.Checked)
+            {
+                // Set glow color to -1
+                foreach (Sector s in sectors)
+                {
+                    UniFields.SetInteger(s.Fields, "ceilingglowcolor", -1, 0);
+                    s.UpdateNeeded = true;
+                }
+
+                // Hide height warning
+                ceilingglowheightrequired.Visible = false;
+
+                // Trigger update
+                General.Map.IsChanged = true;
+                if (OnValuesChanged != null) OnValuesChanged(this, EventArgs.Empty);
+            }
+            else
+            {
+                // Trigger update to restore/update values
+                ceilingglowcolor_OnValueChanged(this, EventArgs.Empty);
+            }
+        }
+
+        private void floorGlowEnabled_CheckedChanged(object sender, EventArgs e)
+        {
+            if (preventchanges) return;
+            MakeUndo();
+
+            // Update controls
+            floorglowcolor.Enabled = floorGlowEnabled.Checked;
+            floorglowcolor.Color = PixelColor.FromInt(0);
+            floorglowheight.Enabled = floorGlowEnabled.Checked;
+            floorglowheightlabel.Enabled = floorGlowEnabled.Checked;
+
+            if (!floorGlowEnabled.Checked)
+            {
+                // Set glow color to -1
+                foreach (Sector s in sectors)
+                {
+                    UniFields.SetInteger(s.Fields, "floorglowcolor", -1, 0);
+                    s.UpdateNeeded = true;
+                }
+
+                // Hide height warning
+                floorglowheightrequired.Visible = false;
+
+                // Trigger update
+                General.Map.IsChanged = true;
+                if (OnValuesChanged != null) OnValuesChanged(this, EventArgs.Empty);
+            }
+            else
+            {
+                // Trigger glow color update to restore/update values
+                floorglowcolor_OnValueChanged(this, EventArgs.Empty);
+            }
+        }
+
+        private void resetceilingglowheight_Click(object sender, EventArgs e)
 		{
 			ceilingglowheight.Focus();
 			ceilingglowheight.Text = "0";
@@ -2041,7 +2061,47 @@ namespace CodeImp.DoomBuilder.Windows
 			floorglowheight.Text = "0";
 		}
 
-		#endregion
+        #endregion
+        #region ================== D64 colors realtime events (mxd)
 
-	}
+        // generic function: use sender
+        private void d64color_OnValueChanged(object sender, EventArgs e)
+        {
+            if (preventchanges) return;
+            MakeUndo();
+
+            ColorFieldsControl colorCtl = (ColorFieldsControl)sender;
+
+            foreach (Sector s in sectors)
+            {
+                int prevv = PixelColor.INT_WHITE_NO_ALPHA;
+                SectorProperties props = sectorprops[s];
+                switch (colorCtl.Field)
+                {
+                    case "color_ceiling":
+                        prevv = props.D64ColorCeiling;
+                        break;
+                    case "color_walltop":
+                        prevv = props.D64ColorWallTop;
+                        break;
+                    case "color_sprites":
+                        prevv = props.D64ColorThings;
+                        break;
+                    case "color_wallbottom":
+                        prevv = props.D64ColorWallBottom;
+                        break;
+                    case "color_floor":
+                        prevv = props.D64ColorFloor;
+                        break;
+                }
+                colorCtl.ApplyTo(s.Fields, prevv);
+                s.UpdateNeeded = true;
+            }
+
+            General.Map.IsChanged = true;
+            if (OnValuesChanged != null) OnValuesChanged(this, EventArgs.Empty);
+        }
+
+        #endregion
+    }
 }

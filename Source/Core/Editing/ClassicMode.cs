@@ -826,7 +826,7 @@ namespace CodeImp.DoomBuilder.Editing
 		protected virtual void StartMultiSelection()
 		{
 			selecting = true;
-			selectstart = mousemappos;
+			selectstart = mousedownmappos;
 			selectionrect = new RectangleF(selectstart.x, selectstart.y, 0, 0);
 
 			//mxd

@@ -211,19 +211,28 @@ namespace CodeImp.DoomBuilder.Data
 		public override void Suspend()
 		{
 			file.Dispose();
+            file = null;
 			base.Suspend();
 		}
 
 		// This resumes use of this resource
 		public override void Resume()
 		{
-			file = new WAD(location.location, true);
-			is_iwad = file.IsIWAD;
+            Reload(IsReadOnly);
 			base.Resume();
 		}
 
-		// This fills a ranges list
-		private void FindRanges(List<LumpRange> ranges, IDictionary rangeinfos, string rangename, string elementname)
+        // This reloads the resource
+        public override void Reload(bool newreadonly)
+        {
+            if (file != null) file.Dispose();
+            file = new WAD(location.location, newreadonly);
+            is_iwad = file.IsIWAD;
+            base.Reload(newreadonly);
+        }
+
+        // This fills a ranges list
+        private void FindRanges(List<LumpRange> ranges, IDictionary rangeinfos, string rangename, string elementname)
 		{
 			Dictionary<LumpRange, KeyValuePair<string, string>> failedranges = new Dictionary<LumpRange, KeyValuePair<string, string>>(); //mxd
 			Dictionary<int, bool> successfulrangestarts = new Dictionary<int, bool>(); //mxd
@@ -299,7 +308,11 @@ namespace CodeImp.DoomBuilder.Data
 			
 			// Look for a lump named PLAYPAL
 			Lump lump = file.FindLump("PLAYPAL");
-			if(lump != null) return new Playpal(lump.Stream); // Read the PLAYPAL from stream
+            if (lump != null)
+            {
+                using (Stream s = lump.GetSafeStream())
+                    return new Playpal(s); // Read the PLAYPAL from stream
+            }
 			return null; // No palette
 		}
 
@@ -379,14 +392,14 @@ namespace CodeImp.DoomBuilder.Data
 				foreach(LumpRange range in colormapranges)
 				{
 					Lump lump = file.FindLump(pname, range.start, range.end);
-					if(lump != null) return lump.Stream;
+					if(lump != null) return lump.GetSafeStream();
 				}
 			}
 			else
 			{
 				// Find the lump anywhere
 				Lump lump = file.FindLump(pname);
-				if(lump != null) return lump.Stream;
+				if(lump != null) return lump.GetSafeStream();
 			}
 
 			return null;
@@ -409,11 +422,11 @@ namespace CodeImp.DoomBuilder.Data
 			Lump lump = file.FindLump("TEXTURE1");
 			if(lump != null) 
 			{
-				LoadTextureSet("TEXTURE1", lump.Stream, ref images, pnames);
+				LoadTextureSet("TEXTURE1", lump.GetSafeStream(), ref images, pnames);
 				if(images.Count > 0) images.RemoveAt(0); //mxd. The first TEXTURE1 texture cannot be used. Let's remove it here
 			}
 			lump = file.FindLump("TEXTURE2");
-			if(lump != null) LoadTextureSet("TEXTURE2", lump.Stream, ref images, pnames);
+			if(lump != null) LoadTextureSet("TEXTURE2", lump.GetSafeStream(), ref images, pnames);
 			
 			// Read ranges from configuration
 			foreach(LumpRange range in textureranges)
@@ -452,8 +465,8 @@ namespace CodeImp.DoomBuilder.Data
 				}
 				else
 				{
-					MemoryStream filedata = new MemoryStream(file.Lumps[lumpindex].Stream.ReadAllBytes());
-					cachedparsers.Add(fullpath, LoadTEXTURESTextures(new TextResourceData(this, filedata, "TEXTURES", lumpindex, true), ref images)); //mxd
+                    Stream filedata = file.Lumps[lumpindex].GetSafeStream();
+                    cachedparsers.Add(fullpath, LoadTEXTURESTextures(new TextResourceData(this, filedata, "TEXTURES", lumpindex, true), ref images)); //mxd
 					filedata.Dispose();
 				}
 
@@ -631,7 +644,11 @@ namespace CodeImp.DoomBuilder.Data
 
 			// Look for a lump named PNAMES
 			Lump lump = file.FindLump("PNAMES");
-			if(lump != null) return new PatchNames(lump.Stream); // Read the PNAMES from stream
+            if (lump != null)
+            {
+                using (Stream s = lump.GetSafeStream())
+                    return new PatchNames(s); // Read the PNAMES from stream
+            }
 			return null; // No patch names found
 		}
 
@@ -647,7 +664,7 @@ namespace CodeImp.DoomBuilder.Data
 			foreach(LumpRange range in patchranges) 
 			{
 				lump = file.FindLump(pname, range.start, range.end);
-				if(lump != null) return lump.Stream;
+				if(lump != null) return lump.GetSafeStream();
 			}
 			
 			if(!strictpatches) 
@@ -659,7 +676,7 @@ namespace CodeImp.DoomBuilder.Data
 					if(lump != null)
 					{
 						patchlocation = location.GetDisplayName();
-						return lump.Stream;
+						return lump.GetSafeStream();
 					}
 				}
 
@@ -670,7 +687,7 @@ namespace CodeImp.DoomBuilder.Data
 					if(lump != null)
 					{
 						patchlocation = location.GetDisplayName();
-						return lump.Stream;
+						return lump.GetSafeStream();
 					}
 				}
 			}
@@ -692,7 +709,7 @@ namespace CodeImp.DoomBuilder.Data
 				if(lump != null)
 				{
 					texturelocation = location.GetDisplayName(); //mxd
-					return lump.Stream;
+					return lump.GetSafeStream();
 				}
 			}
 
@@ -712,7 +729,7 @@ namespace CodeImp.DoomBuilder.Data
 				if(lump != null)
 				{
 					hireslocation = location.GetDisplayName();
-					return lump.Stream;
+					return lump.GetSafeStream();
 				}
 			}
 
@@ -762,7 +779,7 @@ namespace CodeImp.DoomBuilder.Data
 				}
 				else
 				{
-					MemoryStream filedata = new MemoryStream(file.Lumps[lumpindex].Stream.ReadAllBytes());
+                    Stream filedata = file.Lumps[lumpindex].GetSafeStream();
 					cachedparsers.Add(fullpath, LoadTEXTURESFlats(new TextResourceData(this, filedata, "TEXTURES", lumpindex, true), ref images)); //mxd
 					filedata.Dispose();
 				}
@@ -817,7 +834,7 @@ namespace CodeImp.DoomBuilder.Data
 				if(lump != null)
 				{
 					flatlocation = location.GetDisplayName(); //mxd
-					return lump.Stream;
+                    return lump.GetSafeStream();
 				}
 			}
 			
@@ -850,8 +867,8 @@ namespace CodeImp.DoomBuilder.Data
 				}
 				else
 				{
-					MemoryStream filedata = new MemoryStream(file.Lumps[lumpindex].Stream.ReadAllBytes());
-					cachedparsers.Add(fullpath, LoadTEXTURESSprites(new TextResourceData(this, filedata, "TEXTURES", lumpindex, true), ref images)); //mxd
+                    Stream filedata = file.Lumps[lumpindex].GetSafeStream();
+                    cachedparsers.Add(fullpath, LoadTEXTURESSprites(new TextResourceData(this, filedata, "TEXTURES", lumpindex, true), ref images)); //mxd
 					filedata.Dispose();
 				}
 
@@ -901,7 +918,7 @@ namespace CodeImp.DoomBuilder.Data
 				if(lump != null)
 				{
 					spritelocation = location.GetDisplayName(); //mxd
-					return lump.Stream;
+					return lump.GetSafeStream(); // [ZZ] return duplicate MemoryStream, not direct WAD stream. hopefully reduces esoteric errors and crashes.
 				}
 			}
 
@@ -983,10 +1000,9 @@ namespace CodeImp.DoomBuilder.Data
 				if(lump != null)
 				{
 					voxellocation = location.GetDisplayName();
-					
-					// Copy stream, because model/voxel streams are expected to be disposed
-					lump.Stream.Seek(0, SeekOrigin.Begin); // Rewind before use
-					return new MemoryStream(lump.Stream.ReadAllBytes());
+
+                    // Copy stream, because model/voxel streams are expected to be disposed
+                    return lump.GetSafeStream();
 				}
 			}
 
@@ -1017,8 +1033,36 @@ namespace CodeImp.DoomBuilder.Data
 			return new List<TextResourceData> {result[result.Count - 1]};
 		}
 
-		//mxd. Should be only one entry per wad
-		public override IEnumerable<TextResourceData> GetMapinfoData() 
+        // [ZZ] This finds and returns ZSCRIPT streams
+        public override IEnumerable<TextResourceData> GetZScriptData(string pname)
+        {
+            if (issuspended) throw new Exception("Data reader is suspended");
+            List<TextResourceData> result = GetAllLumpsData(pname); //mxd
+
+            //mxd. Return ALL DECORATE lumps
+            if (result.Count == 0 || string.Compare(pname, "ZSCRIPT", StringComparison.OrdinalIgnoreCase) == 0)
+                return result;
+
+            //mxd. Return THE LAST include lump, because that's the way ZDoom seems to operate
+            return new List<TextResourceData> { result[result.Count - 1] };
+        }
+
+        // [ZZ] This finds and returns MODELDEF streams
+        public override IEnumerable<TextResourceData> GetModeldefData(string pname)
+        {
+            if (issuspended) throw new Exception("Data reader is suspended");
+            List<TextResourceData> result = GetAllLumpsData(pname); //mxd
+
+            //mxd. Return ALL DECORATE lumps
+            if (result.Count == 0 || string.Compare(pname, "MODELDEF", StringComparison.OrdinalIgnoreCase) == 0)
+                return result;
+
+            //mxd. Return THE LAST include lump, because that's the way ZDoom seems to operate
+            return new List<TextResourceData> { result[result.Count - 1] };
+        }
+
+        //mxd. Should be only one entry per wad
+        public override IEnumerable<TextResourceData> GetMapinfoData() 
 		{
 			if(issuspended) throw new Exception("Data reader is suspended");
 			
@@ -1064,7 +1108,7 @@ namespace CodeImp.DoomBuilder.Data
 			List<TextResourceData> result = new List<TextResourceData>();
 			int lumpindex = file.FindLumpIndex(name);
 			if(lumpindex != -1)
-				result.Add(new TextResourceData(this, file.Lumps[lumpindex].Stream, name, lumpindex, true));
+				result.Add(new TextResourceData(this, file.Lumps[lumpindex].GetSafeStream(), name, lumpindex, true));
 
 			return result;
 		}
@@ -1075,7 +1119,7 @@ namespace CodeImp.DoomBuilder.Data
 			List<TextResourceData> result = new List<TextResourceData>();
 			int lumpindex = file.FindLastLumpIndex(name);
 			if(lumpindex != -1)
-				result.Add(new TextResourceData(this, file.Lumps[lumpindex].Stream, name, lumpindex, true));
+				result.Add(new TextResourceData(this, file.Lumps[lumpindex].GetSafeStream(), name, lumpindex, true));
 
 			return result;
 		}
@@ -1090,7 +1134,7 @@ namespace CodeImp.DoomBuilder.Data
 			while(lumpindex > -1)
 			{
 				// Add to collection
-				result.Add(new TextResourceData(this, file.Lumps[lumpindex].Stream, name, lumpindex, true));
+				result.Add(new TextResourceData(this, file.Lumps[lumpindex].GetSafeStream(), name, lumpindex, true));
 
 				// Find next entry
 				lumpindex = file.FindLumpIndex(name, lumpindex + 1);
@@ -1108,10 +1152,7 @@ namespace CodeImp.DoomBuilder.Data
 			Lump l = file.FindLump(name);
 
 			if(l != null) 
-			{
-				l.Stream.Seek(0, SeekOrigin.Begin);
-				return new MemoryStream(l.Stream.ReadAllBytes());
-			}
+                return (MemoryStream)l.GetSafeStream();
 
 			return null;
 		}
@@ -1122,8 +1163,10 @@ namespace CodeImp.DoomBuilder.Data
 				return null;
 
 			Lump l = file.Lumps[lumpindex];
-			l.Stream.Seek(0, SeekOrigin.Begin);
-			return new MemoryStream(l.Stream.ReadAllBytes());
+            if (l != null)
+                return (MemoryStream)l.GetSafeStream();
+
+            return null;
 		}
 
 		internal override bool SaveFile(MemoryStream lumpdata, string lumpname)
@@ -1155,16 +1198,16 @@ namespace CodeImp.DoomBuilder.Data
 			if(isreadonly || lumpindex < 0 || file.Lumps.Count <= lumpindex || file.Lumps[lumpindex].Name != lumpname.ToUpperInvariant())
 				return false;
 
-			// Remove the lump
-			file.RemoveAt(lumpindex);
+            // Remove the lump
+            file.RemoveAt(lumpindex);
 
-			// Insert new lump
-			Lump l = file.Insert(lumpname, lumpindex, (int)lumpdata.Length);
-			l.Stream.Seek(0, SeekOrigin.Begin);
-			lumpdata.WriteTo(l.Stream);
+            // Insert new lump
+            Lump l = file.Insert(lumpname, lumpindex, (int)lumpdata.Length);
+            l.Stream.Seek(0, SeekOrigin.Begin);
+            lumpdata.WriteTo(l.Stream);
 
-			// Update WAD file
-			file.WriteHeaders();
+            // Update WAD file
+            file.WriteHeaders();
 
 			return true;
 		}

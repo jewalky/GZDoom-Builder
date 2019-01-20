@@ -173,7 +173,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 						token = parser.ReadToken(false);
 						if(!parser.ReadByte(token, ref color.r))
 						{
-							if(!ZDTextParser.GetColorFromString(token, ref color))
+							if(!ZDTextParser.GetColorFromString(token, out color))
 							{
 								parser.ReportError("Unsupported patch blend definition");
 								return;

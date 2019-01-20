@@ -31,6 +31,7 @@ namespace CodeImp.DoomBuilder.Config
 		public readonly bool NodeBuild;
 		public readonly bool AllowEmpty;
 		public readonly bool ScriptBuild; //mxd
+        public readonly bool Forbidden; // [ZZ]
 		internal readonly ScriptConfiguration Script;
 		
 		// Construct from IDictionary
@@ -44,7 +45,8 @@ namespace CodeImp.DoomBuilder.Config
 			this.NodeBuild = cfg.ReadSetting("maplumpnames." + name + ".nodebuild", false);
 			this.AllowEmpty = cfg.ReadSetting("maplumpnames." + name + ".allowempty", false);
 			this.ScriptBuild = cfg.ReadSetting("maplumpnames." + name + ".scriptbuild", false); //mxd
-			string scriptconfig = (this.ScriptBuild ? string.Empty : cfg.ReadSetting("maplumpnames." + name + ".script", "")); //mxd. Setting Script when "scriptbuild" is true can result in unexpected behaviour...
+            this.Forbidden = cfg.ReadSetting("maplumpnames." + name + ".forbidden", false); //mxd
+            string scriptconfig = (this.ScriptBuild ? string.Empty : cfg.ReadSetting("maplumpnames." + name + ".script", "")); //mxd. Setting Script when "scriptbuild" is true can result in unexpected behaviour...
 			
 			// Find script configuration
 			if(scriptconfig.Length > 0)
@@ -60,6 +62,6 @@ namespace CodeImp.DoomBuilder.Config
 				}
 			}
 		}
-	}
+    }
 }
 

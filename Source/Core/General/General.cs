@@ -40,7 +40,6 @@ using CodeImp.DoomBuilder.Plugins;
 using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.Types;
 using CodeImp.DoomBuilder.Windows;
-using Microsoft.Win32;
 using SlimDX.Direct3D9;
 
 #endregion
@@ -64,7 +63,7 @@ namespace CodeImp.DoomBuilder
 		//internal static extern unsafe void CopyMemory(void* dst, void* src, uint length);
 
 		[DllImport("user32.dll", EntryPoint = "SendMessage", SetLastError = true, CallingConvention = CallingConvention.StdCall)]
-		internal static extern int SendMessage(IntPtr hwnd, uint Msg, int wParam, int lParam);
+		internal static extern int SendMessage(IntPtr hwnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
 		[DllImport("user32.dll", SetLastError = true)]
 		internal static extern bool MessageBeep(MessageBeepType type);
@@ -102,7 +101,8 @@ namespace CodeImp.DoomBuilder
 		// SendMessage API
 		internal const int WM_USER = 0x400;
 		internal const int WM_SYSCOMMAND = 0x112;
-		internal const int SC_KEYMENU = 0xF100;
+        internal const int WM_MOUSEHWHEEL = 0x020E; // [ZZ]
+        internal const int SC_KEYMENU = 0xF100;
 		internal const int CB_SETITEMHEIGHT = 0x153;
 		//internal const int CB_SHOWDROPDOWN = 0x14F;
 		//internal const int EM_GETSCROLLPOS = WM_USER + 221;
@@ -593,7 +593,8 @@ namespace CodeImp.DoomBuilder
 			
 			// Remove the previous log file and start logging
 			if(File.Exists(logfile)) File.Delete(logfile);
-			General.WriteLogLine("GZDoom Builder R" + thisasm.GetName().Version.Revision + " (" + commithash + ") startup"); //mxd
+            string platform = Environment.Is64BitProcess ? "x64" : "x86";
+			General.WriteLogLine("GZDoom Builder R" + thisasm.GetName().Version.Revision + " (" + platform + ", " + commithash + ") startup"); //mxd
 			General.WriteLogLine("Application path:        \"" + apppath + "\"");
 			General.WriteLogLine("Temporary path:          \"" + temppath + "\"");
 			General.WriteLogLine("Local settings path:     \"" + settingspath + "\"");
@@ -2053,6 +2054,13 @@ namespace CodeImp.DoomBuilder
 		// This opens a URL in the default browser
 		public static void OpenWebsite(string url)
 		{
+            // [ZZ] note: it may break. no idea why it was done like it was done.
+            string url2 = url.ToLowerInvariant();
+            if (!url2.StartsWith("http://") && !url2.StartsWith("https://") && !url2.StartsWith("ftp://") && !url2.StartsWith("mailto:"))
+                return;
+            System.Diagnostics.Process.Start(url);
+            /*
+
 			RegistryKey key = null;
 			Process p = null;
 			string browser;
@@ -2089,8 +2097,8 @@ namespace CodeImp.DoomBuilder
 			catch(Exception) { }
 
 			// Clean up
-			if(p != null) p.Dispose();
-		}
+			if(p != null) p.Dispose();*/
+        }
 		
 		// This returns the short path name for a file
 		public static string GetShortFilePath(string longpath)
@@ -2128,31 +2136,21 @@ namespace CodeImp.DoomBuilder
 		//mxd
 		public static bool CheckWritePremissions(string path)
 		{
-			try
-			{
-				DirectoryInfo di = new DirectoryInfo(path);
-				DirectorySecurity ds = di.GetAccessControl();
-				AuthorizationRuleCollection rules = ds.GetAccessRules(true, true, typeof(NTAccount));
-				WindowsIdentity currentuser = WindowsIdentity.GetCurrent();
-
-				if(currentuser != null)
-				{
-					WindowsPrincipal principal = new WindowsPrincipal(currentuser);
-					foreach(AuthorizationRule rule in rules)
-					{
-						FileSystemAccessRule fsar = rule as FileSystemAccessRule;
-						if(fsar != null && (fsar.FileSystemRights & FileSystemRights.WriteData) > 0)
-						{
-							NTAccount account = rule.IdentityReference as NTAccount;
-							if(account != null && principal.IsInRole(account.Value)) return true;
-						}
-					}
-				}
-			}
-			catch(UnauthorizedAccessException) { }
-
-			return false;
-		}
+            try
+            {
+                string testFile = path + "/GZDBWriteTest.tmp";
+                if (File.Exists(testFile))
+                    File.Delete(testFile);
+                FileStream fs = File.OpenWrite(testFile);
+                fs.Close();
+                File.Delete(testFile);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 		
 		#endregion
 

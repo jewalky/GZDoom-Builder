@@ -49,6 +49,7 @@ namespace CodeImp.DoomBuilder.Controls
 		
 		// Properties
 		private bool preventselection;
+        private int imagesize;
 		
 		// States
 		private int keepselected;
@@ -81,8 +82,15 @@ namespace CodeImp.DoomBuilder.Controls
 			{
 				usedfirstgroup = "Available " + value + " (used first):";
 				availgroup = "Available " + value + ":";
-			}
+                list.ContentType = value;
+            }
 		}
+
+        public int ImageSize
+        {
+            get { return imagesize; }
+            set { imagesize = value; }
+        }
 
 		#endregion
 
@@ -116,13 +124,15 @@ namespace CodeImp.DoomBuilder.Controls
 			blockupdate = true;
 
 			this.browseflats = browseflats;
-			uselongtexturenames = General.Map.Options.UseLongTextureNames;
+            uselongtexturenames = General.Map.Options.UseLongTextureNames;
 			texturetype = General.Settings.ReadSetting(settingpath + ".texturetype", 0);
-			usedtexturesfirst.Checked = General.Settings.ReadSetting(settingpath + ".showusedtexturesfirst", false);
+            ElementName = (texturetype == 2 || (texturetype == 3 && browseflats)) ? "flats" : "textures";
+            list.UsedTexturesFirst = usedtexturesfirst.Checked = General.Settings.ReadSetting(settingpath + ".showusedtexturesfirst", false);
+            list.ClassicView = classicview.Checked = General.Settings.ReadSetting(settingpath + ".classicview", false);
 			
-			int imagesize = General.Settings.ReadSetting(settingpath + ".imagesize", 128);
-			sizecombo.Text = (imagesize == 0 ? sizecombo.Items[0].ToString() : imagesize.ToString());
-			list.ImageSize = imagesize;
+			int _imagesize = General.Settings.ReadSetting(settingpath + ".imagesize", 128);
+			sizecombo.Text = (_imagesize == 0 ? sizecombo.Items[0].ToString() : _imagesize.ToString());
+			list.ImageSize = _imagesize;
 
 			ApplySettings();
 
@@ -164,6 +174,9 @@ namespace CodeImp.DoomBuilder.Controls
 				uselongtexturenames = false; //mxd
 			}
 
+            // If we have override for preview images, set this here.
+            if (imagesize > 0) list.ImageSize = imagesize;
+
 			//mxd
 			objectname.CharacterCasing = (longtexturenames.Checked ? CharacterCasing.Normal : CharacterCasing.Upper);
 		}
@@ -172,6 +185,7 @@ namespace CodeImp.DoomBuilder.Controls
 		public virtual void OnClose(string settingpath)
 		{
 			General.Settings.WriteSetting(settingpath + ".showusedtexturesfirst", usedtexturesfirst.Checked);
+            General.Settings.WriteSetting(settingpath + ".classicview", classicview.Checked);
 			General.Settings.WriteSetting(settingpath + ".imagesize", list.ImageSize);
 			if(General.Map.Config.UseLongTextureNames) General.Map.Options.UseLongTextureNames = uselongtexturenames;
 
@@ -331,7 +345,9 @@ namespace CodeImp.DoomBuilder.Controls
 		private void texturetypecombo_SelectedIndexChanged(object sender, EventArgs e) 
 		{
 			texturetype = texturetypecombo.SelectedIndex;
-			RefillList(false);
+            ElementName = (texturetype == 2 || (texturetype == 3 && browseflats)) ? "flats" : "textures";
+
+            RefillList(false);
 		}
 
 		//mxd
@@ -340,7 +356,7 @@ namespace CodeImp.DoomBuilder.Controls
 			if(blockupdate) return;
 			list.ImageSize = (sizecombo.SelectedIndex == 0 ? 0 : Convert.ToInt32(sizecombo.SelectedItem));
 			list.Focus();
-		}
+        }
 
 		//mxd
 		private void longtexturenames_CheckedChanged(object sender, EventArgs e)
@@ -361,17 +377,28 @@ namespace CodeImp.DoomBuilder.Controls
 		{
 			if(!blockupdate)
 			{
-				RefillList(false);
+                list.UsedTexturesFirst = usedtexturesfirst.Checked;
+                RefillList(false);
 				list.Focus();
 			}
 		}
-		
-		#endregion
 
-		#region ================== Methods
+        //
+        private void classicview_CheckedChanged(object sender, EventArgs e)
+        {
+            if(!blockupdate)
+            {
+                list.ClassicView = classicview.Checked;
+                list.Focus();
+            }
+        }
 
-		// This selects an item by longname (mxd - changed from name to longname)
-		public void SelectItem(long longname)
+        #endregion
+
+        #region ================== Methods
+
+        // This selects an item by longname (mxd - changed from name to longname)
+        public void SelectItem(long longname)
 		{
 			// Not when selecting is prevented
 			if(preventselection) return;
@@ -443,14 +470,15 @@ namespace CodeImp.DoomBuilder.Controls
 		}
 		
 		// This adds an item
-		public void AddItem(ImageData image, string tooltip)
+        // [ZZ] having nice string.Empty does not justify having two functions doing the same thing, with one parameter difference.
+        //      C# not Java.
+		public void AddItem(ImageData image, string tooltip = "")
 		{
-			items.Add(new ImageBrowserItem(image, tooltip, uselongtexturenames));
-		}
-
-		public void AddItem(ImageData image)
-		{
-			items.Add(new ImageBrowserItem(image, string.Empty, uselongtexturenames));
+            // check if there are already items with this texturename.
+            // remove them.
+            ImageBrowserItem newItem = new ImageBrowserItem(image, tooltip, uselongtexturenames);
+            items.RemoveAll(item => item.TextureName == newItem.TextureName);
+			items.Add(newItem);
 		}
 
 		// This fills the list based on the objectname filter
@@ -572,18 +600,17 @@ namespace CodeImp.DoomBuilder.Controls
 		// This validates an item
 		private bool ValidateItem(ImageBrowserItem item, ImageBrowserItem previtem)
 		{
-			//mxd. Don't show duplicate items
-			if(previtem != null && item.TextureName == previtem.TextureName) return false; //mxd
-			
-			//mxd. mixMode: 0 = All, 1 = Textures, 2 = Flats, 3 = Based on BrowseFlats
-			if(!splitter.Panel2Collapsed) 
+            //mxd. mixMode: 0 = All, 1 = Textures, 2 = Flats, 3 = Based on BrowseFlats
+            //if (!splitter.Panel2Collapsed) 
 			{
-				if(texturetype == 1 && item.Icon.IsFlat) return false;
-				if(texturetype == 2 && !item.Icon.IsFlat) return false;
-				if(texturetype == 3 && (browseflats != item.Icon.IsFlat)) return false;
+                if (texturetype == 0 && previtem != null && item.TextureName == previtem.TextureName) return false;
+				if (texturetype == 1 && item.Icon.IsFlat) return false;
+				if (texturetype == 2 && !item.Icon.IsFlat) return false;
+				if (texturetype == 3 && (browseflats != item.Icon.IsFlat)) return false;
 			}
+            //else if (previtem != null && item.TextureName == previtem.TextureName) return false;
 
-			return item.TextureName.ToUpperInvariant().Contains(objectname.Text.ToUpperInvariant());
+            return item.TextureName.ToUpperInvariant().Contains(objectname.Text.ToUpperInvariant());
 		}
 
 		//mxd. This validates an item's texture size
@@ -615,7 +642,7 @@ namespace CodeImp.DoomBuilder.Controls
 		{
 			list.Focus();
 		}
-		
-		#endregion
-	}
+
+        #endregion
+    }
 }

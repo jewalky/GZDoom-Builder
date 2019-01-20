@@ -127,13 +127,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				float px, py;
 				if(doBevel) 
 				{
-					px = (float)Math.Round(center.x - (float)Math.Sin(curAngle) * (hw + currentbevelwidth));
-					py = (float)Math.Round(center.y - (float)Math.Cos(curAngle) * (hh + currentbevelwidth));
+					px = (center.x - (float)Math.Sin(curAngle) * (hw + currentbevelwidth));
+					py = (center.y - (float)Math.Cos(curAngle) * (hh + currentbevelwidth));
 				} 
 				else 
 				{
-					px = (float)Math.Round(center.x - (float)Math.Sin(curAngle) * hw);
-					py = (float)Math.Round(center.y - (float)Math.Cos(curAngle) * hh);
+					px = (center.x - (float)Math.Sin(curAngle) * hw);
+					py = (center.y - (float)Math.Cos(curAngle) * hh);
 				}
 				doBevel = !doBevel;
 				shape[i] = new Vector2D(px, py);

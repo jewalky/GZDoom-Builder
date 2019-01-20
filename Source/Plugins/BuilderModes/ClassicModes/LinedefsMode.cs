@@ -878,8 +878,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				// Check if moved enough pixels for multiselect
 				Vector2D delta = mousedownpos - mousepos;
-				if((Math.Abs(delta.x) > MULTISELECT_START_MOVE_PIXELS) ||
-				   (Math.Abs(delta.y) > MULTISELECT_START_MOVE_PIXELS)) 
+				if((Math.Abs(delta.x) > BuilderPlug.Me.MouseSelectionThreshold) ||
+				   (Math.Abs(delta.y) > BuilderPlug.Me.MouseSelectionThreshold)) 
 				{
 					// Start multiselecting
 					StartMultiSelection();

@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Net;
 using CodeImp.DoomBuilder.Map;
 using SlimDX.Direct3D9;
 using SlimDX;
@@ -27,6 +28,8 @@ using CodeImp.DoomBuilder.Data;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.GZBuilder.Data; //mxd
 using CodeImp.DoomBuilder.Config; //mxd
+using CodeImp.DoomBuilder.GZBuilder;
+using SlimDX.Direct3D10_1;
 
 #endregion
 
@@ -542,12 +545,23 @@ namespace CodeImp.DoomBuilder.Rendering
 			if(t.Selected) return General.Colors.Selection;
 			
 			//mxd. If thing is light, set it's color to light color:
-			if(Array.IndexOf(GZBuilder.GZGeneral.GZ_LIGHTS, t.Type) != -1)
+			if(t.DynamicLightType != null)
 			{
-				if(t.Type == 1502) //vavoom light
+				if (t.DynamicLightType.LightDef == GZGeneral.LightDef.VAVOOM_GENERIC) //vavoom light
 					return new PixelColor(255, 255, 255, 255);
-				if(t.Type == 1503) //vavoom colored light
+				if (t.DynamicLightType.LightDef == GZGeneral.LightDef.VAVOOM_COLORED) //vavoom colored light
 					return new PixelColor(255, (byte)t.Args[1], (byte)t.Args[2], (byte)t.Args[3]);
+				if (t.DynamicLightType.LightType == GZGeneral.LightType.SPOT)
+				{
+					if (t.Fields.ContainsKey("arg0str"))
+					{
+						PixelColor pc;
+						ZDoom.ZDTextParser.GetColorFromString(t.Fields["arg0str"].Value.ToString(), out pc);
+						pc.a = 255;
+						return pc;
+					}
+					return new PixelColor(255, (byte)((t.Args[0] & 0xFF0000) >> 16), (byte)((t.Args[0] & 0x00FF00) >> 8), (byte)((t.Args[0] & 0x0000FF)));
+				}
 				return new PixelColor(255, (byte)t.Args[0], (byte)t.Args[1], (byte)t.Args[2]);
 			}
 
@@ -825,11 +839,30 @@ namespace CodeImp.DoomBuilder.Rendering
 
 				if(General.Settings.RenderGrid) //mxd
 				{
-					// Render normal grid
-					RenderGrid(General.Map.Grid.GridSizeF, General.Colors.Grid, gridplotter);
+					bool transformed = Math.Abs(General.Map.Grid.GridOriginX) > 1e-4 || Math.Abs(General.Map.Grid.GridOriginY) > 1e-4 || Math.Abs(General.Map.Grid.GridRotate) > 1e-4;
 
-					// Render 64 grid
-					if(General.Map.Grid.GridSizeF <= 64) RenderGrid(64f, General.Colors.Grid64, gridplotter);
+					if (transformed)
+					{
+						// Render normal grid
+						RenderGridTransformed(General.Map.Grid.GridSizeF, General.Map.Grid.GridRotate,
+							General.Map.Grid.GridOriginX, General.Map.Grid.GridOriginY, General.Colors.Grid, gridplotter);
+
+						// Render 64 grid
+						if(General.Map.Grid.GridSizeF <= 64)
+						{
+							RenderGridTransformed(64f, General.Map.Grid.GridRotate,
+								General.Map.Grid.GridOriginX, General.Map.Grid.GridOriginY, General.Colors.Grid64, gridplotter);
+						}
+					} 
+					else
+					{
+						// Render normal grid
+						RenderGrid(General.Map.Grid.GridSizeF, General.Colors.Grid, gridplotter);
+
+						// Render 64 grid
+						if(General.Map.Grid.GridSizeF <= 64) RenderGrid(64f, General.Colors.Grid64, gridplotter);
+					}
+					
 				}
 				else
 				{
@@ -865,6 +898,82 @@ namespace CodeImp.DoomBuilder.Rendering
 			}
 		}
 		
+		// This renders the grid with a transform applied
+		private void RenderGridTransformed(float size, float angle, float originx, float originy, PixelColor c, Plotter gridplotter)
+		{
+			const int mask = 0x55555555; // dotted line mask
+
+			//mxd. Increase rendered grid size if needed
+			if(!General.Settings.DynamicGridSize && size * scale <= 6f)
+				do { size *= 2; } while(size * scale <= 6f);
+			float sizeinv = 1f / size;
+
+			// Determine map coordinates for view window
+			Vector2D ltview = DisplayToMap(new Vector2D(0, 0));
+			Vector2D rbview = DisplayToMap(new Vector2D(windowsize.Width, windowsize.Height));
+			Vector2D mapsize = rbview - ltview;
+
+			Vector2D ltbound = new Vector2D(General.Map.Config.LeftBoundary, General.Map.Config.TopBoundary);
+			Vector2D rbbound = new Vector2D(General.Map.Config.RightBoundary, General.Map.Config.BottomBoundary);
+
+			// Translate top left boundary and right bottom boundary of map to screen coords
+			Vector2D tlb = ltbound.GetTransformed(translatex, translatey, scale, -scale);
+			Vector2D rbb = rbbound.GetTransformed(translatex, translatey, scale, -scale);
+
+			Vector2D center = GridSetup.SnappedToGrid(0.5f * (ltview + rbview), size, sizeinv, angle, originx, originy);
+
+			// Get the angle vectors for the gridlines
+			Vector2D dx = new Vector2D((float)Math.Cos(angle), (float)Math.Sin(angle));
+			Vector2D dy = new Vector2D((float)-Math.Sin(angle), (float)Math.Cos(angle));
+
+			float maxextent = Math.Max(mapsize.x, mapsize.y);
+			RectangleF bounds = new RectangleF(tlb.x, tlb.y, rbb.x - tlb.x, rbb.y - tlb.y);
+			bounds.Intersect(new RectangleF(0, 0, windowsize.Width, windowsize.Height));
+
+			bool xminintersect = true, xmaxintersect = true, yminintersect = true, ymaxintersect = true;
+
+			int num = 0;            
+			while (xminintersect || xmaxintersect || yminintersect || ymaxintersect) {
+				Vector2D xminstart = center - num * size * dy;
+				Vector2D xmaxstart = center + num * size * dy;
+				Vector2D yminstart = center - num * size * dx;
+				Vector2D ymaxstart = center + num * size * dx;
+
+				Line2D xminscanline = new Line2D(xminstart - dx * maxextent, xminstart + dx * maxextent);
+				Line2D xmaxscanline = new Line2D(xmaxstart - dx * maxextent, xmaxstart + dx * maxextent);
+				Line2D yminscanline = new Line2D(yminstart - dy * maxextent, yminstart + dy * maxextent);
+				Line2D ymaxscanline = new Line2D(ymaxstart - dy * maxextent, ymaxstart + dy * maxextent);
+
+				Line2D xminplotline = xminscanline.GetTransformed(translatex, translatey, scale, -scale);
+				Line2D xmaxplotline = xmaxscanline.GetTransformed(translatex, translatey, scale, -scale);
+				Line2D yminplotline = yminscanline.GetTransformed(translatex, translatey, scale, -scale);
+				Line2D ymaxplotline = ymaxscanline.GetTransformed(translatex, translatey, scale, -scale);
+				xminplotline = Line2D.ClipToRectangle(xminplotline, bounds, out xminintersect);
+				xmaxplotline = Line2D.ClipToRectangle(xmaxplotline, bounds, out xmaxintersect);
+				yminplotline = Line2D.ClipToRectangle(yminplotline, bounds, out yminintersect);
+				ymaxplotline = Line2D.ClipToRectangle(ymaxplotline, bounds, out ymaxintersect);
+
+				if (xminintersect)
+				{
+					gridplotter.DrawLineSolid((int)xminplotline.v1.x, (int)xminplotline.v1.y, (int)xminplotline.v2.x, (int)xminplotline.v2.y, ref c, mask);
+				}
+				if (xmaxintersect)
+				{
+					gridplotter.DrawLineSolid((int)xmaxplotline.v1.x, (int)xmaxplotline.v1.y, (int)xmaxplotline.v2.x, (int)xmaxplotline.v2.y, ref c, mask);
+				}
+				if (yminintersect)
+				{
+					gridplotter.DrawLineSolid((int)yminplotline.v1.x, (int)yminplotline.v1.y, (int)yminplotline.v2.x, (int)yminplotline.v2.y, ref c, mask);
+				}
+				if (ymaxintersect)
+				{
+					gridplotter.DrawLineSolid((int)ymaxplotline.v1.x, (int)ymaxplotline.v1.y, (int)ymaxplotline.v2.x, (int)ymaxplotline.v2.y, ref c, mask);
+				}
+
+				num++;
+			}
+		}
+
 		// This renders the grid
 		private void RenderGrid(float size, PixelColor c, Plotter gridplotter)
 		{

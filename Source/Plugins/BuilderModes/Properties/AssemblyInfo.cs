@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Resources;
 
@@ -29,5 +29,5 @@ using System.Resources;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("2.3.0.2651")]
+[assembly: AssemblyVersion("2.3.0.3041")]
 [assembly: NeutralResourcesLanguageAttribute("en")]

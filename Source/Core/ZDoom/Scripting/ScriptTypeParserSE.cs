@@ -35,6 +35,7 @@ namespace CodeImp.DoomBuilder.ZDoom.Scripting
 			while(SkipWhitespace(true)) 
 			{
 				string token = ReadToken();
+                long cpos = datastream.Position;
 
 				if(!string.IsNullOrEmpty(token)) 
 				{
@@ -70,7 +71,7 @@ namespace CodeImp.DoomBuilder.ZDoom.Scripting
 						}
 
 					}
-					else if(token == "ACTOR")
+					else if(token == "ACTOR") // [ZZ] note: by the looks of it, this doesn't handle the case when we write actor with DoomEdNum.
 					{
 						SkipWhitespace(true);
 						ReadToken(); //should be actor name
@@ -78,7 +79,8 @@ namespace CodeImp.DoomBuilder.ZDoom.Scripting
 						SkipWhitespace(true);
 						token = ReadToken();
 
-						if(token == ":" || token == "{" || token == "REPLACES") 
+                        // [ZZ] note: original code compared token to REPLACES without doing ToUpper
+						if(token == ":" || token == "{" || (token != null && token.ToUpperInvariant() == "REPLACES")) 
 						{
 							scripttype = ScriptType.DECORATE;
 							return true;
@@ -87,13 +89,56 @@ namespace CodeImp.DoomBuilder.ZDoom.Scripting
 						SkipWhitespace(true);
 						token = ReadToken(); //should be actor name
 
+                        // [ZZ]
+                        if (token != "{") // actor bla : bla2 10666 {
+                        {
+                            SkipWhitespace(true);
+                            token = ReadToken();
+                        }
+
 						if(token == "{") 
 						{
 							scripttype = ScriptType.DECORATE;
 							return true;
 						}
 					}
+                    else if(token == "CLASS" || token == "STRUCT" || token == "ENUM" || token == "EXTEND")
+                    {
+                        if (token == "EXTEND")
+                        {
+                            SkipWhitespace(true);
+                            token = ReadToken();
+                            if (!string.IsNullOrEmpty(token))
+                                token = token.ToUpperInvariant();
+                        }
+
+                        string otoken = token; // original token
+
+                        SkipWhitespace(true);
+                        ReadToken(); //should be actor name
+
+                        SkipWhitespace(true);
+                        token = ReadToken();
+
+                        if ((otoken != "ENUM" && token == ":") || token == "{" || (otoken == "CLASS" && (token != null && token.ToUpperInvariant() == "REPLACES")))
+                        {
+                            scripttype = ScriptType.ZSCRIPT;
+                            return true;
+                        }
+
+                        SkipWhitespace(true);
+                        token = ReadToken(); //should be actor name
+
+                        if (token == "{")
+                        {
+                            scripttype = ScriptType.ZSCRIPT;
+                            return true;
+                        }
+                        return true;
+                    }
 				}
+
+                datastream.Position = cpos; // [ZZ] read next token, not whatever is left after possibly unsuccessful parsing.
 			}
 
 			return false;

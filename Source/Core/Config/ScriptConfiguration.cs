@@ -52,6 +52,7 @@ namespace CodeImp.DoomBuilder.Config
 		GAMEINFO,
 		KEYCONF,
 		FONTDEFS,
+        ZSCRIPT,
 	}
 	
 	internal class ScriptConfiguration : IComparable<ScriptConfiguration>
@@ -211,7 +212,7 @@ namespace CodeImp.DoomBuilder.Config
 			terminator = cfg.ReadSetting("terminator", "");
 			extrawordchars = cfg.ReadSetting("extrawordchars", ""); //mxd
 
-			//mxd. Get script type...
+            //mxd. Get script type...
 			string scripttypestr = cfg.ReadSetting("scripttype", string.Empty);
 			if(!string.IsNullOrEmpty(scripttypestr))
 			{
@@ -232,8 +233,8 @@ namespace CodeImp.DoomBuilder.Config
 				scripttype = ScriptType.UNKNOWN;
 			}
 
-			//mxd. Make braces array
-			if(!string.IsNullOrEmpty(functionopen)) braces.Add(functionopen[0]);
+            //mxd. Make braces array
+            if (!string.IsNullOrEmpty(functionopen)) braces.Add(functionopen[0]);
 			if(!string.IsNullOrEmpty(functionclose)) braces.Add(functionclose[0]);
 			if(!string.IsNullOrEmpty(codeblockopen)) braces.Add(codeblockopen[0]);
 			if(!string.IsNullOrEmpty(codeblockclose)) braces.Add(codeblockclose[0]);

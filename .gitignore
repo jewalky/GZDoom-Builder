@@ -4,3 +4,8 @@ obj
 /Build/Builder.xml
 /Build/Builder.exe
 /Build/Refmanual.chm
+/.vs
+/Build/DevIL.dll
+/Build/Plugins/*.dll
+/Build/Builder.pdb
+/Build/Builder.exe.config

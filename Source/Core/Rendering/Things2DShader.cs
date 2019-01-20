@@ -33,6 +33,7 @@ namespace CodeImp.DoomBuilder.Rendering
 		private readonly EffectHandle rendersettings;
 		private readonly EffectHandle transformsettings;
 		private readonly EffectHandle fillcolor; //mxd
+        private readonly EffectHandle desaturationHandle; // [ZZ]
 
 		#endregion
 
@@ -55,6 +56,21 @@ namespace CodeImp.DoomBuilder.Rendering
 			}
 		}
 
+        // [ZZ]
+        private float desaturation;
+        public float Desaturation
+        {
+            set
+            {
+                if (desaturation != value)
+                {
+                    effect.SetValue(desaturationHandle, value);
+                    desaturation = value;
+                    settingschanged = true;
+                }
+            }
+        }
+
 		#endregion
 
 		#region ================== Constructor / Disposer
@@ -72,7 +88,8 @@ namespace CodeImp.DoomBuilder.Rendering
 				rendersettings = effect.GetParameter(null, "rendersettings");
 				transformsettings = effect.GetParameter(null, "transformsettings");
 				fillcolor = effect.GetParameter(null, "fillColor"); //mxd
-			}
+                desaturationHandle = effect.GetParameter(null, "desaturation"); // [ZZ]
+            }
 
 			// Initialize world vertex declaration
 			VertexElement[] elements = new[]
@@ -99,9 +116,10 @@ namespace CodeImp.DoomBuilder.Rendering
 				if(rendersettings != null) rendersettings.Dispose();
 				if(transformsettings != null) transformsettings.Dispose();
 				if(fillcolor != null) fillcolor.Dispose(); //mxd
+                if(desaturationHandle != null) desaturationHandle.Dispose();
 
-				// Done
-				base.Dispose();
+                // Done
+                base.Dispose();
 			}
 		}
 

@@ -62,13 +62,12 @@ namespace CodeImp.DoomBuilder.ZDoom
 		private string errordesc;
 		private string errorsource; // Rooted path to the troubling file
 		private string shorterrorsource; //mxd. Resource name + filename
-		private long prevstreamposition; //mxd. Text stream position storted before performing ReadToken.
+		protected long prevstreamposition; //mxd. Text stream position storted before performing ReadToken.
 
 		//mxd. Text lumps
 		protected string textresourcepath;
 		protected readonly Dictionary<string, ScriptResource> scriptresources;
-		protected readonly HashSet<string> untrackedtextresources; 
-		
+		protected readonly HashSet<string> untrackedtextresources;
 		#endregion
 		
 		#region ================== Properties
@@ -89,7 +88,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 		// Constructor
 		protected ZDTextParser()
 		{
-			// Initialize
+            // Initialize
 			errordesc = null;
 			scriptresources = new Dictionary<string, ScriptResource>(StringComparer.OrdinalIgnoreCase); //mxd
 			untrackedtextresources = new HashSet<string>(StringComparer.OrdinalIgnoreCase); //mxd
@@ -606,7 +605,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 		}
 
 		//mxd. This replicates ZDoom's V_GetColorFromString method
-		public static bool GetColorFromString(string name, ref PixelColor color)
+		public static bool GetColorFromString(string name, out PixelColor color)
 		{
 			name = StripQuotes(name.Replace(" ", ""));
 
@@ -645,7 +644,8 @@ namespace CodeImp.DoomBuilder.ZDoom
 				return true;
 			}
 
-			return false;
+            color = new PixelColor();
+            return false;
 		}
 
 		//mxd
@@ -754,10 +754,10 @@ namespace CodeImp.DoomBuilder.ZDoom
 		}
 
 		//mxd 
-		protected int GetCurrentLineNumber()
+		protected virtual int GetCurrentLineNumber()
 		{
 			long pos = datastream.Position;
-			long finishpos = Math.Min(prevstreamposition, pos);
+			long finishpos = (prevstreamposition >= 0 ? Math.Min(prevstreamposition, pos) : pos);
 			long readpos = 0;
 			int linenumber = -1;
 

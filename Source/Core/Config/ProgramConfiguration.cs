@@ -26,6 +26,7 @@ using CodeImp.DoomBuilder.IO;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Plugins;
 using CodeImp.DoomBuilder.Rendering;
+using CodeImp.DoomBuilder.Types;
 
 #endregion
 
@@ -85,6 +86,7 @@ namespace CodeImp.DoomBuilder.Config
 		private float filteranisotropy;
 		private int antialiasingsamples; //mxd
 		private bool showtexturesizes;
+        private bool texturesizesbelow; // [ZZ]
 		private bool locatetexturegroup; //mxd
 		private SplitLineBehavior splitlinebehavior; //mxd
 		private MergeGeometryMode mergegeomode; //mxd
@@ -194,6 +196,7 @@ namespace CodeImp.DoomBuilder.Config
 		public float FilterAnisotropy { get { return filteranisotropy; } internal set { filteranisotropy = value; } }
 		public int AntiAliasingSamples { get { return antialiasingsamples; } internal set { antialiasingsamples = value; } } //mxd
 		public bool ShowTextureSizes { get { return showtexturesizes; } internal set { showtexturesizes = value; } }
+        public bool TextureSizesBelow { get { return texturesizesbelow; } internal set { texturesizesbelow = value; } }
 		public bool LocateTextureGroup { get { return locatetexturegroup; } internal set { locatetexturegroup = value; } } //mxd
 		public SplitLineBehavior SplitLineBehavior { get { return splitlinebehavior; } set { splitlinebehavior = value; } } //mxd
 		public MergeGeometryMode MergeGeometryMode { get { return mergegeomode; } internal set { mergegeomode = value; } } //mxd
@@ -337,7 +340,8 @@ namespace CodeImp.DoomBuilder.Config
 				filteranisotropy = General.Clamp(cfg.ReadSetting("filteranisotropy", 16.0f), 1.0f, 16.0f);
 				antialiasingsamples = General.Clamp(cfg.ReadSetting("antialiasingsamples", 4), 0, 8) / 2 * 2; //mxd
 				showtexturesizes = cfg.ReadSetting("showtexturesizes", true);
-				locatetexturegroup = cfg.ReadSetting("locatetexturegroup", true); //mxd
+                texturesizesbelow = cfg.ReadSetting("texturesizesbelow", false); // [ZZ]
+                locatetexturegroup = cfg.ReadSetting("locatetexturegroup", true); //mxd
 				splitlinebehavior = (SplitLineBehavior)General.Clamp(cfg.ReadSetting("splitlinebehavior", 0), 0, Enum.GetValues(typeof(SplitLineBehavior)).Length - 1); //mxd
 				mergegeomode = (MergeGeometryMode)General.Clamp(cfg.ReadSetting("mergegeometrymode", (int)MergeGeometryMode.REPLACE), 0, Enum.GetValues(typeof(MergeGeometryMode)).Length - 1); //mxd
 				splitjoinedsectors = cfg.ReadSetting("splitjoinedsectors", true); //mxd
@@ -449,7 +453,8 @@ namespace CodeImp.DoomBuilder.Config
 			cfg.WriteSetting("filteranisotropy", filteranisotropy);
 			cfg.WriteSetting("antialiasingsamples", antialiasingsamples); //mxd
 			cfg.WriteSetting("showtexturesizes", showtexturesizes);
-			cfg.WriteSetting("locatetexturegroup", locatetexturegroup); //mxd
+            cfg.WriteSetting("texturesizesbelow", texturesizesbelow); // [ZZ]
+            cfg.WriteSetting("locatetexturegroup", locatetexturegroup); //mxd
 			cfg.WriteSetting("splitlinebehavior", (int)splitlinebehavior); //mxd
 			cfg.WriteSetting("mergegeometrymode", (int)mergegeomode); //mxd
 			cfg.WriteSetting("splitjoinedsectors", splitjoinedsectors); //mxd

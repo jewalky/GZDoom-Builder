@@ -229,8 +229,8 @@ namespace CodeImp.DoomBuilder.Config
 		//mxd. Destructor
 		~ConfigurationInfo()
 		{
-			foreach(ThingsFilter tf in thingsfilters) tf.Dispose();
-			foreach(EngineInfo ei in testEngines) ei.Dispose();
+			if (thingsfilters != null) foreach(ThingsFilter tf in thingsfilters) tf.Dispose();
+			if (testEngines != null) foreach(EngineInfo ei in testEngines) ei.Dispose();
 		}
 		
 		#endregion

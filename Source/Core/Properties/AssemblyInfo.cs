@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Resources;
 using CodeImp.DoomBuilder;
@@ -6,11 +6,11 @@ using CodeImp.DoomBuilder;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GZDoom Builder")]
+[assembly: AssemblyTitle("GZDoom Builder (Bugfix)")]
 [assembly: AssemblyDescription("ZDoom, GZDoom and Zandronum map editor (can be used for Vanilla/Boom mapping too!)")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("CodeImp, MaxED")]
-[assembly: AssemblyProduct("GZDoom Builder")]
+[assembly: AssemblyProduct("GZDoom Builder (Bugfix)")]
 [assembly: AssemblyCopyright("Copyright © 2007, 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -30,6 +30,6 @@ using CodeImp.DoomBuilder;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("2.3.0.2651")]
+[assembly: AssemblyVersion("2.3.0.3041")]
 [assembly: NeutralResourcesLanguageAttribute("en")]
-[assembly: AssemblyHash("0000000")]
+[assembly: AssemblyHash("e1b9f31")]

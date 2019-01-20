@@ -24,7 +24,9 @@ namespace mxd.GZDBUpdater
 
 		private string processToEnd = string.Empty;
 		private string downloadFile = string.Empty;
+        private string platform = string.Empty;
 		private const string revisionwildcard = "[REVNUM]";
+        private const string platformwildcard = "[PLATFORM]";
 		private string URL = string.Empty;
         private readonly string updateFolder = Application.StartupPath + @"\_update\";
 		private string appFileName = string.Empty;
@@ -272,8 +274,9 @@ namespace mxd.GZDBUpdater
 
 			// Replace wildcard with remoterev
 			downloadFile = downloadFile.Replace(revisionwildcard, remoterev.ToString());
+            downloadFile = downloadFile.Replace(platformwildcard, platform.ToString());
 
-			if(remoterev > 0 && remoterev <= localrev)
+            if (remoterev > 0 && remoterev <= localrev)
 			{
 				URL = string.Empty;
 				ErrorDescription = "Your version is up to date!";
@@ -299,6 +302,10 @@ namespace mxd.GZDBUpdater
 				{
 					downloadFile = line.Substring(10).Trim();
 				}
+                else if(line.StartsWith("Platform"))
+                {
+                    platform = line.Substring(9).Trim();
+                }
 			}
 
 			// Sanity cheks

@@ -1863,6 +1863,12 @@ namespace CodeImp.DoomBuilder.Geometry
 			{
 				Sidedef side1 = forward ? ld.Front : ld.Back;
 				Sidedef side2 = forward ? ld.Back : ld.Front;
+
+                // [ZZ] don't iterate the same linedef twice.
+                //      
+                if ((side1 != null && side1.Marked) ||
+                    (side2 != null && side2.Marked)) continue;
+
 				if((ld.Start == v) && (side1 != null) && !side1.Marked)
 				{
 					if(SidedefTextureMatch(side1, texturelongnames))

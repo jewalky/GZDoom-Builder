@@ -104,7 +104,10 @@ namespace CodeImp.DoomBuilder.Controls
 		// Return true when successfully saved
 		public override bool Save()
 		{
-			try
+            // [ZZ] remove trailing whitespace
+            RemoveTrailingWhitespace();
+
+            try
 			{
 				// Write the file
 				File.WriteAllBytes(filepathname, editor.GetText());

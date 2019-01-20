@@ -13,7 +13,7 @@ ECHO.     the 'Release' directory may be overwritten.
 ECHO.
 ECHO.
 
-SET STUDIODIR=c:\Program Files (x86)\Microsoft Visual Studio 9.0
+SET STUDIODIR=c:\Program Files (x86)\Microsoft Visual Studio 14.0
 SET HHWDIR=c:\Program Files (x86)\HTML Help Workshop
 SET ISSDIR=c:\Program Files (x86)\Inno Setup 5
 
@@ -21,8 +21,8 @@ CALL "%STUDIODIR%\Common7\Tools\vsvars32.bat"
 
 MKDIR "Release"
 
-git checkout "Source\Core\Properties\AssemblyInfo.cs" > NUL
-git checkout "Source\Plugins\BuilderModes\Properties\AssemblyInfo.cs" > NUL
+git checkout "Source/Core/Properties/AssemblyInfo.cs" > NUL
+git checkout "Source/Plugins/BuilderModes/Properties/AssemblyInfo.cs" > NUL
 
 ECHO.
 ECHO Writing GIT log file...
@@ -176,9 +176,9 @@ ECHO.
 IF EXIST "Release\*.exe" DEL /F /Q "Release\*.exe" > NUL
 "%ISSDIR%\iscc.exe" "Setup\gzbuilder_setup.iss"
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
-IF NOT EXIST "Release\GZDoom Builder Setup.exe" GOTO FILEFAIL
+IF NOT EXIST "Release\GZDB-Bugfix Setup.exe" GOTO FILEFAIL
 
-REN "Release\GZDoom Builder Setup.exe" "GZDoom Builder R%REVISIONNUMBER% Setup.exe"
+REN "Release\GZDB-Bugfix Setup.exe" "GZDB-Bugfix R%REVISIONNUMBER% Setup.exe"
 
 git checkout "Source\Core\Properties\AssemblyInfo.cs" > NUL
 git checkout "Source\Plugins\BuilderModes\Properties\AssemblyInfo.cs" > NUL
@@ -213,3 +213,4 @@ PAUSE > NUL
 GOTO LEAVE
 
 :LEAVE
+exit

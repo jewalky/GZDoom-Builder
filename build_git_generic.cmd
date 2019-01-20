@@ -13,16 +13,21 @@ ECHO.     Files in the 'GIT_Build' directory may be overwritten.
 ECHO.
 ECHO.
 
-SET STUDIODIR=c:\Program Files (x86)\Microsoft Visual Studio 9.0
+SET STUDIODIR=c:\Program Files (x86)\Microsoft Visual Studio 14.0
 SET HHWDIR=c:\Program Files (x86)\HTML Help Workshop
 SET SEVENZIPDIR=c:\Program Files (x86)\7-Zip
 
-CALL "%STUDIODIR%\Common7\Tools\vsvars32.bat"
+IF NOT DEFINED PLATFORM SET PLATFORM=x86
+
+CALL "%STUDIODIR%\Common7\Tools\vsdevcmd.bat" %PLATFORM%
+ECHO.
+ECHO Building for platform %PLATFORM%
+ECHO.
 
 MKDIR "GIT_Build"
 
-git checkout "Source\Core\Properties\AssemblyInfo.cs" > NUL
-git checkout "Source\Plugins\BuilderModes\Properties\AssemblyInfo.cs" > NUL
+git checkout "Source/Core/Properties/AssemblyInfo.cs" > NUL
+git checkout "Source/Plugins/BuilderModes/Properties/AssemblyInfo.cs" > NUL
 
 ECHO.
 ECHO Writing GIT log file...
@@ -64,11 +69,16 @@ CALL "setenv.bat"
 DEL /F /Q "setenv.bat"
 
 ECHO.
+ECHO Cleaning solution...
+ECHO.
+msbuild.exe Builder.sln /t:Clean
+
+ECHO.
 ECHO Compiling GZDoom Builder core...
 ECHO.
 IF EXIST "Build\Builder.exe" DEL /F /Q "Build\Builder.exe" > NUL
 IF EXIST "Source\Core\obj" RD /S /Q "Source\Core\obj"
-msbuild "Source\Core\Builder.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Core\Builder.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Builder.exe" GOTO FILEFAIL
 
@@ -77,7 +87,7 @@ ECHO Compiling Automap Mode plugin...
 ECHO.
 IF EXIST "Build\Plugins\AutomapMode.dll" DEL /F /Q "Build\Plugins\AutomapMode.dll" > NUL
 IF EXIST "Source\Plugins\AutomapMode\obj" RD /S /Q "Source\Plugins\AutomapMode\obj"
-msbuild "Source\Plugins\AutomapMode\AutomapMode.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\AutomapMode\AutomapMode.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\AutomapMode.dll" GOTO FILEFAIL
 
@@ -86,7 +96,7 @@ ECHO Compiling Builder Effects plugin...
 ECHO.
 IF EXIST "Build\Plugins\BuilderEffects.dll" DEL /F /Q "Build\Plugins\BuilderEffects.dll" > NUL
 IF EXIST "Source\Plugins\BuilderEffects\obj" RD /S /Q "Source\Plugins\BuilderEffects\obj"
-msbuild "Source\Plugins\BuilderEffects\BuilderEffects.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\BuilderEffects\BuilderEffects.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\BuilderEffects.dll" GOTO FILEFAIL
 
@@ -95,7 +105,7 @@ ECHO Compiling Builder Modes plugin...
 ECHO.
 IF EXIST "Build\Plugins\BuilderModes.dll" DEL /F /Q "Build\Plugins\BuilderModes.dll" > NUL
 IF EXIST "Source\Plugins\BuilderModes\obj" RD /S /Q "Source\Plugins\BuilderModes\obj"
-msbuild "Source\Plugins\BuilderModes\BuilderModes.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\BuilderModes\BuilderModes.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\BuilderModes.dll" GOTO FILEFAIL
 
@@ -104,7 +114,7 @@ ECHO Compiling Color Picker plugin...
 ECHO.
 IF EXIST "Build\Plugins\ColorPicker.dll" DEL /F /Q "Build\Plugins\ColorPicker.dll" > NUL
 IF EXIST "Source\Plugins\ColorPicker\obj" RD /S /Q "Source\Plugins\ColorPicker\obj"
-msbuild "Source\Plugins\ColorPicker\ColorPicker.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\ColorPicker\ColorPicker.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\ColorPicker.dll" GOTO FILEFAIL
 
@@ -113,7 +123,7 @@ ECHO Compiling Comments Panel plugin...
 ECHO.
 IF EXIST "Build\Plugins\CommentsPanel.dll" DEL /F /Q "Build\Plugins\CommentsPanel.dll" > NUL
 IF EXIST "Source\Plugins\CommentsPanel\obj" RD /S /Q "Source\Plugins\CommentsPanel\obj"
-msbuild "Source\Plugins\CommentsPanel\CommentsPanel.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\CommentsPanel\CommentsPanel.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\CommentsPanel.dll" GOTO FILEFAIL
 
@@ -122,7 +132,7 @@ ECHO Compiling Nodes Viewer plugin...
 ECHO.
 IF EXIST "Build\Plugins\NodesViewer.dll" DEL /F /Q "Build\Plugins\NodesViewer.dll" > NUL
 IF EXIST "Source\Plugins\NodesViewer\obj" RD /S /Q "Source\Plugins\NodesViewer\obj"
-msbuild "Source\Plugins\NodesViewer\NodesViewer.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\NodesViewer\NodesViewer.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\NodesViewer.dll" GOTO FILEFAIL
 
@@ -131,7 +141,7 @@ ECHO Compiling Sound Propagation Mode plugin...
 ECHO.
 IF EXIST "Build\Plugins\SoundPropagationMode.dll" DEL /F /Q "Build\Plugins\SoundPropagationMode.dll" > NUL
 IF EXIST "Source\Plugins\SoundPropagationMode\obj" RD /S /Q "Source\Plugins\SoundPropagationMode\obj"
-msbuild "Source\Plugins\SoundPropagationMode\SoundPropagation.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\SoundPropagationMode\SoundPropagation.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\SoundPropagationMode.dll" GOTO FILEFAIL
 
@@ -140,7 +150,7 @@ ECHO Compiling Stair Sector Builder plugin...
 ECHO.
 IF EXIST "Build\Plugins\StairSectorBuilder.dll" DEL /F /Q "Build\Plugins\StairSectorBuilder.dll" > NUL
 IF EXIST "Source\Plugins\StairSectorBuilder\obj" RD /S /Q "Source\Plugins\StairSectorBuilder\obj"
-msbuild "Source\Plugins\StairSectorBuilder\StairSectorBuilder.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\StairSectorBuilder\StairSectorBuilder.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\StairSectorBuilder.dll" GOTO FILEFAIL
 
@@ -149,7 +159,7 @@ ECHO Compiling Tag Explorer plugin...
 ECHO.
 IF EXIST "Build\Plugins\TagExplorer.dll" DEL /F /Q "Build\Plugins\TagExplorer.dll" > NUL
 IF EXIST "Source\Plugins\TagExplorer\obj" RD /S /Q "Source\Plugins\TagExplorer\obj"
-msbuild "Source\Plugins\TagExplorer\TagExplorer.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\TagExplorer\TagExplorer.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\TagExplorer.dll" GOTO FILEFAIL
 
@@ -158,7 +168,7 @@ ECHO Compiling Tag Range plugin...
 ECHO.
 IF EXIST "Build\Plugins\TagRange.dll" DEL /F /Q "Build\Plugins\TagRange.dll" > NUL
 IF EXIST "Source\Plugins\TagRange\obj" RD /S /Q "Source\Plugins\TagRange\obj"
-msbuild "Source\Plugins\TagRange\TagRange.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\TagRange\TagRange.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\TagRange.dll" GOTO FILEFAIL
 
@@ -167,7 +177,7 @@ ECHO Compiling Visplane Explorer plugin...
 ECHO.
 IF EXIST "Build\Plugins\VisplaneExplorer.dll" DEL /F /Q "Build\Plugins\VisplaneExplorer.dll" > NUL
 IF EXIST "Source\Plugins\VisplaneExplorer\obj" RD /S /Q "Source\Plugins\VisplaneExplorer\obj"
-msbuild "Source\Plugins\VisplaneExplorer\VisplaneExplorer.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=x86 /v:minimal
+msbuild "Source\Plugins\VisplaneExplorer\VisplaneExplorer.csproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\VisplaneExplorer.dll" GOTO FILEFAIL
 
@@ -180,14 +190,17 @@ IF %ERRORLEVEL% NEQ 0 GOTO LOGFAIL
 ECHO.
 ECHO Packing release...
 ECHO.
-IF EXIST "GIT_Build\*.7z" DEL /F /Q "GIT_Build\*.7z" > NUL
+IF NOT "%PLATFORM%" == "x86" (SET DEL_PATHSPEC="GIT_Build\GZDoom_Builder*-%PLATFORM%.7z") ELSE (SET DEL_PATHSPEC="GIT_Build\GZDoom_Builder*.7z")
+IF EXIST %DEL_PATHSPEC% DEL /F /Q %DEL_PATHSPEC% > NUL
+IF EXIST "GIT_Build\GZDB_Updater-%PLATFORM%.7z" DEL /F /Q "GIT_Build\GZDB_Updater-%PLATFORM%.7z" > NUL
 "%SEVENZIPDIR%\7z" a .\GIT_Build\gzdb.7z .\Build\* -xr!*.xml -xr!JetBrains.Profiler.Core.Api.dll -xr!ScintillaNET.3.5.pdb -x!Setup
-"%SEVENZIPDIR%\7z" a .\GIT_Build\GZDB_Updater.7z .\Build\Updater.exe .\Build\Updater.ini
+"%SEVENZIPDIR%\7z" a .\GIT_Build\GZDB_Updater-%PLATFORM%.7z .\Build\Updater.exe .\Build\Updater.ini
 IF %ERRORLEVEL% NEQ 0 GOTO PACKFAIL
 IF NOT EXIST .\GIT_Build\gzdb.7z GOTO FILEFAIL
-IF NOT EXIST .\GIT_Build\GZDB_Updater.7z GOTO FILEFAIL
+IF NOT EXIST .\GIT_Build\GZDB_Updater-%PLATFORM%.7z GOTO FILEFAIL
 
-REN "GIT_Build\gzdb.7z" GZDoom_Builder-r%REVISIONNUMBER%.7z
+IF NOT "%PLATFORM%" == "x86" (REN "GIT_Build\gzdb.7z" GZDoom_Builder_Bugfix-r%REVISIONNUMBER%-%PLATFORM%.7z) ELSE (REN "GIT_Build\gzdb.7z" GZDoom_Builder_Bugfix-r%REVISIONNUMBER%.7z)
+
 IF EXIST "Build\Changelog.txt" DEL /F /Q "Build\Changelog.txt" > NUL
 
 @ECHO %REVISIONNUMBER%> .\GIT_Build\Version.txt
@@ -233,3 +246,4 @@ PAUSE > NUL
 GOTO LEAVE
 
 :LEAVE
+exit

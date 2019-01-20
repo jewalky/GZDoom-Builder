@@ -117,6 +117,12 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="cancel.Locked" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="apply.Locked" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
   <metadata name="smallimages.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
@@ -125,7 +131,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj0yLjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAACS
-        EQAAAk1TRnQBSQFMAgEBCQEAAaQBAQGkAQEBEAEAARYBAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
+        EQAAAk1TRnQBSQFMAgEBCQEAAcQBAQHEAQEBEAEAARYBAAT/AQkBAAj/AUIBTQE2AQQGAAE2AQQCAAEo
         AwABQAMAAUIDAAEBAQABCAUAAYABEBgAAYACAAGAAwACgAEAAYADAAGAAQABgAEAAoACAAPAAQABwAHc
         AcABAAHwAcoBpgEAATMFAAEzAQABMwEAATMBAAIzAgADFgEAAxwBAAMiAQADKQEAA1UBAANNAQADQgEA
         AzkBAAGAAXwB/wEAAlAB/wEAAZMBAAHWAQAB/wHsAcwBAAHGAdYB7wEAAdYC5wEAAZABqQGtAgAB/wEz
@@ -168,13 +174,13 @@
         AewEAAEOAfADBwK8AvABvAEOAwABUgGaAVIB/wG8Af8GGQHzAbwBUgFLAQACHAJ0AgcD7wH3ARwD7QES
         AgABbQHwAe8DBwG8AgACbQEOBAABDgHwAgcKEgFSAaANUgIAAe0BHAF0AUsBHAj/Ae0BEgIAAW0B8ALv
         AwcCAAERAQcB7AQAAQ4B8AHvAgcD7wH3ARwD7QESAVIDoAEcAf8BrgGaAb0BdQHjAa4B/wHtAesCAAHs
-        AXMBdAFLAfcB/wauAf8B7QESAgABbQHwA+8CBwIAAm0BDgQAAQ4B8AHvARwI9QHtARIBUgH/AqAB9wH/
+        AXMBdAFLAfcB/wauAf8B7QESAgABbQHwA+8CBwIAAm0BDgQAAQ4B8AHvARwI/wHtARIBUgH/AqAB9wH/
         Aa4C/wJ1Aa4B/wHtAesCAAGTA3QB7wH/Aa4BlAH/AZoBlAGuAf8B7QESAgABbQG8BO8BBwIAAREBBwHs
-        BAABDgG8Ae8B9wH1Bq4B9QHtARIBAAFSAv8B7wH/Aa4BlAH/AZoBlAGuAf8B7QHrAgABHAGZAcMBegHv
-        Af8C0wH/AZoC0wH/Ae0BEgIACG0BAAEPAewBDwQAAQ4BvALvAfUBrgGUAfUBmgGUAa4B9QHtARICAAJS
-        Ae8B/wHTBK4B0wH/Ae0B6wMAAhwBmgHvAf8G0wH/Ae0BEgIACQ4B6wGRAQ0EAAEOAfQB8AHvAfUC0wH1
-        AZoC0wH1Ae0BEgQAAe8B/wbTAf8B7QHrBAABmQF0AQcI/wHtARICAAEOAWUBkAG7BQkB9wFsAg4DAAMO
-        Ae8B9QbTAfUB7QESBAABBwj/Ae0B6wYAAgcD7wH3ARwD7Q4AAQ4HAAEHCPUB7QESBAACBwPvAfcBHAPt
+        BAABDgG8Ae8B9wH/Bq4B/wHtARIBAAFSAv8B7wH/Aa4BlAH/AZoBlAGuAf8B7QHrAgABHAGZAcMBegHv
+        Af8C0wH/AZoC0wH/Ae0BEgIACG0BAAEPAewBDwQAAQ4BvALvAf8BrgGUAf8BmgGUAa4B/wHtARICAAJS
+        Ae8B/wHTBK4B0wH/Ae0B6wMAAhwBmgHvAf8G0wH/Ae0BEgIACQ4B6wGRAQ0EAAEOAfQB8AHvAf8C0wH/
+        AZoC0wH/Ae0BEgQAAe8B/wbTAf8B7QHrBAABmQF0AQcI/wHtARICAAEOAWUBkAG7BQkB9wFsAg4DAAMO
+        Ae8B/wbTAf8B7QESBAABBwj/Ae0B6wYAAgcD7wH3ARwD7Q4AAQ4HAAEHCP8B7QESBAACBwPvAfcBHAPt
         CQACmRwAAgcD7wH3ARwD7f8AcgAB9wKuAW0BbAHqAmwEZjQAAfcF/wL0AxkBZgkACA4TAAH3Aq4BbQFs
         AeoCbARmBAABtQL/ApMBmQEHAbsBtAIZA2YGAAEOAQAF7wH3AQ4DAAJzAesBbgFtAUoBEwEVAUMBEQEP
         AQ4BDwMAAfcF/wL0AxkBZgQAAbUC/wGTAZoBegGfAZ4BuwH0AfMBZgEZAWYFAAEOAe8BAAHwAvEC8gG8
@@ -203,6 +209,18 @@
         HP8L
 </value>
   </data>
+  <metadata name="tvTextureSets.Locked" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="browser.Locked" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="panel.Locked" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="splitter.Locked" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
   <metadata name="$this.Locked" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>

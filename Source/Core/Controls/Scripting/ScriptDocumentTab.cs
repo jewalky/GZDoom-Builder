@@ -28,6 +28,7 @@ using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Compilers;
 using CodeImp.DoomBuilder.ZDoom.Scripting;
 using ScintillaNET;
+using System.Text;
 
 #endregion
 
@@ -41,11 +42,13 @@ namespace CodeImp.DoomBuilder.Controls
 		private const int EDITOR_BORDER_BOTTOM = 4;
 		private const int EDITOR_BORDER_LEFT = 4;
 		private const int EDITOR_BORDER_RIGHT = 4;
-		
+
+		const int SC_FOLDLEVELBASE = 1024;
+
 		#endregion
-		
+
 		#region ================== Variables
-		
+
 		// The script edit control
 		protected readonly ScriptEditorControl editor;
 		private string title; //mxd
@@ -203,6 +206,46 @@ namespace CodeImp.DoomBuilder.Controls
 		// This compiles the script
 		public virtual void Compile() { }
 
+		// [ZZ] this removes trailing whitespace from every line
+		protected void RemoveTrailingWhitespace()
+		{
+			// after changing the contents, selection should stay on the same line, and just move to the end of that line if it was on the trailing space.
+			int vscroll = editor.Scintilla.FirstVisibleLine;
+			int selectionStart = editor.SelectionStart;
+			int selectionEnd = editor.SelectionEnd;
+
+			int offset = 0;
+			string text = editor.Text;
+			string[] atext = text.Split(new char[] { '\n' });
+			for (int i = 0; i < atext.Length; i++)
+			{
+				string oldtext = atext[i];
+				string newtext = oldtext.TrimEnd();
+				int lendiff = oldtext.Length - newtext.Length;
+
+				bool selectioninline1 = selectionStart >= offset && selectionStart < offset + oldtext.Length;
+				bool selectioninline2 = selectionEnd >= offset && selectionEnd < offset + oldtext.Length;
+
+				if (selectioninline1 && selectionStart > offset + newtext.Length)
+					selectionStart = offset + newtext.Length;
+
+				if (selectioninline2 && selectionEnd > offset + newtext.Length)
+					selectionEnd = offset + newtext.Length;
+
+				atext[i] = newtext;
+				offset += newtext.Length + 1; // include \n
+				if (selectionStart > offset)
+					selectionStart -= lendiff;
+				if (selectionEnd > offset)
+					selectionEnd -= lendiff;
+			}
+
+			editor.Text = string.Join("\n", atext);
+			editor.SelectionStart = selectionStart;
+			editor.SelectionEnd = selectionEnd;
+			editor.Scintilla.FirstVisibleLine = vscroll;
+		}
+
 		// This saves the document (used for both explicit and implicit)
 		// Return true when successfully saved
 		public virtual bool Save()
@@ -338,7 +381,7 @@ namespace CodeImp.DoomBuilder.Controls
 			
 			// Text must be exactly the same
 			long hash = MurmurHash2.Hash(Text);
-			bool applyfolding = General.Settings.ScriptShowFolding && (editor.Scintilla.Lexer == Lexer.Cpp || editor.Scintilla.Lexer == Lexer.CppNoCase);
+			bool applyfolding = General.Settings.ScriptShowFolding && (editor.Scintilla.Lexer == Lexer.Cpp /*|| editor.Scintilla.Lexer == Lexer.CppNoCase*/);
 			if(hash == settings.Hash)
 			{
 				// Restore fold levels
@@ -359,7 +402,7 @@ namespace CodeImp.DoomBuilder.Controls
 
 		internal void SetDefaultViewSettings()
 		{
-			if(General.Settings.ScriptShowFolding && (editor.Scintilla.Lexer == Lexer.Cpp || editor.Scintilla.Lexer == Lexer.CppNoCase))
+			if(General.Settings.ScriptShowFolding && (editor.Scintilla.Lexer == Lexer.Cpp /*|| editor.Scintilla.Lexer == Lexer.CppNoCase*/))
 				ApplyFolding(GetFoldLevels());
 		}
 
@@ -382,7 +425,7 @@ namespace CodeImp.DoomBuilder.Controls
 		private Dictionary<int, HashSet<int>> GetFoldLevels()
 		{
 			Dictionary<int, HashSet<int>> foldlevels = new Dictionary<int, HashSet<int>>();
-			int foldlevel = NativeMethods.SC_FOLDLEVELBASE;
+			int foldlevel = SC_FOLDLEVELBASE;
 
 			for(int i = 0; i < editor.Scintilla.Lines.Count; i++)
 			{
@@ -393,7 +436,7 @@ namespace CodeImp.DoomBuilder.Controls
 					if(!foldlevels.ContainsKey(foldlevel)) foldlevels.Add(foldlevel, new HashSet<int>());
 					foldlevels[foldlevel].Add(i);
 				}
-				else if(line.StartsWith("#endregion", true, CultureInfo.InvariantCulture) && foldlevel > NativeMethods.SC_FOLDLEVELBASE)
+				else if(line.StartsWith("#endregion", true, CultureInfo.InvariantCulture) && foldlevel > SC_FOLDLEVELBASE)
 				{
 					foldlevel--;
 				}

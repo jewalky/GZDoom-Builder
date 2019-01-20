@@ -414,9 +414,9 @@ namespace CodeImp.DoomBuilder.Rendering
 			return true;
 		}
 
-		#endregion
-		
-		#region ================== Rendering
+        #endregion
+
+        #region ================== Rendering
 
 		// This begins a drawing session
 		public bool StartRendering(bool clear, Color4 backcolor, Surface target, Surface depthbuffer)
@@ -437,8 +437,33 @@ namespace CodeImp.DoomBuilder.Rendering
 						device.Clear(ClearFlags.Target, backcolor, 1f, 0);
 				}
 
-				// Ready to render
-				device.BeginScene();
+                // Ready to render
+                // [ZZ] Sometimes (apparently during massive lag) this may cause invalid call exception.
+                //      Let's put this code here until proper fix is available.
+                //      For now, eat the initial exception and try to recover.
+                for (int i = 0; i < 2; i++)
+                {
+                    try
+                    {
+                        device.BeginScene();
+                        break;
+                    }
+                    catch (SlimDXException e)
+                    {
+                        if (i != 0) throw e;
+                        else
+                        {
+                            if (!CheckAvailability())
+                            {
+                                isrendering = false;
+                                return false;
+                            }
+
+                            Reset();
+                        }
+                    }
+                }
+
 				isrendering = true; //mxd
 				return true;
 			}

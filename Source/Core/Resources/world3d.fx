@@ -50,11 +50,19 @@ const float4x4 worldviewproj;
 
 //mxd
 float4x4 world;
+float4x4 modelnormal;
 float4 vertexColor;
+// [ZZ]
+float4 stencilColor;
 
 //light
 float4 lightPosAndRadius;
+float3 lightOrientation; // this is a vector that points in light's direction
+float2 light2Radius; // this is used with spotlights
 float4 lightColor; //also used as fog color
+float desaturation;
+float ignoreNormals; // ignore normals in lighting equation. used for non-attenuated lights on models.
+float spotLight; // use lightOrientation
 
 //fog
 const float4 campos;  //w is set to fade factor (distance, at wich fog color completely overrides pixel color)
@@ -130,7 +138,7 @@ LitPixelData vs_customvertexcolor_fog(VertexData vd)
 	pd.pos_w = mul(float4(vd.pos, 1.0f), world).xyz;
 	pd.color = vertexColor;
 	pd.uv = vd.uv;
-	pd.normal = vd.normal;
+	pd.normal = normalize(mul(float4(vd.normal, 1.0f), modelnormal).xyz);
 	
 	// Return result
 	return pd;
@@ -144,23 +152,32 @@ LitPixelData vs_lightpass(VertexData vd)
 	pd.pos_w = mul(float4(vd.pos, 1.0f), world).xyz;
 	pd.color = vd.color;
 	pd.uv = vd.uv;
-	pd.normal = vd.normal;
+	pd.normal = normalize(mul(float4(vd.normal, 1.0f), modelnormal).xyz);
 
 	// Return result
 	return pd;
+}
+
+// [ZZ] desaturation routine. almost literal quote from GZDoom's GLSL
+float4 desaturate(float4 texel)
+{
+	float gray = (texel.r * 0.3 + texel.g * 0.56 + texel.b * 0.14);	
+	return lerp(texel, float4(gray,gray,gray,texel.a), desaturation);
 }
 
 // Normal pixel shader
 float4 ps_main(PixelData pd) : COLOR
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
-	return tcolor * pd.color;
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
+	return desaturate(tcolor * pd.color);
 }
 
 // Full-bright pixel shader
 float4 ps_fullbright(PixelData pd) : COLOR
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	tcolor.a *= pd.color.a;
 	return tcolor;
 }
@@ -169,10 +186,11 @@ float4 ps_fullbright(PixelData pd) : COLOR
 float4 ps_main_highlight(PixelData pd) : COLOR
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0) return tcolor;
 	
 	// Blend texture color and vertex color
-	float4 ncolor = tcolor * pd.color;
+	float4 ncolor = desaturate(tcolor * pd.color);
 	
 	return float4(highlightcolor.rgb * highlightcolor.a + (ncolor.rgb - 0.4f * highlightcolor.a), max(pd.color.a + 0.25f, 0.5f));
 }
@@ -181,6 +199,7 @@ float4 ps_main_highlight(PixelData pd) : COLOR
 float4 ps_fullbright_highlight(PixelData pd) : COLOR
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0) return tcolor;
 	
 	// Blend texture color and vertex color
@@ -204,19 +223,21 @@ float4 getFogColor(LitPixelData pd, float4 color)
 float4 ps_main_fog(LitPixelData pd) : COLOR 
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0) return tcolor;
 	
-	return getFogColor(pd, tcolor * pd.color);
+	return desaturate(getFogColor(pd, tcolor * pd.color));
 }
 
 // Normal pixel shader with highlight
 float4 ps_main_highlight_fog(LitPixelData pd) : COLOR 
 {
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0) return tcolor;
 	
 	// Blend texture color and vertex color
-	float4 ncolor = getFogColor(pd, tcolor * pd.color);
+	float4 ncolor = desaturate(getFogColor(pd, tcolor * pd.color));
 	
 	return float4(highlightcolor.rgb * highlightcolor.a + (ncolor.rgb - 0.4f * highlightcolor.a), max(ncolor.a + 0.25f, 0.5f));
 }
@@ -234,32 +255,48 @@ float4 ps_vertex_color(PixelData pd) : COLOR
 }
 
 //mxd. dynamic light pixel shader pass, dood!
-float4 ps_lightpass(LitPixelData pd) : COLOR 
+float4 ps_lightpass(LitPixelData pd) : COLOR
 {
 	//is face facing away from light source?
-	if(dot(pd.normal, normalize(lightPosAndRadius.xyz - pd.pos_w)) < -0.1f) // (lightPosAndRadius.xyz - pd.pos_w) == direction from light to current pixel
+	// [ZZ] oddly enough pd.normal is not a proper normal, so using dot on it returns rather unexpected results. wrapped in normalize().
+	//      update 01.02.2017: offset the equation by 3px back to try to emulate GZDoom's broken visibility check.
+	float diffuseContribution = dot(pd.normal, normalize(lightPosAndRadius.xyz - pd.pos_w + pd.normal*3));
+	if (diffuseContribution < 0 && ignoreNormals < 0.5)
 		clip(-1);
+	diffuseContribution = max(diffuseContribution, 0); // to make sure
 
 	//is pixel in light range?
 	float dist = distance(pd.pos_w, lightPosAndRadius.xyz);
 	if(dist > lightPosAndRadius.w)
 		clip(-1);
-	
+
 	//is pixel tranparent?
 	float4 tcolor = tex2D(texturesamp, pd.uv);
+	tcolor = lerp(tcolor, float4(stencilColor.rgb, tcolor.a), stencilColor.a);
 	if(tcolor.a == 0.0f)
 		clip(-1);
 
 	//if it is - calculate color at current pixel
-	float4 lightColorMod = float4(0.0f, 0.0f, 0.0f, 0.0f);
+	float4 lightColorMod = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
 	lightColorMod.rgb = lightColor.rgb * max(lightPosAndRadius.w - dist, 0.0f) / lightPosAndRadius.w;
-	if(lightColorMod.r > 0.0f || lightColorMod.g > 0.0f || lightColorMod.b > 0.0f)
+    
+    if (spotLight > 0.5)
+    {
+        float3 lightDirection = normalize(lightPosAndRadius.xyz - pd.pos_w);
+        float cosDir = dot(lightDirection, lightOrientation);
+        float df = smoothstep(light2Radius.y, light2Radius.x, cosDir);
+        lightColorMod.rgb *= df;
+    }
+
+	if (lightColor.a > 0.979f && lightColor.a < 0.981f) // attenuated light 98%
+		lightColorMod.rgb *= diffuseContribution;
+	if (lightColorMod.r > 0.0f || lightColorMod.g > 0.0f || lightColorMod.b > 0.0f)
 	{
 		lightColorMod.rgb *= lightColor.a;
-		if(lightColor.a > 0.4f) //Normal, vavoom or negative light
-			return tcolor * lightColorMod;
-		return lightColorMod; //Additive light
+		if (lightColor.a > 0.4f) //Normal, vavoom or negative light (or attenuated)
+			lightColorMod *= tcolor;
+		return desaturate(lightColorMod); //Additive light
 	}
 	clip(-1);
 	return lightColorMod; //should never get here

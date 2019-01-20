@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Actions;
 using CodeImp.DoomBuilder.Compilers;
@@ -36,6 +37,7 @@ using CodeImp.DoomBuilder.Rendering;
 using CodeImp.DoomBuilder.VisualModes;
 using CodeImp.DoomBuilder.Windows;
 using CodeImp.DoomBuilder.ZDoom.Scripting;
+using System.Collections;
 
 #endregion
 
@@ -412,7 +414,7 @@ namespace CodeImp.DoomBuilder
 
 			// Copy the map lumps to the temp file
 			General.WriteLogLine("Copying map lumps to temporary file...");
-			CopyLumpsByType(mapwad, options.CurrentName, tempwadreader.WadFile, TEMP_MAP_HEADER, REPLACE_TARGET_MAP, true, true, true, true);
+			CopyLumpsByType(mapwad, options.CurrentName, tempwadreader.WadFile, TEMP_MAP_HEADER, true, true, true, true);
 
 			// Close the map file
 			mapwad.Dispose();
@@ -512,7 +514,7 @@ namespace CodeImp.DoomBuilder
 
 			// Copy the map lumps to the temp file
 			General.WriteLogLine("Copying map lumps to temporary file...");
-			CopyLumpsByType(mapwad, options.CurrentName, tempwadreader.WadFile, TEMP_MAP_HEADER, REPLACE_TARGET_MAP, true, true, true, true);
+			CopyLumpsByType(mapwad, options.CurrentName, tempwadreader.WadFile, TEMP_MAP_HEADER, true, true, true, true);
 
 			// Close the map file
 			mapwad.Dispose();
@@ -897,7 +899,6 @@ namespace CodeImp.DoomBuilder
 			// Determine original map name
 			string origmapname = (!string.IsNullOrEmpty(options.PreviousName) && purpose != SavePurpose.IntoFile) ? options.PreviousName : options.CurrentName;
 			string origwadfile = string.Empty; //mxd
-			int mapheaderindex = REPLACE_TARGET_MAP; //mxd. Lump index of the map file header in the source WAD
 
 			try 
 			{
@@ -907,7 +908,7 @@ namespace CodeImp.DoomBuilder
 					if(purpose == SavePurpose.IntoFile) 
 					{
 						WAD wad = new WAD(newfilepathname, true);
-						int mapindex = wad.FindLumpIndex(origmapname);
+                        int mapindex = FindAndRemoveMap(wad, origmapname, false);
 						wad.Dispose();
 
 						if(mapindex != -1 && MessageBox.Show(General.MainWindow, "Target file already contains map \"" + origmapname + "\"\nDo you want to replace it?", "Map already exists!", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No) 
@@ -937,52 +938,20 @@ namespace CodeImp.DoomBuilder
 					if(File.Exists(settingsfile)) File.Delete(settingsfile);
 				}
 
+                // [ZZ] We really want to tell apart saving into current archive from saving into a new one.
+                //      Treat "save as" into the current archive as normal save.
+                bool isSaveAs = (purpose == SavePurpose.AsNewFile) && (newfilepathname != filepathname);
 				// On Save AS we have to copy the previous file to the new file
-				if((purpose == SavePurpose.AsNewFile) && (filepathname != string.Empty)) 
+				if(isSaveAs) 
 				{
 					// Copy if original file still exists
 					if(File.Exists(filepathname)) File.Copy(filepathname, newfilepathname, true);
 				}
 
 				// If the target file exists, we need to rebuild it
-				if(File.Exists(newfilepathname)) 
-				{
-					// Move the target file aside
-					origwadfile = newfilepathname + ".temp";
-					File.Move(newfilepathname, origwadfile);
-
-					// Open original file
-					WAD origwad = new WAD(origwadfile, true);
-
-					// Create new target file
-					targetwad = new WAD(newfilepathname) { IsIWAD = origwad.IsIWAD }; //mxd. Let's preserve wad type
-
-					// Copy all lumps, except the original map
-					GameConfiguration origcfg; //mxd
-					if(origmapconfigname == configinfo.Filename) 
-					{
-						origcfg = config;
-					} 
-					else 
-					{
-						ConfigurationInfo ci = General.GetConfigurationInfo(origmapconfigname);
-						origcfg = new GameConfiguration(ci.Configuration);
-
-						// Needed only once!
-						origmapconfigname = configinfo.Filename;
-					}
-
-					mapheaderindex = CopyAllLumpsExceptMap(origwad, targetwad, origcfg, origmapname);
-
-					// Close original file and delete it
-					origwad.Dispose();
-					File.Delete(origwadfile);
-				}
-				else 
-				{
-					// Create new target file
-					targetwad = new WAD(newfilepathname);
-				}
+                // [ZZ] The original code here would do some weird trickery with tempfiles.
+                //      I'm just finding the map lumps and deleting them on later stages.
+				targetwad = new WAD(newfilepathname);
 			} 
 			catch(Exception e) 
 			{
@@ -1006,10 +975,10 @@ namespace CodeImp.DoomBuilder
 				data.Resume();
 				General.WriteLogLine("Map saving failed: " + e.Message);
 				return false;
-			} 
+			}
 
 			// Copy map lumps to target file
-			CopyLumpsByType(tempwadreader.WadFile, TEMP_MAP_HEADER, targetwad, origmapname, mapheaderindex, true, true, includenodes, true);
+			CopyLumpsByType(tempwadreader.WadFile, TEMP_MAP_HEADER, targetwad, origmapname, true, true, includenodes, true, true);
 
 			// mxd. Was the map renamed?
 			if(options.LevelNameChanged) 
@@ -1222,7 +1191,7 @@ namespace CodeImp.DoomBuilder
 
 				// Copy lumps to buildwad
 				General.WriteLogLine("Copying map lumps to temporary build file...");
-				CopyLumpsByType(tempwadreader.WadFile, TEMP_MAP_HEADER, buildwad, BUILD_MAP_HEADER, REPLACE_TARGET_MAP, true, false, false, true);
+				CopyLumpsByType(tempwadreader.WadFile, TEMP_MAP_HEADER, buildwad, BUILD_MAP_HEADER, true, false, false, true);
 
 				// Close buildwad
 				buildwad.Dispose();
@@ -1267,7 +1236,7 @@ namespace CodeImp.DoomBuilder
 					{
 						// Copy nodebuilder lumps to temp file
 						General.WriteLogLine("Copying nodebuilder lumps to temporary file...");
-						CopyLumpsByType(buildwad, BUILD_MAP_HEADER, tempwadreader.WadFile, TEMP_MAP_HEADER, REPLACE_TARGET_MAP, false, false, true, false);
+						CopyLumpsByType(buildwad, BUILD_MAP_HEADER, tempwadreader.WadFile, TEMP_MAP_HEADER, false, false, true, false);
 					}
 					else 
 					{
@@ -1461,75 +1430,140 @@ namespace CodeImp.DoomBuilder
 			foreach(Lump lump in toRemove) target.Remove(lump);
 		}
 
-		// This copies all lumps, except those of a specific map. mxd. Returns the index of skipped map's header lump
-		private static int CopyAllLumpsExceptMap(WAD source, WAD target, GameConfiguration mapconfig, string sourcemapname) 
-		{
-			// Go for all lumps
-			bool skipping = false;
-			int headerpos = REPLACE_TARGET_MAP; //mxd
-			for(int i = 0; i < source.Lumps.Count; i++)
-			{
-				Lump srclump = source.Lumps[i];
-				
-				// Check if we should stop skipping lumps here
-				if(skipping) 
-				{
-					//mxd
-					string srclumpname = srclump.Name;
-					if(srclumpname.Contains(sourcemapname)) srclumpname = srclumpname.Replace(sourcemapname, CONFIG_MAP_HEADER);
+        // [ZZ] this is the more specific case of MatchConfiguration from OpenMapOptionsForm.
+        //      that code is not possible to reuse for this purpose though.
+        private int FindAndRemoveMap(WAD target, string targetmapname, bool reallyremove)
+        {
+            int tgtheaderindex = -1;
+            int lastindex = -1;
+            
+            bool writeheaders = false;
+            // [ZZ] Detect and delete target map from the target archive. Note that it can be in different format compared to current one, and there can be multiple maps with the same name as well.
+            //
+            while (true)
+            {
+                int nextindex = target.FindLumpIndex(targetmapname, lastindex+1);
+                // note that the original algorithm would break if you have a patch or a texture named MAP01 for example...
+                // this is the case for multiple megawads that have level selection screen (Duel40-style), but luckily most of them are using the PK3 format.
+                // we are trying to detect if this is a valid map and shouldn't try to open or save over something that uses the map name as well.
+                if (nextindex < 0) break; // next lump not found
+                lastindex = nextindex;
 
-					if(!mapconfig.MapLumps.ContainsKey(srclumpname)) 
-					{
-						// Stop skipping
-						skipping = false;
-					}
-				}
+                // try to detect the format used for this map.
+                // if more than one format matches, do... idk what actually.
+                // todo: move this code out and call it something like DetectMapConfiguration
+                List<List<MapLumpInfo>> trylists = new List<List<MapLumpInfo>>();
+                foreach (ConfigurationInfo cinfo in General.Configs)
+                {
+                    List<MapLumpInfo> maplumps = new List<MapLumpInfo>();
+                    // parse only the map lumps section of the config.
+                    Configuration cfg = cinfo.Configuration;
+                    IDictionary dic = cfg.ReadSetting("maplumpnames", new Hashtable());
+                    foreach (string k in dic.Keys)
+                        maplumps.Add(new MapLumpInfo(k, cfg));
 
-				// Check if we should start skipping lumps here
-				//TODO: I see a big, but kinda esoteric problem here if the source has several maps with the same name (mxd)
-				if(!skipping && headerpos == REPLACE_TARGET_MAP && srclump.Name == sourcemapname) 
-				{
-					// We have encountered the map header, start skipping!
-					skipping = true;
-					headerpos = i;
-				}
+                    // check if we already have this lump list. don't duplicate.
+                    bool found = false;
+                    foreach (List<MapLumpInfo> ctrylist in trylists)
+                    {
+                        if (ctrylist.Count == maplumps.Count &&
+                            ctrylist.SequenceEqual(maplumps))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
 
-				// Not skipping this lump?
-				if(!skipping) 
-				{
-					// Copy lump over!
-					Lump tgtlump = target.Insert(srclump.Name, target.Lumps.Count, srclump.Length, false);
-					srclump.CopyTo(tgtlump);
-				}
-			}
+                    if (!found)
+                        trylists.Add(maplumps);
+                }
 
-			target.WriteHeaders(); //mxd
+                // currently outputs 6 in 43. seems to work correctly.
+                General.WriteLogLine(string.Format("Found {0} different map lump lists in the {1} registered game configurations", trylists.Count, General.Configs.Count));
 
-			return headerpos;
-		}
+                // find the most probable lump list.
+                int maxmatches = 0;
+                List<MapLumpInfo> trylist = null;
+                foreach (List<MapLumpInfo> lst in trylists)
+                {
+                    int matches = 0;
+                    int maxcnt = lst.Count;
+                    int checkindex = nextindex+1;
+                    for (int i = 0; i < lst.Count; i++)
+                    {
+                        if (checkindex >= target.Lumps.Count)
+                            break;
+                        int mliIdx = lst.FindIndex(e => e.Name == target.Lumps[checkindex].Name);
+                        if (mliIdx < 0) break; // stop matching on first non-matching lump
+                        MapLumpInfo mli = lst[mliIdx];
+                        if (mli.Forbidden)
+                        {
+                            matches = 0;
+                            break; // completely stop matching on first forbidden lump - definitely not this configuration
+                        }
+
+                        matches++;
+                        checkindex++;
+                    }
+
+                    if (matches > maxmatches)
+                    {
+                        trylist = lst;
+                        maxmatches = matches;
+                    }
+                }
+
+                // if we didn't find anything it's weird...
+                if (trylist != null)
+                {
+                    if (reallyremove)
+                    {
+                        int checkindex = nextindex + 1;
+                        for (int i = 0; i < trylist.Count; i++)
+                        {
+                            if (checkindex >= target.Lumps.Count)
+                                break;
+                            bool match = (trylist.FindIndex(e => e.Name == target.Lumps[checkindex].Name) >= 0);
+                            if (match) target.RemoveAt(checkindex);
+                            else break; // stop deleting on first non-matching lump
+                        }
+
+                        // now if trylist was not null, we need to remove the header as well.
+                        target.RemoveAt(nextindex, false);
+                        writeheaders = true;
+                        lastindex--;
+                    }
+
+                    tgtheaderindex = nextindex;
+                }
+            }
+
+            if (writeheaders) target.WriteHeaders();
+            return tgtheaderindex;
+        }
 
 		// This copies specific map lumps from one WAD to another
 		private void CopyLumpsByType(WAD source, string sourcemapname,
 									 WAD target, string targetmapname,
-									 int targetheaderinsertindex, //mxd
 									 bool copyrequired, bool copyblindcopy,
-									 bool copynodebuild, bool copyscript) 
+									 bool copynodebuild, bool copyscript,
+                                     bool deleteold = false) // [ZZ] deleteold=true means we need to delete the old map in-place. we only call this in SaveMap()
 		{
-			// Find the map header in target (mxd. Or use the provided one)
-			bool replacetargetmap = (targetheaderinsertindex == REPLACE_TARGET_MAP); //mxd
-			int tgtheaderindex = (replacetargetmap ? target.FindLumpIndex(targetmapname) : targetheaderinsertindex); //mxd
-			if(tgtheaderindex == -1) 
-			{
-				// If this header doesnt exists in the target
-				// then insert at the end of the target
-				tgtheaderindex = target.Lumps.Count;
-			}
+            int tgtheaderindex = FindAndRemoveMap(target, targetmapname, deleteold); // this is unobvious, but this function also performs search, not just deletion :)
+            bool replacetargetmap = !(deleteold && (tgtheaderindex > -1)); // this is unobvious, but we set replacetargetmap to false when we are completely overwriting it
 
-			// Begin inserting at target header index
-			int targetindex = tgtheaderindex;
+            if (tgtheaderindex == -1)
+            {
+                // If this header doesnt exists in the target
+                // then insert at the end of the target
+                tgtheaderindex = target.Lumps.Count;
+            }
 
-			// Find the map header in source
-			int srcheaderindex = source.FindLumpIndex(sourcemapname);
+            // Begin inserting at target header index
+            int targetindex = tgtheaderindex;
+
+            // Find the map header in source
+            int srcheaderindex = FindAndRemoveMap(source, sourcemapname, false);
 			if(srcheaderindex > -1) 
 			{
 				// Go for all the map lump names
@@ -1547,28 +1581,28 @@ namespace CodeImp.DoomBuilder
 						int sourceindex = FindSpecificLump(source, srclumpname, srcheaderindex, sourcemapname, config.MapLumps);
 						if(sourceindex > -1) 
 						{
-							//mxd. Don't do this when inserting a map (SaveMap() removes the old version of the map before calling CopyLumpsByType())
-							if(replacetargetmap)
-							{
-								// Remove lump at target
-								int lumpindex = RemoveSpecificLump(target, tgtlumpname, tgtheaderindex, targetmapname, config.MapLumps);
+                            //mxd. Don't do this when inserting a map (SaveMap() removes the old version of the map before calling CopyLumpsByType())
+                            if (replacetargetmap)
+                            {
+                                // Remove lump at target
+                                int lumpindex = RemoveSpecificLump(target, tgtlumpname, tgtheaderindex, targetmapname, config.MapLumps);
 
-								// Determine target index
-								// When original lump was found and removed then insert at that position
-								// otherwise insert after last insertion position
-								if(lumpindex > -1) targetindex = lumpindex; else targetindex++;
-							}
-							if(targetindex > target.Lumps.Count) targetindex = target.Lumps.Count;
+                                // Determine target index
+                                // When original lump was found and removed then insert at that position
+                                // otherwise insert after last insertion position
+                                if (lumpindex > -1) targetindex = lumpindex; else targetindex++;
+                            }
+                            if (targetindex > target.Lumps.Count) targetindex = target.Lumps.Count;
 
-							// Copy the lump to the target
-							//General.WriteLogLine(srclumpname + " copying as " + tgtlumpname);
-							Lump lump = source.Lumps[sourceindex];
-							Lump newlump = target.Insert(tgtlumpname, targetindex, lump.Length, false);
-							lump.CopyTo(newlump);
+                            // Copy the lump to the target
+                            //General.WriteLogLine(srclumpname + " copying as " + tgtlumpname);
+                            Lump lump = source.Lumps[sourceindex];
+                            Lump newlump = target.Insert(tgtlumpname, targetindex, lump.Length, false);
+                            lump.CopyTo(newlump);
 
-							//mxd. We still need to increment targetindex...
-							if(!replacetargetmap) targetindex++;
-						}
+                            //mxd. We still need to increment targetindex...
+                            if (!replacetargetmap) targetindex++;
+                        }
 						else 
 						{
 							// We don't want to bother the user with this. There are a lot of lumps in
@@ -1582,6 +1616,7 @@ namespace CodeImp.DoomBuilder
 				}
 
 				target.WriteHeaders(); //mxd
+                target.Compress(); // [ZZ]
 			}
 		}
 

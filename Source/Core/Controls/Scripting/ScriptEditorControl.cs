@@ -72,7 +72,11 @@ namespace CodeImp.DoomBuilder.Controls
 		private const int HIGHLIGHT_INDICATOR = 8; //mxd. Indicators 0-7 could be in use by a lexer so we'll use indicator 8 to highlight words.
 		private const string ENTRY_POSITION_MARKER = "[EP]"; //mxd
 		private const string LINE_BREAK_MARKER = "[LB]"; //mxd
-		
+
+		const int SCI_ENSUREVISIBLEENFORCEPOLICY = 2234;
+		const int SCI_SETBACKSPACEUNINDENTS = 2262;
+		const int SCI_SETTABINDENTS = 2260;
+
 		#endregion
 
 		#region ================== Delegates / Events
@@ -146,12 +150,12 @@ namespace CodeImp.DoomBuilder.Controls
 		{
 			// Initialize
 			InitializeComponent();
-			
+
 			// Script editor properties
 			//TODO: use ScintillaNET properties instead when they become available
-			scriptedit.DirectMessage(NativeMethods.SCI_SETBACKSPACEUNINDENTS, new IntPtr(1));
-			scriptedit.DirectMessage(NativeMethods.SCI_SETMOUSEDOWNCAPTURES, new IntPtr(1));
-			scriptedit.DirectMessage(NativeMethods.SCI_SETTABINDENTS, new IntPtr(1));
+			scriptedit.DirectMessage(SCI_SETBACKSPACEUNINDENTS, new IntPtr(1), IntPtr.Zero);
+			//scriptedit.DirectMessage(SCI_SETMOUSEDOWNCAPTURES, new IntPtr(1), IntPtr.Zero);
+			scriptedit.DirectMessage(SCI_SETTABINDENTS, new IntPtr(1), IntPtr.Zero);
 
 			// Symbol margin
 			scriptedit.Margins[0].Type = MarginType.Symbol;
@@ -262,7 +266,7 @@ namespace CodeImp.DoomBuilder.Controls
 			int endline = Math.Min(scriptedit.Lines.Count, Math.Max(linenumber, linenumber + scriptedit.LinesOnScreen - 6));
 
 			// Go to target line
-			scriptedit.DirectMessage(NativeMethods.SCI_ENSUREVISIBLEENFORCEPOLICY, (IntPtr)startline); // Unfold the whole text block if needed
+			scriptedit.DirectMessage(SCI_ENSUREVISIBLEENFORCEPOLICY, (IntPtr)startline, IntPtr.Zero); // Unfold the whole text block if needed
 			scriptedit.ShowLines(startline, endline);
 
 			// We may want to do some scrolling...
@@ -283,7 +287,7 @@ namespace CodeImp.DoomBuilder.Controls
 			int endline = scriptedit.LineFromPosition(endpos);
 
 			// Go to target line
-			scriptedit.DirectMessage(NativeMethods.SCI_ENSUREVISIBLEENFORCEPOLICY, (IntPtr)startline); // Unfold the whole text block if needed
+			scriptedit.DirectMessage(SCI_ENSUREVISIBLEENFORCEPOLICY, (IntPtr)startline, IntPtr.Zero); // Unfold the whole text block if needed
 			scriptedit.ShowLines(startline, endline);
 			scriptedit.GotoPosition(startpos);
 
@@ -396,8 +400,8 @@ namespace CodeImp.DoomBuilder.Controls
 			scriptedit.TabWidth = General.Settings.ScriptTabWidth;
 			//scriptedit.IndentWidth = General.Settings.ScriptTabWidth; // Equals to TabWidth by default
 			//TODO: use ScintillaNET properties instead when they become available
-			scriptedit.DirectMessage(NativeMethods.SCI_SETTABINDENTS, new IntPtr(1));
-			scriptedit.DirectMessage(NativeMethods.SCI_SETBACKSPACEUNINDENTS, new IntPtr(1));
+			scriptedit.DirectMessage(SCI_SETTABINDENTS, new IntPtr(1), IntPtr.Zero);
+			scriptedit.DirectMessage(SCI_SETBACKSPACEUNINDENTS, new IntPtr(1), IntPtr.Zero);
 			
 			// This applies the default style to all styles
 			scriptedit.StyleClearAll();
@@ -475,7 +479,7 @@ namespace CodeImp.DoomBuilder.Controls
 			handler.SetKeywords(lexercfg, lexername);
 
 			// Setup folding (https://github.com/jacobslusser/ScintillaNET/wiki/Automatic-Code-Folding)
-			if(General.Settings.ScriptShowFolding && (scriptconfig.Lexer == Lexer.Cpp || scriptconfig.Lexer == Lexer.CppNoCase))
+			if(General.Settings.ScriptShowFolding && (scriptconfig.Lexer == Lexer.Cpp /*|| scriptconfig.Lexer == Lexer.CppNoCase*/))
 			{
 				// Instruct the lexer to calculate folding
 				scriptedit.SetProperty("fold", "1");

@@ -54,6 +54,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		void OnProcess(long deltatime);
 		void OnInsert();
 		void OnDelete();
+		void OnPaintSelectBegin(); // biwa
+		void OnPaintSelectEnd(); // biwa
 
 		// Assist functions
 		void ApplyTexture(string texture);

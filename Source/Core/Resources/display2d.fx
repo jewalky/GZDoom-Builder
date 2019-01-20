@@ -30,6 +30,9 @@ float4x4 transformsettings;
 // Filter settings
 dword filtersettings;
 
+//
+float desaturation;
+
 // Texture1 input
 texture texture1
 <
@@ -68,6 +71,13 @@ float4 addcolor(float4 c1, float4 c2)
 				  saturate(c1.a + c2.a * 0.5f));
 }
 
+// [ZZ] desaturation routine. almost literal quote from GZDoom's GLSL
+float3 desaturate(float3 texel)
+{
+	float gray = (texel.r * 0.3 + texel.g * 0.56 + texel.b * 0.14);	
+	return lerp(texel, float3(gray,gray,gray), desaturation);
+}
+
 // Pixel shader for antialiased drawing
 float4 ps_fsaa(PixelData pd) : COLOR
 {
@@ -85,10 +95,10 @@ float4 ps_fsaa(PixelData pd) : COLOR
 		n = addcolor(n, tex2D(texture1samp, float2(pd.uv.x, pd.uv.y - rendersettings.y)));
 		
 		// If any pixels nearby where found, return a blend, otherwise return nothing
-		//if(n.a > 0.1f) return float4(n.rgb, n.a * settings.z); else return (float4)0;
-		return float4(n.rgb, n.a * rendersettings.z * rendersettings.w);
+		//if(n.a > 0.1f) return float4(desaturate(n.rgb), n.a * settings.z); else return (float4)0;
+		return float4(desaturate(n.rgb), n.a * rendersettings.z * rendersettings.w);
 	}
-	else return float4(c.rgb, c.a * rendersettings.w) * pd.color;
+	else return float4(desaturate(c.rgb), c.a * rendersettings.w) * pd.color;
 }
 
 // Pixel shader for normal drawing
@@ -96,7 +106,7 @@ float4 ps_normal(PixelData pd) : COLOR
 {
 	// Take this pixel's color
 	float4 c = tex2D(texture1samp, pd.uv);
-	return float4(c.rgb, c.a * rendersettings.w) * pd.color;
+	return float4(desaturate(c.rgb), c.a * rendersettings.w) * pd.color;
 }
 
 //mxd. Pixel shader for full bright drawing

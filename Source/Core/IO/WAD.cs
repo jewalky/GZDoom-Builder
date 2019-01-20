@@ -290,8 +290,11 @@ namespace CodeImp.DoomBuilder.IO
 		// This writes the WAD header and lumps table
 		public void WriteHeaders()
 		{
-			// Seek to beginning
-			file.Seek(0, SeekOrigin.Begin);
+            // [ZZ] don't allow any edit actions on readonly archive
+            if (isreadonly) return;
+
+            // Seek to beginning
+            file.Seek(0, SeekOrigin.Begin);
 
 			// Write WAD type
 			writer.Write(ENCODING.GetBytes(isiwad ? TYPE_IWAD : TYPE_PWAD));
@@ -422,11 +425,13 @@ namespace CodeImp.DoomBuilder.IO
 		#region ================== Lumps
 
 		// This creates a new lump in the WAD file
-		public Lump Insert(string name, int position, int datalength) { return Insert(name, position, datalength, true); } //mxd
-		public Lump Insert(string name, int position, int datalength, bool writeheaders)
+        public Lump Insert(string name, int position, int datalength, bool writeheaders = true)
 		{
-			// We will be adding a lump
-			numlumps++;
+            // [ZZ] don't allow any edit actions on readonly archive
+            if (isreadonly) return null;
+
+            // We will be adding a lump
+            numlumps++;
 			
 			// Extend the file
 			file.SetLength(file.Length + datalength + 16);
@@ -446,23 +451,29 @@ namespace CodeImp.DoomBuilder.IO
 		}
 
 		// This removes a lump from the WAD file by index
-		public void RemoveAt(int index)
+		public void RemoveAt(int index, bool writeheaders = true)
 		{
-			// Remove from list
-			Lump l = lumps[index];
+            // [ZZ] don't allow any edit actions on readonly archive
+            if (isreadonly) return;
+
+            // Remove from list
+            Lump l = lumps[index];
 			lumps.RemoveAt(index);
 			l.Dispose();
 			numlumps--;
 			
 			// Write the new headers
-			WriteHeaders();
+			if (writeheaders) WriteHeaders();
 		}
 		
 		// This removes a lump from the WAD file
 		public void Remove(Lump lump)
 		{
-			// Remove from list
-			lumps.Remove(lump);
+            // [ZZ] don't allow any edit actions on readonly archive
+            if (isreadonly) return;
+
+            // Remove from list
+            lumps.Remove(lump);
 			lump.Dispose();
 			numlumps--;
 			

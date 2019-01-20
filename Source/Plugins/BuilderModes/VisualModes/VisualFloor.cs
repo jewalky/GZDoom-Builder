@@ -111,16 +111,17 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			else
 				texscale = new Vector2D(1.0f / 64.0f, 1.0f / 64.0f);
 
-			// Determine brightness
-			int color = PixelColor.FromInt(level.color).WithAlpha((byte)General.Clamp(level.alpha, 0, 255)).ToInt();
+            // Determine brightness
+            byte alpha = (byte)General.Clamp(level.alpha, 0, 255);
+            int color = PixelColor.FromInt(level.color).WithAlpha(alpha).ToInt();
 
-			//mxd. Top extrafloor level should calculate fogdensity
-			//from the brightness of the level above it
-			int targetbrightness;
+            //mxd. Top extrafloor level should calculate fogdensity
+            //from the brightness of the level above it
+            SectorData sd = mode.GetSectorData(this.Sector.Sector);
+            int targetbrightness;
 			if(extrafloor != null && extrafloor.VavoomType && !level.disablelighting)
 			{
 				targetbrightness = 0;
-				SectorData sd = mode.GetSectorData(this.Sector.Sector);
 				for(int i = 0; i < sd.LightLevels.Count - 1; i++)
 				{
 					if(sd.LightLevels[i] == level)
@@ -135,8 +136,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				targetbrightness = level.brightnessbelow;
 			}
 
-			//mxd. Determine fog density
-			fogfactor = CalculateFogFactor(targetbrightness);
+            // [ZZ] Apply Doom 64 lighting here (for extrafloor)
+            if (extrafloor != null) color = PixelColor.Modulate(PixelColor.FromInt(color), extrafloor.ColorFloor).WithAlpha(alpha).ToInt();
+
+            //mxd. Determine fog density
+            fogfactor = CalculateFogFactor(targetbrightness);
 
 			// Make vertices
 			ReadOnlyCollection<Vector2D> triverts = Sector.Sector.Triangles.Vertices;
@@ -169,11 +173,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// Determine render pass
 			if(extrafloor != null)
 			{
-				if(extrafloor.Sloped3dFloor) //mxd
+				if (extrafloor.Sloped3dFloor) //mxd
 					this.RenderPass = RenderPass.Mask;
-				else if(extrafloor.RenderAdditive) //mxd
+				else if (extrafloor.RenderAdditive) //mxd
 					this.RenderPass = RenderPass.Additive;
-				else if(level.alpha < 255)
+				else if ((level.alpha < 255) || Texture.IsTranslucent)
 					this.RenderPass = RenderPass.Alpha;
 				else
 					this.RenderPass = RenderPass.Mask;
@@ -450,30 +454,33 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				// Some textures (e.g. HiResImage) may lie about their size, so use bitmap size instead
 				Bitmap image = Texture.GetBitmap();
 
-				// Fetch ZDoom fields
-				float rotate = Angle2D.DegToRad(level.sector.Fields.GetValue("rotationfloor", 0.0f));
-				Vector2D offset = new Vector2D(level.sector.Fields.GetValue("xpanningfloor", 0.0f), level.sector.Fields.GetValue("ypanningfloor", 0.0f));
-				Vector2D scale = new Vector2D(level.sector.Fields.GetValue("xscalefloor", 1.0f), level.sector.Fields.GetValue("yscalefloor", 1.0f));
-				Vector2D texscale = new Vector2D(1.0f / Texture.ScaledWidth, 1.0f / Texture.ScaledHeight);
+                lock (image)
+                {
+                    // Fetch ZDoom fields
+                    float rotate = Angle2D.DegToRad(level.sector.Fields.GetValue("rotationfloor", 0.0f));
+                    Vector2D offset = new Vector2D(level.sector.Fields.GetValue("xpanningfloor", 0.0f), level.sector.Fields.GetValue("ypanningfloor", 0.0f));
+                    Vector2D scale = new Vector2D(level.sector.Fields.GetValue("xscalefloor", 1.0f), level.sector.Fields.GetValue("yscalefloor", 1.0f));
+                    Vector2D texscale = new Vector2D(1.0f / Texture.ScaledWidth, 1.0f / Texture.ScaledHeight);
 
-				// Texture coordinates
-				Vector2D o = pickintersect;
-				o = o.GetRotated(rotate);
-				o.y = -o.y;
-				o = (o + offset) * scale * texscale;
-				o.x = (o.x * image.Width) % image.Width;
-				o.y = (o.y * image.Height) % image.Height;
+                    // Texture coordinates
+                    Vector2D o = pickintersect;
+                    o = o.GetRotated(rotate);
+                    o.y = -o.y;
+                    o = (o + offset) * scale * texscale;
+                    o.x = (o.x * image.Width) % image.Width;
+                    o.y = (o.y * image.Height) % image.Height;
 
-				// Make sure coordinates are inside of texture dimensions...
-				if(o.x < 0) o.x += image.Width;
-				if(o.y < 0) o.y += image.Height;
+                    // Make sure coordinates are inside of texture dimensions...
+                    if (o.x < 0) o.x += image.Width;
+                    if (o.y < 0) o.y += image.Height;
 
-				// Make final texture coordinates...
-				int ox = General.Clamp((int)Math.Floor(o.x), 0, image.Width - 1);
-				int oy = General.Clamp((int)Math.Floor(o.y), 0, image.Height - 1);
+                    // Make final texture coordinates...
+                    int ox = General.Clamp((int)Math.Floor(o.x), 0, image.Width - 1);
+                    int oy = General.Clamp((int)Math.Floor(o.y), 0, image.Height - 1);
 
-				// Check pixel alpha
-				return (image.GetPixel(ox, oy).A > 0);
+                    // Check pixel alpha
+                    return (image.GetPixel(ox, oy).A > 0);
+                }
 			}
 
 			return false;

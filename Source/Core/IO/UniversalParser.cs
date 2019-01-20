@@ -620,8 +620,15 @@ namespace CodeImp.DoomBuilder.IO
 								cs.Add(f);
 								if(!matches.ContainsKey(data[line])) matches.Add(data[line], f);
 								break;
-								
-							default:
+
+                            case "nan":
+                                // Add float value
+                                UniversalEntry nan = new UniversalEntry(key.ToString().Trim().ToLowerInvariant(), float.NaN);
+                                cs.Add(nan);
+                                if (!matches.ContainsKey(data[line])) matches.Add(data[line], nan);
+                                break;
+
+                            default:
 								// Unknown keyword
 								RaiseError(line, ERROR_KEYWORDUNKNOWN + "\n\nUnrecognized token: \"" + val.ToString().Trim() + "\"");
 								break;

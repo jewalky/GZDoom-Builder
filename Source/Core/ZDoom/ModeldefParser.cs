@@ -7,6 +7,8 @@ using CodeImp.DoomBuilder.Data;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.GZBuilder.Data;
 using SlimDX;
+using System.IO;
+using System.Globalization;
 
 #endregion
 
@@ -14,16 +16,24 @@ namespace CodeImp.DoomBuilder.ZDoom
 {
 	internal class ModeldefParser : ZDTextParser
 	{
-		#region ================== Variables
+        public delegate void IncludeDelegate(ModeldefParser parser, string includefile);
 
-		private readonly Dictionary<string, int> actorsbyclass;
+        public IncludeDelegate OnInclude;
+
+
+        #region ================== Variables
+
+        private readonly Dictionary<string, int> actorsbyclass;
 		private Dictionary<string, ModelData> entries; //classname, entry
+        //mxd. Includes tracking
+        private HashSet<string> parsedlumps;
 
-		#endregion
 
-		#region ================== Properties
+        #endregion
 
-		internal override ScriptType ScriptType { get { return ScriptType.MODELDEF; } }
+        #region ================== Properties
+
+        internal override ScriptType ScriptType { get { return ScriptType.MODELDEF; } }
 		internal Dictionary<string, ModelData> Entries { get { return entries; } }
 
 		#endregion
@@ -34,6 +44,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 		{
 			this.actorsbyclass = actorsbyclass;
 			this.entries = new Dictionary<string, ModelData>(StringComparer.OrdinalIgnoreCase);
+            this.parsedlumps = new HashSet<string>();
 		}
 
 		#endregion
@@ -53,11 +64,88 @@ namespace CodeImp.DoomBuilder.ZDoom
 			// Cannot process?
 			if(!base.Parse(data, clearerrors)) return false;
 
-			// Continue until at the end of the stream
-			while(SkipWhitespace(true)) 
+            // Keep local data
+            Stream localstream = datastream;
+            string localsourcename = sourcename;
+            BinaryReader localreader = datareader;
+            DataLocation locallocation = datalocation; //mxd
+            string localtextresourcepath = textresourcepath; //mxd
+
+            // Continue until at the end of the stream
+            while (SkipWhitespace(true)) 
 			{
 				string token = ReadToken();
-				if(string.IsNullOrEmpty(token) || token.ToLowerInvariant() != "model") continue;
+
+				if(string.IsNullOrEmpty(token) || token.ToLowerInvariant() != "model")
+                {
+                    if (token != null && token.ToLowerInvariant() == "#include")
+                    {
+                        //INFO: ZDoom DECORATE include paths can't be relative ("../actor.txt") 
+                        //or absolute ("d:/project/actor.txt") 
+                        //or have backward slashes ("info\actor.txt")
+                        //include paths are relative to the first parsed entry, not the current one 
+                        //also include paths may or may not be quoted
+                        SkipWhitespace(true);
+                        string filename = StripQuotes(ReadToken(false)); //mxd. Don't skip newline
+
+                        //mxd. Sanity checks
+                        if (string.IsNullOrEmpty(filename))
+                        {
+                            ReportError("Expected file name to include");
+                            return false;
+                        }
+
+                        //mxd. Check invalid path chars
+                        if (!CheckInvalidPathChars(filename)) return false;
+
+                        //mxd. Absolute paths are not supported...
+                        if (Path.IsPathRooted(filename))
+                        {
+                            ReportError("Absolute include paths are not supported by ZDoom");
+                            return false;
+                        }
+
+                        //mxd. Relative paths are not supported
+                        if (filename.StartsWith(RELATIVE_PATH_MARKER) || filename.StartsWith(CURRENT_FOLDER_PATH_MARKER) ||
+                            filename.StartsWith(ALT_RELATIVE_PATH_MARKER) || filename.StartsWith(ALT_CURRENT_FOLDER_PATH_MARKER))
+                        {
+                            ReportError("Relative include paths are not supported by ZDoom");
+                            return false;
+                        }
+
+                        //mxd. Backward slashes are not supported
+                        if (filename.Contains(Path.DirectorySeparatorChar.ToString(CultureInfo.InvariantCulture)))
+                        {
+                            ReportError("Only forward slashes are supported by ZDoom");
+                            return false;
+                        }
+
+                        //mxd. Already parsed?
+                        if (parsedlumps.Contains(filename))
+                        {
+                            ReportError("Already parsed \"" + filename + "\". Check your include directives");
+                            return false;
+                        }
+
+                        //mxd. Add to collection
+                        parsedlumps.Add(filename);
+
+                        // Callback to parse this file now
+                        if (OnInclude != null) OnInclude(this, filename);
+
+                        //mxd. Bail out on error
+                        if (this.HasError) return false;
+
+                        // Set our buffers back to continue parsing
+                        datastream = localstream;
+                        datareader = localreader;
+                        sourcename = localsourcename;
+                        datalocation = locallocation; //mxd
+                        textresourcepath = localtextresourcepath; //mxd
+                    }
+
+                    continue;
+                }
 
 				// Find classname
 				SkipWhitespace(true);
@@ -70,7 +158,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 
 				// Check if actor exists
 				bool haveplaceableactor = actorsbyclass.ContainsKey(classname);
-				if(!haveplaceableactor && !General.Map.Data.Decorate.ActorsByClass.ContainsKey(classname))
+				if(!haveplaceableactor && (General.Map.Data.GetZDoomActor(classname) == null))
 					LogWarning("DECORATE class \"" + classname + "\" does not exist");
 				
 				// Now find opening brace
@@ -103,8 +191,9 @@ namespace CodeImp.DoomBuilder.ZDoom
 
 									// Things are complicated in GZDoom...
 									Matrix moffset = Matrix.Translation(mds.Offset.Y, -mds.Offset.X, mds.Offset.Z);
-									Matrix mrotation = Matrix.RotationY(-Angle2D.DegToRad(mds.RollOffset)) * Matrix.RotationX(-Angle2D.DegToRad(mds.PitchOffset)) * Matrix.RotationZ(Angle2D.DegToRad(mds.AngleOffset));
-									md.SetTransform(mrotation, moffset, mds.Scale);
+                                    //Matrix mrotation = Matrix.RotationZ(Angle2D.DegToRad(mds.AngleOffset)) * Matrix.RotationY(-Angle2D.DegToRad(mds.RollOffset)) * Matrix.RotationX(-Angle2D.DegToRad(mds.PitchOffset));
+                                    Matrix mrotation = Matrix.RotationY(-Angle2D.DegToRad(mds.RollOffset)) * Matrix.RotationX(-Angle2D.DegToRad(mds.PitchOffset)) * Matrix.RotationZ(Angle2D.DegToRad(mds.AngleOffset));
+                                    md.SetTransform(mrotation, moffset, mds.Scale);
 
 									// Add models
 									int disabledframescount = 0;
@@ -113,7 +202,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 										// Sanity checks
 										if(string.IsNullOrEmpty(mds.ModelNames[fs.ModelIndex]))
 										{
-											LogWarning("Model definition \"" + classname + "\", frame \"" + fs.SpriteName + " " + fs.FrameName + "\" references undefiend model index " + fs.ModelIndex);
+											LogWarning("Model definition \"" + classname + "\", frame \"" + fs.SpriteName + " " + fs.FrameName + "\" references undefined model index " + fs.ModelIndex);
 											continue;
 										}
 

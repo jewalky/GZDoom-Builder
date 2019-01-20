@@ -213,8 +213,8 @@ namespace CodeImp.DoomBuilder.Controls
 
 			//mxd. ACS script argument names
 			bool isacsscript = (Array.IndexOf(GZGeneral.ACS_SPECIALS, l.Action) != -1);
-			bool isnamedacsscript = (isacsscript && General.Map.UDMF && l.Fields.ContainsKey("arg0str"));
-			string scriptname = (isnamedacsscript ? l.Fields.GetValue("arg0str", string.Empty) : string.Empty);
+			bool isarg0str = (General.Map.UDMF && l.Fields.ContainsKey("arg0str"));
+            string arg0str = isarg0str ? l.Fields.GetValue("arg0str", string.Empty) : string.Empty;
 			ScriptItem scriptitem = null;
 
 			//mxd. Set default label colors
@@ -222,15 +222,15 @@ namespace CodeImp.DoomBuilder.Controls
 			arglbl1.ForeColor = SystemColors.ControlText;
 
 			// Named script?
-			if(isnamedacsscript && General.Map.NamedScripts.ContainsKey(scriptname.ToLowerInvariant()))
+			if(isacsscript && isarg0str && General.Map.NamedScripts.ContainsKey(arg0str.ToLowerInvariant()))
 			{
-				scriptitem = General.Map.NamedScripts[scriptname.ToLowerInvariant()];
+				scriptitem = General.Map.NamedScripts[arg0str.ToLowerInvariant()];
 			}
 			// Script number?
 			else if(isacsscript && General.Map.NumberedScripts.ContainsKey(l.Args[0]))
 			{
 				scriptitem = General.Map.NumberedScripts[l.Args[0]];
-				scriptname = (scriptitem.HasCustomName ? scriptitem.Name : scriptitem.Index.ToString());
+				arg0str = (scriptitem.HasCustomName ? scriptitem.Name : scriptitem.Index.ToString());
 			}
 
 			// Apply script args?
@@ -239,8 +239,16 @@ namespace CodeImp.DoomBuilder.Controls
 
 			if(scriptitem != null)
 			{
-				string[] argnames = scriptitem.GetArgumentsDescriptions(l.Action);
-				for(int i = 0; i < argnames.Length; i++)
+                int first;
+				string[] argnames = scriptitem.GetArgumentsDescriptions(l.Action, out first);
+                for (int i = 0; i < first; i++)
+                {
+                    arglabels[i].Text = (isarg0str ? act.Args[i].TitleStr : act.Args[i].Title) + ":";
+                    arglabels[i].Enabled = act.Args[i].Used;
+                    args[i].Enabled = act.Args[i].Used;
+                }
+
+                for (int i = first; i < argnames.Length; i++)
 				{
 					if(!string.IsNullOrEmpty(argnames[i]))
 					{
@@ -250,8 +258,8 @@ namespace CodeImp.DoomBuilder.Controls
 					}
 					else
 					{
-						arglabels[i].Text = act.Args[i].Title + ":";
-						arglabels[i].Enabled = act.Args[i].Used;
+                        arglabels[i].Text = (isarg0str ? act.Args[i].TitleStr : act.Args[i].Title) + ":";
+                        arglabels[i].Enabled = act.Args[i].Used;
 						args[i].Enabled = act.Args[i].Used;
 					}
 				}
@@ -260,22 +268,22 @@ namespace CodeImp.DoomBuilder.Controls
 			{
 				for(int i = 0; i < act.Args.Length; i++)
 				{
-					arglabels[i].Text = act.Args[i].Title + ":";
-					arglabels[i].Enabled = act.Args[i].Used;
+                    arglabels[i].Text = (isarg0str ? act.Args[i].TitleStr : act.Args[i].Title) + ":";
+                    arglabels[i].Enabled = act.Args[i].Used;
 					args[i].Enabled = act.Args[i].Used;
 				}
 
 				// Special cases: unknown script name/index
-				if(isacsscript || isnamedacsscript)
+				if(isacsscript)
 				{
-					arglbl1.Text = "Unknown script " + (isnamedacsscript ? "name" : "number") + ":";
+					arglbl1.Text = "Unknown script " + (isarg0str ? "name" : "number") + ":";
 					arg1.ForeColor = Color.DarkRed;
 					arglbl1.ForeColor = Color.DarkRed;
 				}
 			}
 
 			//mxd. Set argument value and label
-			if(!string.IsNullOrEmpty(scriptname)) arg1.Text = scriptname;
+			if(isarg0str) arg1.Text = arg0str;
 			else SetArgumentText(act.Args[0], arg1, l.Args[0]);
 			SetArgumentText(act.Args[1], arg2, l.Args[1]);
 			SetArgumentText(act.Args[2], arg3, l.Args[2]);
@@ -585,10 +593,10 @@ namespace CodeImp.DoomBuilder.Controls
 
 			// Show the whole thing
 			this.Show();
-			this.Update();
-		}
+            //this.Update(); // ano - don't think this is needed, and is slow
+        }
 
-		private static void UpdateTexturePanel(Panel panel, string texturename, Label texturenamelabel, Label sizelabel, int maxlabelright, Panel image, int sizeref, bool extendedinfoshown, bool required)
+        private static void UpdateTexturePanel(Panel panel, string texturename, Label texturenamelabel, Label sizelabel, int maxlabelright, Panel image, int sizeref, bool extendedinfoshown, bool required)
 		{
 			// Set texture name
 			texturenamelabel.Text = (texturename.Length > DataManager.CLASIC_IMAGE_NAME_LENGTH ? texturename : texturename.ToUpperInvariant());

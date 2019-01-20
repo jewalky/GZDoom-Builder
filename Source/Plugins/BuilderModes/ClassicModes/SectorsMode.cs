@@ -1036,8 +1036,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				// Check if moved enough pixels for multiselect
 				Vector2D delta = mousedownpos - mousepos;
-				if((Math.Abs(delta.x) > MULTISELECT_START_MOVE_PIXELS) ||
-				   (Math.Abs(delta.y) > MULTISELECT_START_MOVE_PIXELS)) 
+				if((Math.Abs(delta.x) > BuilderPlug.Me.MouseSelectionThreshold) ||
+				   (Math.Abs(delta.y) > BuilderPlug.Me.MouseSelectionThreshold)) 
 				{
 					// Start multiselecting
 					StartMultiSelection();
@@ -1606,25 +1606,29 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				string ceiltex = BuilderPlug.Me.MakeDoor.CeilingTexture;
 				string floortex = null;
 				bool resetoffsets = BuilderPlug.Me.MakeDoor.ResetOffsets;
+				bool applyactionspecials = BuilderPlug.Me.MakeDoor.ApplyActionSpecials;
+				bool applytag = BuilderPlug.Me.MakeDoor.ApplyTag;
 
 				// Find floor texture
-				foreach(Sector s in orderedselection)
+				foreach (Sector s in orderedselection)
 				{
 					if(floortex == null) floortex = s.FloorTexture; else if(floortex != s.FloorTexture) floortex = "";
 				}
 				
 				// Show the dialog
 				MakeDoorForm form = new MakeDoorForm();
-				if(form.Show(General.Interface, doortex, tracktex, ceiltex, floortex, resetoffsets) == DialogResult.OK)
+				if(form.Show(General.Interface, doortex, tracktex, ceiltex, floortex, resetoffsets, applyactionspecials, applytag) == DialogResult.OK)
 				{
 					doortex = form.DoorTexture;
 					tracktex = form.TrackTexture;
 					ceiltex = form.CeilingTexture;
 					floortex = form.FloorTexture;
 					resetoffsets = form.ResetOffsets;
+					applyactionspecials = form.ApplyActionSpecials;
+					applytag = form.ApplyTag;
 
 					//mxd. Store new settings
-					BuilderPlug.Me.MakeDoor = new BuilderPlug.MakeDoorSettings(doortex, tracktex, ceiltex, resetoffsets);
+					BuilderPlug.Me.MakeDoor = new BuilderPlug.MakeDoorSettings(doortex, tracktex, ceiltex, resetoffsets, applyactionspecials, applytag);
 					
 					// Create undo
 					General.Map.UndoRedo.CreateUndo("Make door (" + doortex + ")");
@@ -1639,7 +1643,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						// Make a unique tag (not sure if we need it yet, depends on the args)
 						int tag = General.Map.Map.GetNewTag();
 
-						// Go for all it's sidedefs
+						// Go for all its sidedefs
 						foreach(Sidedef sd in s.Sidedefs)
 						{
 							// Singlesided?
@@ -1664,16 +1668,25 @@ namespace CodeImp.DoomBuilder.BuilderModes
 								// Set upper/lower unpegged flags
 								sd.Line.SetFlag(General.Map.Config.UpperUnpeggedFlag, false);
 								sd.Line.SetFlag(General.Map.Config.LowerUnpeggedFlag, false);
-								
-								// Get door linedef type from config
-								sd.Line.Action = General.Map.Config.MakeDoorAction;
 
-								// Set activation type
-								sd.Line.Activate = General.Map.Config.MakeDoorActivate;
+								if (applyactionspecials)
+								{
+									// Get door linedef type from config
+									sd.Line.Action = General.Map.Config.MakeDoorAction;
 
-								// Set the flags
-								foreach(var flagpair in General.Map.Config.MakeDoorFlags)
-									sd.Line.SetFlag(flagpair.Key, flagpair.Value);
+									// Set activation type
+									sd.Line.Activate = General.Map.Config.MakeDoorActivate;
+
+									// Set the flags for player repeatable activation
+									foreach (var flagpair in General.Map.Config.MakeDoorFlags)
+										sd.Line.SetFlag(flagpair.Key, flagpair.Value);
+								}
+
+								if (applytag)
+								{
+									//If tag checkbox is checked, apply our new tag no matter what happens next
+									s.Tag = tag;
+								}
 
 								// Set the linedef args
 								for(int i = 0; i < Linedef.NUM_ARGS; i++)

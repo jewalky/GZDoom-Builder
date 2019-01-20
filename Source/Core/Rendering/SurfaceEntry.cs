@@ -48,6 +48,9 @@ namespace CodeImp.DoomBuilder.Rendering
 		// The sector must set these!
 		public long floortexture;
 		public long ceiltexture;
+
+        //
+        public float desaturation;
 		
 		// Constructor
 		internal SurfaceEntry(int numvertices, int bufferindex, int vertexoffset)

@@ -128,7 +128,7 @@ namespace CodeImp.DoomBuilder.Controls
 			scriptedit.Margins[2].Mask = 0; // No markers here
 
 			// Set lexer
-			scriptedit.Lexer = Lexer.CppNoCase;
+			scriptedit.Lexer = Lexer.Cpp;
 
 			// Set script editor preview text
 			scriptedit.Text = "#include \"zcommon.acs\"" + "\n" +
@@ -137,7 +137,7 @@ namespace CodeImp.DoomBuilder.Controls
 								"    int red = CR_RED;" + "\n" +
 								"\tPrint(s:\"Welcome!\");" + "\n" +
 								"\tThing_ChangeTID(0, 667);" + "\n" +
-			                  "} } // <- A spare brace!";
+							  "} } // <- A spare brace!";
 
 			// No text editing beyond this point!
 			scriptedit.ReadOnly = true;

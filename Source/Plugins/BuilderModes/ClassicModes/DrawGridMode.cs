@@ -378,8 +378,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					int step = width / slicesH;
 					for(int w = 0; w < slicesH; w++)
 					{
-						shapes.Add(new[] { new Vector2D((float)Math.Round(s.x + step * w), (float)Math.Round(s.y)), 
-										   new Vector2D((float)Math.Round(s.x + step * w + step), (float)Math.Round(s.y)) });
+						shapes.Add(new[] { new Vector2D(s.x + step * w, s.y), 
+										   new Vector2D(s.x + step * w + step, s.y) });
 					}
 					return shapes;
 				}
@@ -390,8 +390,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					int step = height / slicesV;
 					for(int h = 0; h < slicesV; h++)
 					{
-						shapes.Add(new[] { new Vector2D((float)Math.Round(s.x), (float)Math.Round(s.y + step * h)), 
-										   new Vector2D((float)Math.Round(s.x), (float)Math.Round(s.y + step * h + step)) });
+						shapes.Add(new[] { new Vector2D(s.x, s.y + step * h), 
+										   new Vector2D(s.x, s.y + step * h + step) });
 					}
 					return shapes;
 				}
@@ -401,7 +401,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			// Create grid shape
-			List<Vector2D> rect = new List<Vector2D> { s, new Vector2D((int)s.x, (int)e.y), e, new Vector2D((int)e.x, (int)s.y), s };
+			List<Vector2D> rect = new List<Vector2D> { s, new Vector2D(s.x, e.y), e, new Vector2D(e.x, s.y), s };
 			if(slicesH == 1 && slicesV == 1) 
 			{
 				if(triangulate) rect.AddRange(new[] { s, e });
@@ -415,10 +415,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				for(int h = 0; h < slicesV; h++)
 				{
-					float left = (float)Math.Round(InterpolationTools.Interpolate(s.x, e.x, (float)w / slicesH, horizontalinterpolation));
-					float top = (float)Math.Round(InterpolationTools.Interpolate(s.y, e.y, (float)h / slicesV, verticalinterpolation));
-					float right = (float)Math.Round(InterpolationTools.Interpolate(s.x, e.x, (w + 1.0f) / slicesH, horizontalinterpolation));
-					float bottom = (float)Math.Round(InterpolationTools.Interpolate(s.y, e.y, (h + 1.0f)/ slicesV, verticalinterpolation));
+					float left = (InterpolationTools.Interpolate(s.x, e.x, (float)w / slicesH, horizontalinterpolation));
+					float top = (InterpolationTools.Interpolate(s.y, e.y, (float)h / slicesV, verticalinterpolation));
+					float right = (InterpolationTools.Interpolate(s.x, e.x, (w + 1.0f) / slicesH, horizontalinterpolation));
+					float bottom = (InterpolationTools.Interpolate(s.y, e.y, (h + 1.0f) / slicesV, verticalinterpolation));
 					blocks[w, h] = RectangleF.FromLTRB(left, top, right, bottom);
 				}
 			}
@@ -428,7 +428,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				for(int w = 1; w < slicesH; w++) 
 				{
-					float px = (float)Math.Round(blocks[w, 0].X);
+					float px = blocks[w, 0].X;
 					shapes.Add(new[] { new Vector2D(px, s.y), new Vector2D(px, e.y) });
 				}
 			}
@@ -436,7 +436,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				for(int h = 1; h < slicesV; h++) 
 				{
-					float py = (float)Math.Round(blocks[0, h].Y);
+					float py = blocks[0, h].Y;
 					shapes.Add(new[] { new Vector2D(s.x, py), new Vector2D(e.x, py) });
 				}
 			}
