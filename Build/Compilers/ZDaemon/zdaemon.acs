@@ -81,6 +81,15 @@ special
 #define PLAYERINFO_USR_8        118
 #define PLAYERINFO_USR_9        119
 #define PLAYERINFO_USR_10       120
+#define PLAYERINFO_MORPHTICS    121
+#define PLAYERINFO_MORPHED      122
+#define PLAYERINFO_READYWEAPON  123
+
+// Return values for PLAYERINFO_MORPHED -------------------------------------
+
+#define MORPHEDTO_NONE          0
+#define MORPHEDTO_CHICK         1
+#define MORPHEDTO_PIG           2
 
 // Return values for NetMode ------------------------------------------------
 

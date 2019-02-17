@@ -908,6 +908,11 @@ namespace CodeImp.DoomBuilder.Rendering
 				do { size *= 2; } while(size * scale <= 6f);
 			float sizeinv = 1f / size;
 
+			if (float.IsInfinity(size) || size < 1e-10)
+			{
+				return;
+			}
+
 			// Determine map coordinates for view window
 			Vector2D ltview = DisplayToMap(new Vector2D(0, 0));
 			Vector2D rbview = DisplayToMap(new Vector2D(windowsize.Width, windowsize.Height));
@@ -934,6 +939,12 @@ namespace CodeImp.DoomBuilder.Rendering
 
 			int num = 0;            
 			while (xminintersect || xmaxintersect || yminintersect || ymaxintersect) {
+				if (num > 1e6)
+				{
+					// just in case garbage inputs breaks the algorithm and causes an infinite loop
+					break;
+				}
+
 				Vector2D xminstart = center - num * size * dy;
 				Vector2D xmaxstart = center + num * size * dy;
 				Vector2D yminstart = center - num * size * dx;
