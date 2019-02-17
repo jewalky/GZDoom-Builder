@@ -87,8 +87,11 @@ namespace CodeImp.DoomBuilder.Map
 		private bool uselongtexturenames;
 		private bool useresourcesinreadonlymode;
 
-		//mxd. Position and scale
-		private readonly Vector2D viewposition;
+        // List that represents the palette for quick texture access
+        private Dictionary<int, string> texturepalette = new Dictionary<int, string>();
+
+        //mxd. Position and scale
+        private readonly Vector2D viewposition;
 		private readonly float viewscale;
 		
 		#endregion
@@ -145,8 +148,10 @@ namespace CodeImp.DoomBuilder.Map
 		public bool UseLongTextureNames { get { return uselongtexturenames; } set { uselongtexturenames = value; } }
 		public bool UseResourcesInReadonlyMode { get { return useresourcesinreadonlymode; } set { useresourcesinreadonlymode = value; } }
 
-		//mxd. Position and scale
-		public Vector2D ViewPosition { get { return viewposition; } }
+        public Dictionary<int, string> TexturePalette { get { return texturepalette; } set { texturepalette = value; } }
+
+        //mxd. Position and scale
+        public Vector2D ViewPosition { get { return viewposition; } }
 		public float ViewScale { get { return viewscale; } }
 
 		#endregion
