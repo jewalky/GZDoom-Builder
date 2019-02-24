@@ -6,12 +6,12 @@ using System.Threading;
 namespace CodeImp.DoomBuilder.BuilderModes
 {
     [ErrorChecker("Check missing activations", true, 50)]
-    public class CheckMissingActications : ErrorChecker
+    public class CheckMissingActivations : ErrorChecker
     {
         private const int PROGRESS_STEP = 1000;
 
         // Constructor
-        public CheckMissingActications()
+        public CheckMissingActivations()
         {
             // Total progress is done when all linedefs are checked
             SetTotalProgress(General.Map.Map.Linedefs.Count / PROGRESS_STEP);
