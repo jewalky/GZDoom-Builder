@@ -17,6 +17,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
             SetTotalProgress(General.Map.Map.Linedefs.Count / PROGRESS_STEP);
         }
 
+        public override bool SkipCheck { get { return !General.Map.UDMF; } }
+
         // This runs the check
         public override void Run()
         {
