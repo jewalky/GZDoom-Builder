@@ -90,6 +90,7 @@ namespace CodeImp.DoomBuilder.Config
 		public string TestProgram { get { return testEngines[currentEngineIndex].TestProgram; } internal set { testEngines[currentEngineIndex].TestProgram = value; } }
 		public string TestParameters { get { return testEngines[currentEngineIndex].TestParameters; } internal set { testEngines[currentEngineIndex].TestParameters = value; } }
 		public bool TestShortPaths { get { return testEngines[currentEngineIndex].TestShortPaths; } internal set { testEngines[currentEngineIndex].TestShortPaths = value; } }
+		public bool TestLinuxPaths { get { return testEngines[currentEngineIndex].TestLinuxPaths; } internal set { testEngines[currentEngineIndex].TestLinuxPaths = value; } }
 		public int TestSkill { get { return testEngines[currentEngineIndex].TestSkill; } internal set { testEngines[currentEngineIndex].TestSkill = value; } }
 		public bool CustomParameters { get { return testEngines[currentEngineIndex].CustomParameters; } internal set { testEngines[currentEngineIndex].CustomParameters = value; } }
 		public List<EngineInfo> TestEngines { get { return testEngines; } internal set { testEngines = value; } }
@@ -139,6 +140,7 @@ namespace CodeImp.DoomBuilder.Config
 				info.TestProgramName = General.Settings.ReadSetting("configurations." + settingskey + ".testprogramname", EngineInfo.DEFAULT_ENGINE_NAME);
 				info.TestParameters = General.Settings.ReadSetting("configurations." + settingskey + ".testparameters", "");
 				info.TestShortPaths = General.Settings.ReadSetting("configurations." + settingskey + ".testshortpaths", false);
+				info.TestLinuxPaths = General.Settings.ReadSetting("configurations." + settingskey + ".testlinuxpaths", false);
 				info.CustomParameters = General.Settings.ReadSetting("configurations." + settingskey + ".customparameters", false);
 				info.TestSkill = General.Settings.ReadSetting("configurations." + settingskey + ".testskill", 3);
 				testEngines.Add(info);
@@ -155,6 +157,7 @@ namespace CodeImp.DoomBuilder.Config
 					info.TestProgramName = General.Settings.ReadSetting(path + ".testprogramname", EngineInfo.DEFAULT_ENGINE_NAME);
 					info.TestParameters = General.Settings.ReadSetting(path + ".testparameters", "");
 					info.TestShortPaths = General.Settings.ReadSetting(path + ".testshortpaths", false);
+					info.TestLinuxPaths = General.Settings.ReadSetting(path + ".testlinuxpaths", false);
 					info.CustomParameters = General.Settings.ReadSetting(path + ".customparameters", false);
 					info.TestSkill = General.Settings.ReadSetting(path + ".testskill", 3);
 					testEngines.Add(info);
@@ -317,6 +320,7 @@ namespace CodeImp.DoomBuilder.Config
 				rlinfo.Add("testprogram", testEngines[i].TestProgram);
 				rlinfo.Add("testparameters", testEngines[i].TestParameters);
 				rlinfo.Add("testshortpaths", testEngines[i].TestShortPaths);
+				rlinfo.Add("testlinuxpaths", testEngines[i].TestShortPaths);
 				rlinfo.Add("customparameters", testEngines[i].CustomParameters);
 				rlinfo.Add("testskill", testEngines[i].TestSkill);
 

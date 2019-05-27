@@ -2109,6 +2109,23 @@ namespace CodeImp.DoomBuilder
 			return shortname.ToString();
 		}
 
+		public static string GetLinuxFilePath(string longpath)
+		{
+			string linuxpath;
+			linuxpath = longpath.Replace('\\', '/');
+			string wineprefix = Environment.GetEnvironmentVariable("WINEPREFIX");
+
+			if (linuxpath.Substring(0, 2) == "C:")
+			{
+				linuxpath = wineprefix + "/drive_c" + linuxpath.Substring(2);
+			}
+			else if (linuxpath.Substring(0,2) == "Z:")
+			{
+				linuxpath = linuxpath.Substring(2);
+			}
+			return linuxpath;
+        }
+		
 		//mxd
 		internal static ScriptConfiguration GetScriptConfiguration(ScriptType type)
 		{

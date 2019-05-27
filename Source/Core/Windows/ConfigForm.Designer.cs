@@ -40,6 +40,7 @@ namespace CodeImp.DoomBuilder.Windows
 			System.Windows.Forms.Label label8;
 			System.Windows.Forms.Label label4;
 			System.Windows.Forms.Label label10;
+			this.linuxpaths = new System.Windows.Forms.CheckBox();
 			this.labelparameters = new System.Windows.Forms.Label();
 			this.cancel = new System.Windows.Forms.Button();
 			this.apply = new System.Windows.Forms.Button();
@@ -76,10 +77,10 @@ namespace CodeImp.DoomBuilder.Windows
 			this.startmode = new System.Windows.Forms.ComboBox();
 			this.label11 = new System.Windows.Forms.Label();
 			this.listmodes = new System.Windows.Forms.ListView();
-			this.colmodename = new System.Windows.Forms.ColumnHeader();
-			this.colmodeplugin = new System.Windows.Forms.ColumnHeader();
+			this.colmodename = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this.colmodeplugin = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.listconfigs = new System.Windows.Forms.ListView();
-			this.columnname = new System.Windows.Forms.ColumnHeader();
+			this.columnname = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.copypastemenu = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.copyall = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -120,24 +121,24 @@ namespace CodeImp.DoomBuilder.Windows
 			label5.Size = new System.Drawing.Size(299, 39);
 			label5.TabIndex = 19;
 			label5.Text = "Drag && drop resources to add them.\r\nDrag items to change order (lower items over" +
-				"ride higher items).\r\nUse the context menu to cut, copy, paste or remove items.";
+    "ride higher items).\r\nUse the context menu to cut, copy, paste or remove items.";
 			// 
 			// label6
 			// 
-			label6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			label6.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			label6.AutoEllipsis = true;
 			label6.Location = new System.Drawing.Point(12, 15);
 			label6.Name = "label6";
 			label6.Size = new System.Drawing.Size(457, 37);
 			label6.TabIndex = 21;
 			label6.Text = "These are the resources that will be loaded when this configuration is chosen for" +
-				" editing. Usually you add your IWAD (like DOOM.WAD or DOOM2.WAD) here.";
+    " editing. Usually you add your IWAD (like DOOM.WAD or DOOM2.WAD) here.";
 			// 
 			// label3
 			// 
-			label3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			label3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			label3.AutoEllipsis = true;
 			label3.Location = new System.Drawing.Point(12, 15);
 			label3.Name = "label3";
@@ -165,15 +166,15 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// label9
 			// 
-			label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			label9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			label9.AutoEllipsis = true;
 			label9.Location = new System.Drawing.Point(12, 15);
 			label9.Name = "label9";
 			label9.Size = new System.Drawing.Size(477, 54);
 			label9.TabIndex = 23;
 			label9.Text = "Here you can specify the program settings to use for launching a game engine when" +
-				" testing the map. Press F1 for help with custom parameters.";
+    " testing the map. Press F1 for help with custom parameters.";
 			// 
 			// label1
 			// 
@@ -195,27 +196,39 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// label4
 			// 
-			label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			label4.AutoEllipsis = true;
 			label4.Location = new System.Drawing.Point(12, 15);
 			label4.Name = "label4";
 			label4.Size = new System.Drawing.Size(483, 46);
 			label4.TabIndex = 24;
 			label4.Text = "Texture Sets are a way to group textures and flats into categories, so that you c" +
-				"an easily find a texture for the specific style or purpose you need by selecting" +
-				" one of the categories.";
+    "an easily find a texture for the specific style or purpose you need by selecting" +
+    " one of the categories.";
 			// 
 			// label10
 			// 
-			label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			label10.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			label10.AutoEllipsis = true;
 			label10.Location = new System.Drawing.Point(12, 15);
 			label10.Name = "label10";
 			label10.Size = new System.Drawing.Size(470, 58);
 			label10.TabIndex = 25;
 			label10.Text = resources.GetString("label10.Text");
+			// 
+			// linuxpaths
+			// 
+			this.linuxpaths.AutoSize = true;
+			this.linuxpaths.Location = new System.Drawing.Point(375, 217);
+			this.linuxpaths.Name = "linuxpaths";
+			this.linuxpaths.Size = new System.Drawing.Size(102, 17);
+			this.linuxpaths.TabIndex = 41;
+			this.linuxpaths.Text = "Use Linux paths";
+			this.linuxpaths.UseVisualStyleBackColor = true;
+			this.linuxpaths.Visible = false;
+			this.linuxpaths.CheckedChanged += new System.EventHandler(this.Linuxpaths_CheckedChanged);
 			// 
 			// labelparameters
 			// 
@@ -255,8 +268,8 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// tabs
 			// 
-			this.tabs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.tabs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.tabs.Controls.Add(this.tabresources);
 			this.tabs.Controls.Add(this.tabnodebuilder);
 			this.tabs.Controls.Add(this.tabtesting);
@@ -313,8 +326,8 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// nodebuildertest
 			// 
-			this.nodebuildertest.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.nodebuildertest.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.nodebuildertest.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.nodebuildertest.FormattingEnabled = true;
 			this.nodebuildertest.Location = new System.Drawing.Point(167, 122);
@@ -326,8 +339,8 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// nodebuildersave
 			// 
-			this.nodebuildersave.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.nodebuildersave.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.nodebuildersave.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.nodebuildersave.FormattingEnabled = true;
 			this.nodebuildersave.Location = new System.Drawing.Point(167, 83);
@@ -339,6 +352,7 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// tabtesting
 			// 
+			this.tabtesting.Controls.Add(this.linuxpaths);
 			this.tabtesting.Controls.Add(this.btnRemoveEngine);
 			this.tabtesting.Controls.Add(this.btnNewEngine);
 			this.tabtesting.Controls.Add(this.cbEngineSelector);
@@ -394,8 +408,8 @@ namespace CodeImp.DoomBuilder.Windows
 			this.cbEngineSelector.Name = "cbEngineSelector";
 			this.cbEngineSelector.Size = new System.Drawing.Size(340, 21);
 			this.cbEngineSelector.TabIndex = 38;
-			this.cbEngineSelector.SelectedIndexChanged += new System.EventHandler(this.cbEngineSelector_SelectedIndexChanged);
 			this.cbEngineSelector.DropDown += new System.EventHandler(this.cbEngineSelector_DropDown);
+			this.cbEngineSelector.SelectedIndexChanged += new System.EventHandler(this.cbEngineSelector_SelectedIndexChanged);
 			// 
 			// label13
 			// 
@@ -467,8 +481,8 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// testresult
 			// 
-			this.testresult.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.testresult.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.testresult.BackColor = System.Drawing.SystemColors.Control;
 			this.testresult.Location = new System.Drawing.Point(86, 241);
 			this.testresult.Multiline = true;
@@ -490,8 +504,8 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// testparameters
 			// 
-			this.testparameters.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.testparameters.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.testparameters.Location = new System.Drawing.Point(87, 166);
 			this.testparameters.Multiline = true;
 			this.testparameters.Name = "testparameters";
@@ -502,8 +516,8 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// testapplication
 			// 
-			this.testapplication.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.testapplication.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.testapplication.Location = new System.Drawing.Point(87, 86);
 			this.testapplication.Name = "testapplication";
 			this.testapplication.ReadOnly = true;
@@ -531,9 +545,9 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// listtextures
 			// 
-			this.listtextures.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.listtextures.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.listtextures.FullRowSelect = true;
 			this.listtextures.HideSelection = false;
 			this.listtextures.Location = new System.Drawing.Point(15, 64);
@@ -659,9 +673,9 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// listmodes
 			// 
-			this.listmodes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
+			this.listmodes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.listmodes.CheckBoxes = true;
 			this.listmodes.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.colmodename,
@@ -691,8 +705,8 @@ namespace CodeImp.DoomBuilder.Windows
 			// 
 			// listconfigs
 			// 
-			this.listconfigs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)));
+			this.listconfigs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
 			this.listconfigs.CheckBoxes = true;
 			this.listconfigs.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnname});
@@ -708,8 +722,8 @@ namespace CodeImp.DoomBuilder.Windows
 			this.listconfigs.TabIndex = 0;
 			this.listconfigs.UseCompatibleStateImageBehavior = false;
 			this.listconfigs.View = System.Windows.Forms.View.Details;
-			this.listconfigs.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listconfigs_MouseUp);
 			this.listconfigs.KeyUp += new System.Windows.Forms.KeyEventHandler(this.listconfigs_KeyUp);
+			this.listconfigs.MouseUp += new System.Windows.Forms.MouseEventHandler(this.listconfigs_MouseUp);
 			// 
 			// columnname
 			// 
@@ -903,5 +917,6 @@ namespace CodeImp.DoomBuilder.Windows
 		private System.Windows.Forms.Label hintlabel;
 		private System.Windows.Forms.PictureBox hint;
 		private System.Windows.Forms.ToolTip tooltip;
-	}
+        private System.Windows.Forms.CheckBox linuxpaths;
+    }
 }

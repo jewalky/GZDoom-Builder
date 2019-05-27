@@ -26,6 +26,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 		public bool CustomParameters;
 		public int TestSkill;
 		public bool TestShortPaths;
+		public bool TestLinuxPaths;
 
 		// Disposing
 		private bool isdisposed;
@@ -55,6 +56,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 			CustomParameters = other.CustomParameters;
 			TestSkill = other.TestSkill;
 			TestShortPaths = other.TestShortPaths;
+			TestLinuxPaths = other.TestLinuxPaths;
 
 			UpdateIcon();
 		}

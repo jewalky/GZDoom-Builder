@@ -112,7 +112,7 @@ namespace CodeImp.DoomBuilder
 		// This takes the unconverted parameters (with placeholders) and converts it
 		// to parameters with full paths, names and numbers where placeholders were put.
 		// The tempfile must be the full path and filename to the PWAD file to test.
-		public string ConvertParameters(string parameters, int skill, bool shortpaths)
+		public string ConvertParameters(string parameters, int skill, bool shortpaths, bool linuxpaths)
 		{
 			string outp = parameters;
 			DataLocation iwadloc;
@@ -124,7 +124,7 @@ namespace CodeImp.DoomBuilder
 			
 			// Make short path if needed
 			if(shortpaths) f = General.GetShortFilePath(f);
-			
+			else if (linuxpaths) f = General.GetLinuxFilePath(f);
 			// Find the first IWAD file
 			if(General.Map.Data.FindFirstIWAD(out iwadloc))
 			{
@@ -135,6 +135,11 @@ namespace CodeImp.DoomBuilder
 				{
 					p_wp = General.GetShortFilePath(p_wp);
 					p_wf = General.GetShortFilePath(p_wf);
+				}
+				else if (linuxpaths)
+				{
+					p_wp = General.GetLinuxFilePath(p_wp);
+					p_wf = General.GetLinuxFilePath(p_wf);
 				}
 			}
 			
@@ -163,6 +168,11 @@ namespace CodeImp.DoomBuilder
 						{
 							p_ap += General.GetShortFilePath(dl.location) + " ";
 							p_apq += "\"" + General.GetShortFilePath(dl.location) + "\" ";
+						}
+						else if (linuxpaths)
+						{
+							p_ap += General.GetLinuxFilePath(dl.location) + " ";
+							p_apq += "\"" + General.GetLinuxFilePath(dl.location) + "\" ";
 						}
 						else
 						{
@@ -301,6 +311,7 @@ namespace CodeImp.DoomBuilder
 				// Set parameters to the default ones
 				General.Map.ConfigSettings.TestParameters = General.Map.Config.TestParameters;
 				General.Map.ConfigSettings.TestShortPaths = General.Map.Config.TestShortPaths;
+				General.Map.ConfigSettings.TestLinuxPaths = General.Map.Config.TestLinuxPaths;
 			}
 			
 			// Remove temporary file
@@ -320,7 +331,7 @@ namespace CodeImp.DoomBuilder
 				if(General.Map.Errors.Count == 0)
 				{
 					// Make arguments
-					string args = ConvertParameters(General.Map.ConfigSettings.TestParameters, skill, General.Map.ConfigSettings.TestShortPaths);
+					string args = ConvertParameters(General.Map.ConfigSettings.TestParameters, skill, General.Map.ConfigSettings.TestShortPaths, General.Map.ConfigSettings.TestLinuxPaths);
 
 					// Setup process info
 					ProcessStartInfo processinfo = new ProcessStartInfo();

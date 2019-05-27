@@ -66,6 +66,7 @@ namespace CodeImp.DoomBuilder.Config
 		private readonly int linedefactivationsfilter;
 		private readonly string testparameters;
 		private readonly bool testshortpaths;
+		private readonly bool testlinuxpaths;
 		private readonly string makedoortrack;
 		private readonly string makedoordoor; //mxd
 		private readonly string makedoorceil; //mxd
@@ -204,6 +205,7 @@ namespace CodeImp.DoomBuilder.Config
 		public int LinedefActivationsFilter { get { return linedefactivationsfilter; } }
 		public string TestParameters { get { return testparameters; } }
 		public bool TestShortPaths { get { return testshortpaths; } }
+		public bool TestLinuxPaths { get; internal set; }
 		public string MakeDoorTrack { get { return makedoortrack; } }
 		public string MakeDoorDoor { get { return makedoordoor; } } //mxd
 		public string MakeDoorCeiling { get { return makedoorceil; } } //mxd
@@ -385,6 +387,7 @@ namespace CodeImp.DoomBuilder.Config
 			linedefactivationsfilter = cfg.ReadSetting("linedefactivationsfilter", 0);
 			testparameters = cfg.ReadSetting("testparameters", "");
 			testshortpaths = cfg.ReadSetting("testshortpaths", false);
+			testlinuxpaths = cfg.ReadSetting("testlinuxpaths", false);
 			makedoortrack = cfg.ReadSetting("makedoortrack", "-");
 			makedoordoor = cfg.ReadSetting("makedoordoor", "-"); //mxd
 			makedoorceil = cfg.ReadSetting("makedoorceil", "-"); //mxd
