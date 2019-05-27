@@ -474,7 +474,10 @@ namespace CodeImp.DoomBuilder.Windows
 		{
 			// Leave when no configuration selected
 			if(configinfo == null) return;
-			
+			if (linuxpaths.Checked && shortpaths.Checked)
+			{
+				linuxpaths.Checked = false;
+			}
 			// Apply to selected configuration
 			configinfo.TestShortPaths = shortpaths.Checked;
 			configinfo.Changed = true; //mxd
@@ -485,7 +488,10 @@ namespace CodeImp.DoomBuilder.Windows
         {
             // Leave when no configuration selected
             if (configinfo == null) return;
-
+			if (linuxpaths.Checked && shortpaths.Checked)
+			{
+				shortpaths.Checked = false;
+			}
             // Apply to selected configuration
             configinfo.TestLinuxPaths = linuxpaths.Checked;
             configinfo.Changed = true; //mxd
