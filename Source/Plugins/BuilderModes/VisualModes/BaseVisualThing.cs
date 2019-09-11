@@ -868,7 +868,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				// toggle selected state
 				if (mode.PaintSelectType == this.GetType() && mode.Highlighted != this)
 				{
-					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditivePaintSelect)
 					{
 						this.selected = true;
 						mode.AddSelectedObject(this);
@@ -898,7 +898,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			mode.PaintSelectType = this.GetType();
 
 			// toggle selected state
-			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditivePaintSelect)
 			{
 				this.selected = true;
 				mode.AddSelectedObject(this);

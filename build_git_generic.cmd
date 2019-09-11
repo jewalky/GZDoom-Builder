@@ -15,7 +15,7 @@ ECHO.
 
 SET STUDIODIR=c:\Program Files (x86)\Microsoft Visual Studio 14.0
 SET HHWDIR=c:\Program Files (x86)\HTML Help Workshop
-SET SEVENZIPDIR=c:\Program Files (x86)\7-Zip
+SET SEVENZIPDIR=c:\Program Files\7-Zip
 
 IF NOT DEFINED PLATFORM SET PLATFORM=x86
 
@@ -26,8 +26,8 @@ ECHO.
 
 MKDIR "GIT_Build"
 
-git checkout "Source/Core/Properties/AssemblyInfo.cs" > NUL
-git checkout "Source/Plugins/BuilderModes/Properties/AssemblyInfo.cs" > NUL
+git.exe checkout "Source/Core/Properties/AssemblyInfo.cs" > NUL
+git.exe checkout "Source/Plugins/BuilderModes/Properties/AssemblyInfo.cs" > NUL
 
 ECHO.
 ECHO Writing GIT log file...
@@ -36,7 +36,7 @@ IF EXIST "GIT_Build\Changelog.xml" DEL /F /Q "GIT_Build\Changelog.xml" > NUL
 (
 echo [OB]?xml version="1.0" encoding="UTF-8"?[CB]
 echo [OB]log[CB]
-git log master --since=2012-04-17 --pretty=format:"[OB]logentry commit=\"%%h\"[CB]%%n[OB]author[CB]%%an[OB]/author[CB]%%n[OB]date[CB]%%aI[OB]/date[CB]%%n[OB]msg[CB]%%B[OB]/msg[CB]%%n[OB]/logentry[CB]"
+git.exe log master --since=2012-04-17 --pretty=format:"[OB]logentry commit=\"%%h\"[CB]%%n[OB]author[CB]%%an[OB]/author[CB]%%n[OB]date[CB]%%aI[OB]/date[CB]%%n[OB]msg[CB]%%B[OB]/msg[CB]%%n[OB]/logentry[CB]"
 echo [OB]/log[CB]
 ) >"GIT_Build\Changelog.xml"
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
@@ -173,6 +173,16 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
 IF NOT EXIST "Build\Plugins\TagRange.dll" GOTO FILEFAIL
 
 ECHO.
+ECHO Compiling vpo_dll...
+ECHO.
+IF EXIST "Source\Plugins\VisplaneExplorer\Resources\vpo.dll" DEL /F /Q "Source\Plugins\VisplaneExplorer\Resources\vpo.dll" > NUL
+IF EXIST "Source\Plugins\vpo_dll\Release" RD /S /Q "Source\Plugins\vpo_dll\Release"
+msbuild "Source\Plugins\vpo_dll\vpo_dll.vcxproj" /t:Rebuild /p:Configuration=Release /p:Platform=%PLATFORM% /v:minimal
+IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
+IF NOT EXIST "Source\Plugins\VisplaneExplorer\Resources\vpo.dll" GOTO FILEFAIL
+
+
+ECHO.
 ECHO Compiling Visplane Explorer plugin...
 ECHO.
 IF EXIST "Build\Plugins\VisplaneExplorer.dll" DEL /F /Q "Build\Plugins\VisplaneExplorer.dll" > NUL
@@ -206,8 +216,8 @@ IF EXIST "Build\Changelog.txt" DEL /F /Q "Build\Changelog.txt" > NUL
 @ECHO %REVISIONNUMBER%> .\GIT_Build\Version.txt
 @ (ECHO %REVISIONNUMBER% && ECHO %EXEREVISIONNUMBER%) > .\GIT_Build\Versions.txt
 
-git checkout "Source\Core\Properties\AssemblyInfo.cs" > NUL
-git checkout "Source\Plugins\BuilderModes\Properties\AssemblyInfo.cs" > NUL
+git.exe checkout "Source\Core\Properties\AssemblyInfo.cs" > NUL
+git.exe checkout "Source\Plugins\BuilderModes\Properties\AssemblyInfo.cs" > NUL
 
 ECHO.
 ECHO.     BUILD DONE !

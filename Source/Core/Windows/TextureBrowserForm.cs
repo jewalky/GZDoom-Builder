@@ -547,7 +547,9 @@ namespace CodeImp.DoomBuilder.Windows
 				// Add all available textures
 				foreach(ImageData img in set.Textures) browser.AddItem(img);
 			}
-			
+
+			browser.MakeTexturesUnique(); // biwa
+
 			// Done adding
 			browser.EndAdding();
 		}

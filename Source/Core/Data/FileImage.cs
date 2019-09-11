@@ -145,6 +145,8 @@ namespace CodeImp.DoomBuilder.Data
 
             this.longname = Lump.MakeLongName(this.name, uselongtexturenames);
             this.filepathname = filepathname;
+
+			ComputeNamesWidth(); // biwa
         }
 
         // This loads the image

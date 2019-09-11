@@ -508,7 +508,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				// toggle selected state
 				if (mode.PaintSelectType == this.GetType().BaseType && mode.Highlighted != this) // using BaseType so that both floor and ceiling can be selected in one go
 				{
-					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditivePaintSelect)
 					{
 						this.selected = true;
 						mode.AddSelectedObject(this);
@@ -1010,7 +1010,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			mode.PaintSelectType = this.GetType().BaseType; // using BaseType so that both floor and ceiling can be selected in one go
 
 			// toggle selected state
-			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditivePaintSelect)
 			{
 				this.selected = true;
 				mode.AddSelectedObject(this);

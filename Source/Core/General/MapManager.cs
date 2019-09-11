@@ -543,13 +543,17 @@ namespace CodeImp.DoomBuilder
 
 			if(General.Editing.Mode != null)
 			{
-				if(General.Editing.Mode is ClassicMode)
+				if (General.Editing.Mode is ClassicMode)
 				{
 					ClassicMode mode = (ClassicMode)General.Editing.Mode;
 					mode.OnRedoEnd();
 
+					// biwa. Cancel current mode. This will re-engage non-volatile modes to make sure it's
+					// properly initialized for the new map. Fixes issues mentioned in #196
+					General.Editing.CancelMode();
+
 					// Center map in screen or on stored coordinates
-					if(options.ViewPosition.IsFinite() && !float.IsNaN(options.ViewScale))
+					if (options.ViewPosition.IsFinite() && !float.IsNaN(options.ViewScale))
 						mode.CenterOnCoordinates(options.ViewPosition, options.ViewScale);
 					else
 						mode.CenterInScreen();
@@ -557,12 +561,16 @@ namespace CodeImp.DoomBuilder
 				else if(General.Editing.Mode is VisualMode)
 				{
 					VisualMode mode = (VisualMode)General.Editing.Mode;
-					
+
+					// biwa. Cancel current mode. This will re-engage non-volatile modes to make sure it's
+					// properly initialized for the new map. Fixes issues mentioned in #196
+					General.Editing.CancelMode();
+
 					// This will rebuild blockmap, among the other things
 					General.Editing.Mode.OnReloadResources();
 
 					// Update camera position
-					if(options.ViewPosition.IsFinite()) mode.CenterOnCoordinates(options.ViewPosition);
+					if (options.ViewPosition.IsFinite()) mode.CenterOnCoordinates(options.ViewPosition);
 				}
 			}
 

@@ -4488,12 +4488,29 @@ namespace CodeImp.DoomBuilder.Windows
 
 		public SizeF MeasureString(string text, Font font)
 		{
-			return graphics.MeasureString(text, font);
+			SizeF length;
+
+			// Be thread safe
+			lock(graphics)
+			{
+				length = graphics.MeasureString(text, font);
+			}
+
+			return length;
 		}
 
 		public SizeF MeasureString(string text, Font font, int width, StringFormat format)
 		{
-			return graphics.MeasureString(text, font, width, format);
+			SizeF length;
+
+			// Be thread safe
+			lock (graphics)
+			{
+
+				length = graphics.MeasureString(text, font, width, format);
+			}
+
+			return length;
 		}
 
 		#endregion

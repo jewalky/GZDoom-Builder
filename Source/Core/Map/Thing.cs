@@ -80,6 +80,7 @@ namespace CodeImp.DoomBuilder.Map
 
 		// Configuration
 		private float size;
+		private float rendersize;
 		private float height; //mxd
 		private PixelColor color;
 		private bool fixedsize;
@@ -106,6 +107,7 @@ namespace CodeImp.DoomBuilder.Map
 		public int Action { get { return action; } set { BeforePropsChange(); action = value; } }
 		public int[] Args { get { return args; } }
 		public float Size { get { return size; } }
+		public float RenderSize { get { return rendersize; } }
 		public float Height { get { return height; } } //mxd
 		public PixelColor Color { get { return color; } }
 		public bool FixedSize { get { return fixedsize; } }
@@ -242,6 +244,7 @@ namespace CodeImp.DoomBuilder.Map
 			t.action = action;
 			t.args = (int[])args.Clone();
 			t.size = size;
+			t.rendersize = rendersize;
 			t.height = height; //mxd
 			t.color = color;
 			t.directional = directional;
@@ -532,6 +535,7 @@ namespace CodeImp.DoomBuilder.Map
                 dynamiclighttype = ti.DynamicLightType;
             //General.ErrorLogger.Add(ErrorType.Warning, string.Format("thing dynamiclighttype is {0}; class is {1}", dynamiclighttype, ti.Actor.ClassName));
 			size = ti.Radius;
+			rendersize = ti.RenderRadius;
 			height = ti.Height; //mxd
 			fixedsize = ti.FixedSize;
 			spritescale = ti.SpriteScale; //mxd

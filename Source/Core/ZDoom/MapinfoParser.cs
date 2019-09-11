@@ -479,6 +479,11 @@ namespace CodeImp.DoomBuilder.ZDoom
                         if (!ParsePixelRatio()) return false;
                         break;
 
+					// biwa
+					case "forceworldpanning":
+						mapinfo.ForceWorldPanning = true;
+						break;
+
 					case "}": return true; // Block end
 
 					case "{": // Skip inner blocks

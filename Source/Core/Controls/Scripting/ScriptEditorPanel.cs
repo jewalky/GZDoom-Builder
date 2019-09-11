@@ -1106,11 +1106,11 @@ namespace CodeImp.DoomBuilder.Controls
 			if(errorlist.Items.Count > 0)
 			{
 				infotabs.SelectedTab = taberrors;
-				scriptsplitter.IsCollapsed = false;
+				if(scriptsplitter.IsCollapsed) scriptsplitter.IsCollapsed = false; // biwa. Only toggle if it's not shown
 			}
 			else if(infotabs.SelectedTab == taberrors)
 			{
-				scriptsplitter.IsCollapsed = true;
+				if(!scriptsplitter.IsCollapsed) scriptsplitter.IsCollapsed = true; // biwa. Only toggle if it's shown
 			}
 		}
 
@@ -2229,5 +2229,18 @@ namespace CodeImp.DoomBuilder.Controls
 		}
 
 		#endregion
+
+		private void ScriptEditorPanel_Load(object sender, EventArgs e)
+		{
+			// biwa. The designer is setting the properties in the wrong order, which
+			// results in them not being set correctly at all. Set them here manually
+			// scriptsplitter.SplitterDistance = 100;
+			scriptsplitter.Panel1MinSize = 100;
+			scriptsplitter.Panel2MinSize = 100;
+			scriptsplitter.SetSizes();
+
+			mainsplitter.Panel1MinSize = 180;
+			mainsplitter.SetSizes();
+		}
 	}
 }

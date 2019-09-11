@@ -124,7 +124,9 @@
     <Compile Include="ClassicModes\FindReplaceMode.cs" />
     <Compile Include="ClassicModes\MakeSectorMode.cs" />
     <Compile Include="ClassicModes\QuickTextureSetupMode.cs" />
+    <Compile Include="ErrorChecks\BaseCheckTextures.cs" />
     <Compile Include="ErrorChecks\CheckClosedSectors.cs" />
+    <Compile Include="ErrorChecks\CheckMissingActivations.cs" />
     <Compile Include="ErrorChecks\CheckOffGridVertices.cs" />
     <Compile Include="ErrorChecks\CheckStuckThings.cs" />
     <Compile Include="ErrorChecks\CheckLineReferences.cs" />
@@ -134,6 +136,7 @@
     <Compile Include="ErrorChecks\ResultLineNotDoubleSided.cs" />
     <Compile Include="ErrorChecks\ResultLineMissingFront.cs" />
     <Compile Include="ErrorChecks\ResultLineMissingSides.cs" />
+    <Compile Include="ErrorChecks\ResultMissingActivation.cs" />
     <Compile Include="ErrorChecks\ResultOffGridVertex.cs" />
     <Compile Include="ErrorChecks\ResultSectorUnclosed.cs" />
     <Compile Include="ErrorChecks\ResultStuckThingInLine.cs" />
