@@ -92,6 +92,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private MenusForm menusform;
 		private FindReplaceForm findreplaceform;
 		private ErrorCheckForm errorcheckform;
+        private QuickTextureForm quicktextureform;
 		private PreferencesForm preferencesform;
 		
 		// Dockers
@@ -150,7 +151,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public MenusForm MenusForm { get { return menusform; } }
 		public FindReplaceForm FindReplaceForm { get { return findreplaceform ?? (findreplaceform = new FindReplaceForm()); } }
 		public ErrorCheckForm ErrorCheckForm { get { return errorcheckform ?? (errorcheckform = new ErrorCheckForm()); } }
-		public PreferencesForm PreferencesForm { get { return preferencesform; } }
+        public QuickTextureForm QuickTextureForm { get { return quicktextureform ?? (quicktextureform = new QuickTextureForm()); } }
+        public PreferencesForm PreferencesForm { get { return preferencesform; } }
 
 		// Settings
 		public int ShowVisualThings { get { return showvisualthings; } set { showvisualthings = value; } }
@@ -258,9 +260,14 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					errorcheckform.Dispose();
 					errorcheckform = null;
 				}
-				
-				// Done
-				me = null;
+                if (quicktextureform != null)
+                {
+                    quicktextureform.Dispose();
+                    quicktextureform = null;
+                }
+
+                // Done
+                me = null;
 				base.Dispose();
 			}
 		}

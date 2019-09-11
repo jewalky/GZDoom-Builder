@@ -17,6 +17,7 @@
 #region ================== Namespaces
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.BuilderModes.Interface;
@@ -2095,69 +2096,74 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			PostAction();
 		}
 
-        [BeginAction("grabtexture1")]
-        public void GrabTexture1() { GrabTexture(1); }
-        [BeginAction("grabtexture2")]
-        public void GrabTexture2() { GrabTexture(2); }
-        [BeginAction("grabtexture3")]
-        public void GrabTexture3() { GrabTexture(3); }
-        [BeginAction("grabtexture4")]
-        public void GrabTexture4() { GrabTexture(4); }
-        [BeginAction("grabtexture5")]
-        public void GrabTexture5() { GrabTexture(5); }
-        [BeginAction("grabtexture6")]
-        public void GrabTexture6() { GrabTexture(6); }
-        [BeginAction("grabtexture7")]
-        public void GrabTexture7() { GrabTexture(7); }
-        [BeginAction("grabtexture8")]
-        public void GrabTexture8() { GrabTexture(8); }
-        [BeginAction("grabtexture9")]
-        public void GrabTexture9() { GrabTexture(9); }
-        [BeginAction("grabtexture10")]
-        public void GrabTexture10() { GrabTexture(10); }
+        [BeginAction("grabquicktexture1")]
+        public void GrabQuickTexture1() { GrabQuickTexture(1); }
+        [BeginAction("grabquicktexture2")]
+        public void GrabQuickTexture2() { GrabQuickTexture(2); }
+        [BeginAction("grabquicktexture3")]
+        public void GrabQuickTexture3() { GrabQuickTexture(3); }
+        [BeginAction("grabquicktexture4")]
+        public void GrabQuickTexture4() { GrabQuickTexture(4); }
+        [BeginAction("grabquicktexture5")]
+        public void GrabQuickTexture5() { GrabQuickTexture(5); }
+        [BeginAction("grabquicktexture6")]
+        public void GrabQuickTexture6() { GrabQuickTexture(6); }
+        [BeginAction("grabquicktexture7")]
+        public void GrabQuickTexture7() { GrabQuickTexture(7); }
+        [BeginAction("grabquicktexture8")]
+        public void GrabQuickTexture8() { GrabQuickTexture(8); }
+        [BeginAction("grabquicktexture9")]
+        public void GrabQuickTexture9() { GrabQuickTexture(9); }
+        [BeginAction("grabquicktexture10")]
+        public void GrabQuickTexture10() { GrabQuickTexture(0); }
 
-        public void GrabTexture(int slot)
+        public void GrabQuickTexture(int slot)
         {
+            PreActionNoChange();
             IVisualEventReceiver target = GetTargetEventReceiver(true);
             string texture = target.GetTextureName();
-            General.Map.Options.TexturePalette[slot] = texture;
+            General.Map.Options.QuickTextures[slot] = texture;
             General.Interface.DisplayStatus(StatusType.Action, "Grabbed texture " + texture + " into slot " + slot + ".");
+            PostAction();
         }
 
-        [BeginAction("applytexture1")]
-        public void ApplyTexture1() { ApplyTexture(1); }
-        [BeginAction("applytexture2")]
-        public void ApplyTexture2() { ApplyTexture(2); }
-        [BeginAction("applytexture3")]
-        public void ApplyTexture3() { ApplyTexture(3); }
-        [BeginAction("applytexture4")]
-        public void ApplyTexture4() { ApplyTexture(4); }
-        [BeginAction("applytexture5")]
-        public void ApplyTexture5() { ApplyTexture(5); }
-        [BeginAction("applytexture6")]
-        public void ApplyTexture6() { ApplyTexture(6); }
-        [BeginAction("applytexture7")]
-        public void ApplyTexture7() { ApplyTexture(7); }
-        [BeginAction("applytexture8")]
-        public void ApplyTexture8() { ApplyTexture(8); }
-        [BeginAction("applytexture9")]
-        public void ApplyTexture9() { ApplyTexture(9); }
-        [BeginAction("applytexture10")]
-        public void ApplyTexture10() { ApplyTexture(10); }
+        [BeginAction("applyquicktexture1")]
+        public void ApplyQuickTexture1() { ApplyQuickTexture(1); }
+        [BeginAction("applyquicktexture2")]
+        public void ApplyQuickTexture2() { ApplyQuickTexture(2); }
+        [BeginAction("applyquicktexture3")]
+        public void ApplyQuickTexture3() { ApplyQuickTexture(3); }
+        [BeginAction("applyquicktexture4")]
+        public void ApplyQuickTexture4() { ApplyQuickTexture(4); }
+        [BeginAction("applyquicktexture5")]
+        public void ApplyQuickTexture5() { ApplyQuickTexture(5); }
+        [BeginAction("applyquicktexture6")]
+        public void ApplyQuickTexture6() { ApplyQuickTexture(6); }
+        [BeginAction("applyquicktexture7")]
+        public void ApplyQuickTexture7() { ApplyQuickTexture(7); }
+        [BeginAction("applyquicktexture8")]
+        public void ApplyQuickTexture8() { ApplyQuickTexture(8); }
+        [BeginAction("applyquicktexture9")]
+        public void ApplyQuickTexture9() { ApplyQuickTexture(9); }
+        [BeginAction("applyquicktexture10")]
+        public void ApplyQuickTexture10() { ApplyQuickTexture(0); }
 
-        public void ApplyTexture(int slot)
+        public void ApplyQuickTexture(int slot)
         {
             string texture = null;
-            General.Map.Options.TexturePalette.TryGetValue(slot, out texture);
-            if (texture == null)
+            General.Map.Options.QuickTextures.TryGetValue(slot, out texture);
+
+            if (new string[] { null, "-", ""}.Contains(texture))
             {
                 General.Interface.DisplayStatus(StatusType.Action, "No texture in slot " + slot + " - grab one first");
             }
             else
             {
+                PreAction(UndoGroup.None);
                 ApplySelectTexture(texture, false);
                 General.Interface.DisplayStatus(StatusType.Action, "Applied texture \"" + texture + "\" to selection");
             }
+            PostAction();
         }
 
         [BeginAction("visualedit", BaseAction = true)]
