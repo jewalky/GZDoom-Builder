@@ -814,6 +814,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 		}
 
+        [BeginAction("quicktexturesetup")]
+        private void SetupQuickTextures()
+        {
+            QuickTextureForm quickTextureForm = new QuickTextureForm();
+            quickTextureForm.Show((Form)General.Interface);
+        }
+
 		#endregion
 	}
 }

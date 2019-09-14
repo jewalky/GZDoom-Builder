@@ -87,11 +87,11 @@ namespace CodeImp.DoomBuilder.Map
 		private bool uselongtexturenames;
 		private bool useresourcesinreadonlymode;
 
-        // List that represents the palette for quick texture access
-        private Dictionary<int, string> quicktextures = new Dictionary<int, string>();
+		// List that represents the palette for quick texture access
+		private Dictionary<int, string> quicktextures = new Dictionary<int, string>();
 
-        //mxd. Position and scale
-        private readonly Vector2D viewposition;
+		//mxd. Position and scale
+		private readonly Vector2D viewposition;
 		private readonly float viewscale;
 		
 		#endregion
@@ -148,10 +148,10 @@ namespace CodeImp.DoomBuilder.Map
 		public bool UseLongTextureNames { get { return uselongtexturenames; } set { uselongtexturenames = value; } }
 		public bool UseResourcesInReadonlyMode { get { return useresourcesinreadonlymode; } set { useresourcesinreadonlymode = value; } }
 
-        public Dictionary<int, string> QuickTextures { get { return quicktextures; } set { quicktextures = value; } }
+		public Dictionary<int, string> QuickTextures { get { return quicktextures; } set { quicktextures = value; } }
 
-        //mxd. Position and scale
-        public Vector2D ViewPosition { get { return viewposition; } }
+		//mxd. Position and scale
+		public Vector2D ViewPosition { get { return viewposition; } }
 		public float ViewScale { get { return viewscale; } }
 
 		#endregion
@@ -239,14 +239,14 @@ namespace CodeImp.DoomBuilder.Map
 			overrideceilheight = this.mapconfig.ReadSetting("overrideceilheight", false);
 			overridebrightness = this.mapconfig.ReadSetting("overridebrightness", false);
 
-            //Read quick textures
-            for (int slot = 0; slot < 10; slot++)
-            {
-                this.quicktextures[slot] = this.mapconfig.ReadSetting("quicktexture" + slot, "");
-            }
+			//Read quick textures
+			for (int slot = 0; slot < 10; slot++)
+			{
+				this.quicktextures[slot] = this.mapconfig.ReadSetting("quicktexture" + slot, "");
+			}
 
-            //mxd
-            uselongtexturenames = longtexturenamessupported && this.mapconfig.ReadSetting("uselongtexturenames", false);
+			//mxd
+			uselongtexturenames = longtexturenamessupported && this.mapconfig.ReadSetting("uselongtexturenames", false);
 			useresourcesinreadonlymode = this.mapconfig.ReadSetting("useresourcesinreadonlymode", false);
 
 			//mxd. Position and scale
@@ -339,17 +339,17 @@ namespace CodeImp.DoomBuilder.Map
 			//mxd. Save selection groups
 			General.Map.Map.WriteSelectionGroups(mapconfig);
 
-            //Save quick textures, if any
-            for (int slot = 0; slot < 10; slot++)
-            {
-                if (General.Map.Options.QuickTextures.ContainsKey(slot))
-                {
-                    mapconfig.WriteSetting("quicktexture" + slot, General.Map.Options.QuickTextures[slot]);
-                }
-            }
+			//Save quick textures, if any
+			for (int slot = 0; slot < 10; slot++)
+			{
+				if (General.Map.Options.QuickTextures.ContainsKey(slot))
+				{
+					mapconfig.WriteSetting("quicktexture" + slot, General.Map.Options.QuickTextures[slot]);
+				}
+			}
 
-            //mxd. Save Tag Labels
-            if (tagLabels.Count > 0) 
+			//mxd. Save Tag Labels
+			if (tagLabels.Count > 0) 
 			{
 				ListDictionary tagLabelsData = new ListDictionary();
 				int counter = 1;

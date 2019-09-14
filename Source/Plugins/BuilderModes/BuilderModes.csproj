@@ -123,7 +123,6 @@
     <Compile Include="ClassicModes\DrawGeometryMode.cs" />
     <Compile Include="ClassicModes\FindReplaceMode.cs" />
     <Compile Include="ClassicModes\MakeSectorMode.cs" />
-    <Compile Include="ClassicModes\QuickTextureSetupMode.cs" />
     <Compile Include="ErrorChecks\CheckClosedSectors.cs" />
     <Compile Include="ErrorChecks\CheckOffGridVertices.cs" />
     <Compile Include="ErrorChecks\CheckStuckThings.cs" />
