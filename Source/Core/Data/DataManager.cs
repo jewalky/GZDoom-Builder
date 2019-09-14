@@ -481,9 +481,6 @@ namespace CodeImp.DoomBuilder.Data
 			LoadSndSeq();
 			LoadSndInfo();
 			LoadVoxels();
-			Dictionary<string, int> actorsbyclass = CreateActorsByClassList();
-			LoadModeldefs(actorsbyclass);
-			foreach(Thing t in General.Map.Map.Things) t.UpdateCache();
 			General.MainWindow.DisplayReady();
 			
 			// Process colormaps (we just put them in as textures)
@@ -568,7 +565,6 @@ namespace CodeImp.DoomBuilder.Data
 
 			//mxd. Should be done after loading textures...
 			int hirestexcount = LoadHiResTextures();
-			LoadGldefs(actorsbyclass);
 
 			//mxd. Create camera textures. Should be done after loading textures.
 			LoadAnimdefs();
@@ -580,8 +576,15 @@ namespace CodeImp.DoomBuilder.Data
 			texturenames.Sort();
 			flatnames.Sort();
 
+			// biwa. Moved model processing after texture processing, since the model might need one of those textures
+			Dictionary<string, int> actorsbyclass = CreateActorsByClassList();
+			LoadModeldefs(actorsbyclass);
+			foreach (Thing t in General.Map.Map.Things) t.UpdateCache();
+
+			LoadGldefs(actorsbyclass);
+
 			// Sort things
-			foreach(ThingCategory tc in thingcategories) tc.SortIfNeeded();
+			foreach (ThingCategory tc in thingcategories) tc.SortIfNeeded();
 
 			// Update the used textures
 			General.Map.Data.UpdateUsedTextures();

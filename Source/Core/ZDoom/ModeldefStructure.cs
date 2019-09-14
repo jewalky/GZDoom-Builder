@@ -63,6 +63,7 @@ namespace CodeImp.DoomBuilder.ZDoom
 		public bool InheritActorPitch { get { return inheritactorpitch; } }
 		public bool UseActorPitch { get { return useactorpitch; } }
 		public bool UseActorRoll { get { return useactorroll; } }
+		public string DataPath { get { return path; } } // biwa
 
 		public Dictionary<string, HashSet<FrameStructure>> Frames { get { return frames; } }
 
@@ -150,9 +151,9 @@ namespace CodeImp.DoomBuilder.ZDoom
 							return false;
 						}
 
-						if(modelext != ".md3" && modelext != ".md2" && modelext != ".3d") 
+						if(modelext != ".md3" && modelext != ".md2" && modelext != ".3d" && modelext != ".obj") 
 						{
-							parser.ReportError("Model \"" + token + "\" won't be loaded. Only Unreal 3D, MD2 and MD3 models are supported");
+							parser.ReportError("Model \"" + token + "\" won't be loaded. Only Unreal 3D, MD2, MD3, and OBJ models are supported");
 							return false;
 						}
 
@@ -193,16 +194,8 @@ namespace CodeImp.DoomBuilder.ZDoom
 						// Check invalid path chars
 						if(!parser.CheckInvalidPathChars(token)) return false;
 
-						// Check extension
-						string texext = Path.GetExtension(token);
-						if(Array.IndexOf(ModelData.SUPPORTED_TEXTURE_EXTENSIONS, texext) == -1) 
-						{
-							parser.ReportError("Image format \"" + texext + "\" is not supported");
-							return false;
-						} 
-
 						// GZDoom allows skins with identical index, it uses the last one encountered
-						skinnames[skinindex] = Path.Combine(path, token).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+						skinnames[skinindex] = Path.Combine(path, token);
 						break;
 
 					// SurfaceSkin <int modelindex> <int surfaceindex> <string skinfile>
@@ -257,14 +250,6 @@ namespace CodeImp.DoomBuilder.ZDoom
 
 						// Check invalid path chars
 						if(!parser.CheckInvalidPathChars(token)) return false;
-
-						// Check extension
-						string skinext = Path.GetExtension(token);
-						if(Array.IndexOf(ModelData.SUPPORTED_TEXTURE_EXTENSIONS, skinext) == -1)
-						{
-							parser.ReportError("Image format \"" + skinext + "\" is not supported");
-							return false;
-						} 
 
 						// Store
 						surfaceskinenames[modelindex][surfaceindex] = Path.Combine(path, token).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);

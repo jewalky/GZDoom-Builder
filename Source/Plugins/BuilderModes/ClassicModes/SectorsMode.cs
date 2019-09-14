@@ -1070,7 +1070,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 						{
 							//toggle selected state
 							highlighted = s;
-							if(General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+							if(General.Interface.ShiftState ^ BuilderPlug.Me.AdditivePaintSelect)
 								SelectSector(highlighted, true, true);
 							else if(General.Interface.CtrlState)
 								SelectSector(highlighted, false, true);
@@ -1165,7 +1165,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			if(highlighted != null) 
 			{
-				if(General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+				if(General.Interface.ShiftState ^ BuilderPlug.Me.AdditivePaintSelect)
 					SelectSector(highlighted, true, true);
 				else if(General.Interface.CtrlState)
 					SelectSector(highlighted, false, true);

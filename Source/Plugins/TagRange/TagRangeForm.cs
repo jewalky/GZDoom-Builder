@@ -102,10 +102,12 @@ namespace CodeImp.DoomBuilder.TagRange
 			//mxd. Get relative tag range
 			if(relative) 
 			{
+				int addtag = 0; // biwa
+
 				// Go for the number of tags we need
 				for(int i = 0; i < selectioncount; i++) 
 				{
-					int newtag = initialtags[i] + starttag;
+					int newtag = initialtags[i] + starttag + addtag;
 
 					if(newtag > General.Map.FormatInterface.MaxTag || newtag < General.Map.FormatInterface.MinTag) 
 					{
@@ -124,7 +126,8 @@ namespace CodeImp.DoomBuilder.TagRange
 								return newtags;
 							}
 
-							starttag += increment; //mxd
+							newtag += increment; //mxd // biwa
+							addtag += increment; // biwa
 						}
 					} 
 					else 
@@ -133,7 +136,7 @@ namespace CodeImp.DoomBuilder.TagRange
 					}
 
 					newtags.Add(newtag);
-					starttag += increment;
+					addtag += increment;
 				}
 			} 
 			else //mxd. Get absolute tag range

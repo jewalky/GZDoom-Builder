@@ -30,8 +30,6 @@ namespace CodeImp.DoomBuilder.Controls
 		private bool showfullname;
 		protected ImageBrowserItemType itemtype;
 		private string tooltip;
-		private int namewidth;
-		private int shortnamewidth;
 
         private static Brush bgbrush, fgbrush_used, fgbrush_unused, selectedbgbrush, selectionbrush, selectiontextbrush, bgbrush_alpha;
         private static Color bgcolor;
@@ -48,7 +46,7 @@ namespace CodeImp.DoomBuilder.Controls
 		public virtual bool IsPreviewLoaded { get { return icon.IsPreviewLoaded; } }
 		public bool ShowFullName { set { showfullname = value; } get { return showfullname && (!(icon is PK3FileImage) || !((PK3FileImage)icon).IsBadForLongTextureNames); } }
 		public virtual string TextureName { get { return (ShowFullName ? icon.Name : icon.ShortName); } }
-		public virtual int TextureNameWidth { get { return (ShowFullName ? namewidth : shortnamewidth); } }
+		public virtual int TextureNameWidth { get { return ShowFullName ? icon.NameWidth : icon.ShortNameWidth; } } // biwa
 		public string ToolTip { get { return tooltip; } }
 
 		#endregion
@@ -65,10 +63,6 @@ namespace CodeImp.DoomBuilder.Controls
 			this.showfullname = showfullname; //mxd
 			this.imageloaded = icon.IsPreviewLoaded; //mxd
 			this.tooltip = tooltip; //mxd
-            
-			//mxd. Calculate names width
-			this.namewidth = (int)Math.Ceiling(General.Interface.MeasureString(icon.Name, SystemFonts.MessageBoxFont, 10000, StringFormat.GenericTypographic).Width)+6;
-			this.shortnamewidth = (int)Math.Ceiling(General.Interface.MeasureString(icon.ShortName, SystemFonts.MessageBoxFont, 10000, StringFormat.GenericTypographic).Width)+6;
 		}
 
 		#endregion

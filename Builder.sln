@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Builder", "Source\Core\Builder.csproj", "{818B3D10-F791-4C3F-9AF5-BB2D0079B63C}"
 EndProject
@@ -20,6 +20,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagRange", "Source\Plugins\TagRange\TagRange.csproj", "{F49EFF6D-51CB-4E49-8223-AAE653C5B62F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VisplaneExplorer", "Source\Plugins\VisplaneExplorer\VisplaneExplorer.csproj", "{CF670175-7099-4090-A330-EE25C7230139}"
+	ProjectSection(ProjectDependencies) = postProject
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE} = {29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoundPropagation", "Source\Plugins\SoundPropagationMode\SoundPropagation.csproj", "{F59B344C-DD50-4DB7-ADDD-56AAD66450AF}"
 EndProject
@@ -29,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StairSectorBuilder", "Sourc
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutomapMode", "Source\Plugins\AutomapMode\AutomapMode.csproj", "{B33F68D5-1335-400C-A1D7-7F5602A030EF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vpo_dll", "Source\Plugins\vpo_dll\vpo_dll.vcxproj", "{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -234,6 +239,22 @@ Global
 		{B33F68D5-1335-400C-A1D7-7F5602A030EF}.Release|x64.Build.0 = Release|x64
 		{B33F68D5-1335-400C-A1D7-7F5602A030EF}.Release|x86.ActiveCfg = Release|x86
 		{B33F68D5-1335-400C-A1D7-7F5602A030EF}.Release|x86.Build.0 = Release|x86
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Debug + Profiler|x64.ActiveCfg = Debug|x64
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Debug + Profiler|x64.Build.0 = Debug|x64
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Debug + Profiler|x86.ActiveCfg = Debug|Win32
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Debug + Profiler|x86.Build.0 = Debug|Win32
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Debug|x64.ActiveCfg = Debug|x64
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Debug|x64.Build.0 = Debug|x64
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Debug|x86.ActiveCfg = Debug|Win32
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Debug|x86.Build.0 = Debug|Win32
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Release + Profiler|x64.ActiveCfg = Release|Win32
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Release + Profiler|x64.Build.0 = Release|Win32
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Release + Profiler|x86.ActiveCfg = Release|Win32
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Release + Profiler|x86.Build.0 = Release|Win32
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Release|x64.ActiveCfg = Release|x64
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Release|x64.Build.0 = Release|x64
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Release|x86.ActiveCfg = Release|Win32
+		{29C8D76F-DE3D-482D-AD7D-B86BBD0824DE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

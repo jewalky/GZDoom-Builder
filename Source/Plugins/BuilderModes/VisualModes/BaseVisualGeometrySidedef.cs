@@ -528,6 +528,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			if(ignorelight) lightabsolute = false;
 		}
 
+		// biwa
+		protected static float GetNewTexutreOffset(float oldValue, float offset, float textureSize)
+		{
+			return GetRoundedTextureOffset(oldValue, offset, 1.0f, textureSize);
+		}
+
 		//mxd
 		protected static float GetRoundedTextureOffset(float oldValue, float offset, float scale, float textureSize) 
 		{
@@ -1420,7 +1426,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				if (mode.PaintSelectType == this.GetType().BaseType && mode.Highlighted != this) // using BaseType so that middle, upper, lower, etc can be selecting in one go
 				{
 					// toggle selected state
-					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+					if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditivePaintSelect)
 					{
 						this.selected = true;
 						mode.AddSelectedObject(this);
@@ -1703,7 +1709,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			mode.PaintSelectType = this.GetType().BaseType; // using BaseType so that middle, upper, lower, etc can be selecting in one go
 
 			// toggle selected state
-			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+			if (General.Interface.ShiftState ^ BuilderPlug.Me.AdditivePaintSelect)
 			{
 				this.selected = true;
 				mode.AddSelectedObject(this);

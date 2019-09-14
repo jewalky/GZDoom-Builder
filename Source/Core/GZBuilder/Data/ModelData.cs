@@ -14,7 +14,9 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 	{
 		#region ================== Constants
 
-		public static readonly string[] SUPPORTED_TEXTURE_EXTENSIONS = { ".jpg", ".tga", ".png", ".dds", ".pcx" };
+		// Keep sage order of extensions as in GZDoom's r_data\models\models.cpp FindGFXFile function. That doesn't
+		// list .dds, but just keep it in here
+		public static readonly string[] SUPPORTED_TEXTURE_EXTENSIONS = { ".png", ".jpg", ".tga", ".pcx", ".dds" };
 
 		#endregion
 
@@ -35,6 +37,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 		internal List<Dictionary<int, string>> SurfaceSkinNames;
 		internal List<string> FrameNames;
 		internal List<int> FrameIndices;
+		internal string Path; // biwa
 
 		internal GZModel Model;
 
@@ -69,6 +72,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 			SurfaceSkinNames = new List<Dictionary<int, string>>();
 			FrameNames = new List<string>();
 			FrameIndices = new List<int>();
+			Path = string.Empty;
 			transform = Matrix.Identity;
 			transformstretched = Matrix.Identity;
 			hashcode = hashcounter++;

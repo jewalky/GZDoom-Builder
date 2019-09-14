@@ -394,6 +394,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		// This updates the selection
 		private void Update()
 		{
+			// biwa. This is a fix for autodrag, since it will actually fire OnMouseLeave and would crash when Update is called while the
+			// mouse is outside the window. This does *not* happen when dragging without autodrag.
+			if (!mouseinside) return;
+
 			// Not in any modifying mode?
 			if(mode == ModifyMode.None)
 			{
