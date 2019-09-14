@@ -308,8 +308,6 @@
             this.Name = "QuickTextureForm";
             this.ShowInTaskbar = false;
             this.Text = "Quick Textures";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.QuickTextureForm_FormClosing);
-            this.Load += new System.EventHandler(this.QuickTextureForm_Load);
             this.ResumeLayout(false);
 
         }

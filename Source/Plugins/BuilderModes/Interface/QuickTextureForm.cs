@@ -78,24 +78,6 @@ namespace CodeImp.DoomBuilder.BuilderModes.Interface
 		{
 			this.DialogResult = DialogResult.Cancel;
 			this.Close();
-			General.Interface.Focus();
-			General.Editing.CancelMode();
-		}
-
-		private void QuickTextureForm_Load(object sender, EventArgs e)
-		{
-
-		}
-
-		private void QuickTextureForm_FormClosing(object sender, FormClosingEventArgs e)
-		{
-			// If the user closes the form, then just cancel the mode
-			if (e.CloseReason == CloseReason.UserClosing)
-			{
-				e.Cancel = true;
-				General.Interface.Focus();
-				General.Editing.CancelMode();
-			}
 		}
 	}
 }

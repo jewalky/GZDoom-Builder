@@ -767,14 +767,14 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				// Remove all vertex handles from selection
 				if(vertices != null && vertices.Count > 0) 
 				{
-                    for (int i = 0; i < selectedobjects.Count; i++)
-                    {
-                        if (selectedobjects[i] is BaseVisualVertex)
-                        {
-                            RemoveSelectedObject(selectedobjects[i]);
-                            i--;
-                        }
-                    }
+					for (int i = 0; i < selectedobjects.Count; i++)
+					{
+						if (selectedobjects[i] is BaseVisualVertex)
+						{
+							RemoveSelectedObject(selectedobjects[i]);
+							i--;
+						}
+					}
 				}
 			}
 
@@ -1068,19 +1068,19 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			cameraflooroffset = General.Map.Config.ReadSetting("cameraflooroffset", cameraflooroffset);
 			cameraceilingoffset = General.Map.Config.ReadSetting("cameraceilingoffset", cameraceilingoffset);
 
-            //mxd. Update fog color (otherwise FogBoundaries won't be setup correctly)
-            foreach (Sector s in General.Map.Map.Sectors)
-                s.UpdateFogColor();
+			//mxd. Update fog color (otherwise FogBoundaries won't be setup correctly)
+			foreach (Sector s in General.Map.Map.Sectors)
+				s.UpdateFogColor();
 
-            // (Re)create special effects
-            RebuildElementData();
+			// (Re)create special effects
+			RebuildElementData();
 
-            //mxd. Update event lines
-            renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
+			//mxd. Update event lines
+			renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
 
-            // [ZZ] this enables calling of this object from the outside world. Only after properly initialized pls.
-            base.OnEngage();
-        }
+			// [ZZ] this enables calling of this object from the outside world. Only after properly initialized pls.
+			base.OnEngage();
+		}
 
 		// When returning to another mode
 		public override void OnDisengage()
@@ -1718,8 +1718,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 		}
 
-        // This returns all selected objects
-        internal List<IVisualEventReceiver> GetSelectedObjects(bool includesectors, bool includesidedefs, bool includethings, bool includevertices)
+		// This returns all selected objects
+		internal List<IVisualEventReceiver> GetSelectedObjects(bool includesectors, bool includesidedefs, bool includethings, bool includevertices)
 		{
 			List<IVisualEventReceiver> objs = new List<IVisualEventReceiver>();
 			foreach(IVisualEventReceiver i in selectedobjects)
@@ -1981,82 +1981,82 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			return t;
-        }
+		}
 		
 		#endregion
 
 		#region ================== Actions
 
-        // [ZZ] I moved this out of ClearSelection because "cut selection" action needs this to only affect things.
-        private void ClearSelection(bool clearsectors, bool clearsidedefs, bool clearthings, bool clearvertices, bool displaystatus)
-        {
-            selectedobjects.RemoveAll(obj =>
-            {
-                return ((obj is BaseVisualGeometrySector && clearsectors) ||
-                        (obj is BaseVisualGeometrySidedef && clearsidedefs) ||
-                        (obj is BaseVisualThing && clearthings) ||
-                        (obj is BaseVisualVertex && clearvertices));
-            });
+		// [ZZ] I moved this out of ClearSelection because "cut selection" action needs this to only affect things.
+		private void ClearSelection(bool clearsectors, bool clearsidedefs, bool clearthings, bool clearvertices, bool displaystatus)
+		{
+			selectedobjects.RemoveAll(obj =>
+			{
+				return ((obj is BaseVisualGeometrySector && clearsectors) ||
+						(obj is BaseVisualGeometrySidedef && clearsidedefs) ||
+						(obj is BaseVisualThing && clearthings) ||
+						(obj is BaseVisualVertex && clearvertices));
+			});
 
-            //
-            foreach (KeyValuePair<Sector, VisualSector> vs in allsectors)
-            {
-                if (vs.Value != null)
-                {
-                    BaseVisualSector bvs = (BaseVisualSector)vs.Value;
-                    if (clearsectors)
-                    {
-                        if (bvs.Floor != null) bvs.Floor.Selected = false;
-                        if (bvs.Ceiling != null) bvs.Ceiling.Selected = false;
-                        foreach (VisualFloor vf in bvs.ExtraFloors) vf.Selected = false;
-                        foreach (VisualCeiling vc in bvs.ExtraCeilings) vc.Selected = false;
-                        foreach (VisualFloor vf in bvs.ExtraBackFloors) vf.Selected = false; //mxd
-                        foreach (VisualCeiling vc in bvs.ExtraBackCeilings) vc.Selected = false; //mxd
-                    }
+			//
+			foreach (KeyValuePair<Sector, VisualSector> vs in allsectors)
+			{
+				if (vs.Value != null)
+				{
+					BaseVisualSector bvs = (BaseVisualSector)vs.Value;
+					if (clearsectors)
+					{
+						if (bvs.Floor != null) bvs.Floor.Selected = false;
+						if (bvs.Ceiling != null) bvs.Ceiling.Selected = false;
+						foreach (VisualFloor vf in bvs.ExtraFloors) vf.Selected = false;
+						foreach (VisualCeiling vc in bvs.ExtraCeilings) vc.Selected = false;
+						foreach (VisualFloor vf in bvs.ExtraBackFloors) vf.Selected = false; //mxd
+						foreach (VisualCeiling vc in bvs.ExtraBackCeilings) vc.Selected = false; //mxd
+					}
 
-                    if (clearsidedefs)
-                    {
-                        foreach (Sidedef sd in vs.Key.Sidedefs)
-                        {
-                            //mxd. VisualSidedefParts can contain references to visual geometry, which is not present in VisualSector.sidedefgeometry
-                            bvs.GetSidedefParts(sd).DeselectAllParts();
-                        }
-                    }
-                }
-            }
+					if (clearsidedefs)
+					{
+						foreach (Sidedef sd in vs.Key.Sidedefs)
+						{
+							//mxd. VisualSidedefParts can contain references to visual geometry, which is not present in VisualSector.sidedefgeometry
+							bvs.GetSidedefParts(sd).DeselectAllParts();
+						}
+					}
+				}
+			}
 
-            if (clearthings)
-            {
-                foreach (KeyValuePair<Thing, VisualThing> vt in allthings)
-                {
-                    if (vt.Value != null)
-                    {
-                        BaseVisualThing bvt = (BaseVisualThing)vt.Value;
-                        bvt.Selected = false;
-                    }
-                }
-            }
+			if (clearthings)
+			{
+				foreach (KeyValuePair<Thing, VisualThing> vt in allthings)
+				{
+					if (vt.Value != null)
+					{
+						BaseVisualThing bvt = (BaseVisualThing)vt.Value;
+						bvt.Selected = false;
+					}
+				}
+			}
 
-            //mxd
-            if (clearvertices)
-            {
-                if (General.Map.UDMF)
-                {
-                    foreach (KeyValuePair<Vertex, VisualVertexPair> pair in vertices) pair.Value.Deselect();
-                }
-            }
+			//mxd
+			if (clearvertices)
+			{
+				if (General.Map.UDMF)
+				{
+					foreach (KeyValuePair<Vertex, VisualVertexPair> pair in vertices) pair.Value.Deselect();
+				}
+			}
 
-            //mxd
-            if (displaystatus)
-            {
-                General.Interface.DisplayStatus(StatusType.Selection, string.Empty);
-            }
-        }
+			//mxd
+			if (displaystatus)
+			{
+				General.Interface.DisplayStatus(StatusType.Selection, string.Empty);
+			}
+		}
 
-        [BeginAction("clearselection", BaseAction = true)]
+		[BeginAction("clearselection", BaseAction = true)]
 		public void ClearSelection()
 		{
-            ClearSelection(true, true, true, true, true);
+			ClearSelection(true, true, true, true, true);
 		}
 
 		[BeginAction("visualselect", BaseAction = true)]
@@ -2096,77 +2096,77 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			PostAction();
 		}
 
-        [BeginAction("grabquicktexture1")]
-        public void GrabQuickTexture1() { GrabQuickTexture(1); }
-        [BeginAction("grabquicktexture2")]
-        public void GrabQuickTexture2() { GrabQuickTexture(2); }
-        [BeginAction("grabquicktexture3")]
-        public void GrabQuickTexture3() { GrabQuickTexture(3); }
-        [BeginAction("grabquicktexture4")]
-        public void GrabQuickTexture4() { GrabQuickTexture(4); }
-        [BeginAction("grabquicktexture5")]
-        public void GrabQuickTexture5() { GrabQuickTexture(5); }
-        [BeginAction("grabquicktexture6")]
-        public void GrabQuickTexture6() { GrabQuickTexture(6); }
-        [BeginAction("grabquicktexture7")]
-        public void GrabQuickTexture7() { GrabQuickTexture(7); }
-        [BeginAction("grabquicktexture8")]
-        public void GrabQuickTexture8() { GrabQuickTexture(8); }
-        [BeginAction("grabquicktexture9")]
-        public void GrabQuickTexture9() { GrabQuickTexture(9); }
-        [BeginAction("grabquicktexture10")]
-        public void GrabQuickTexture10() { GrabQuickTexture(0); }
+		[BeginAction("grabquicktexture1")]
+		public void GrabQuickTexture1() { GrabQuickTexture(1); }
+		[BeginAction("grabquicktexture2")]
+		public void GrabQuickTexture2() { GrabQuickTexture(2); }
+		[BeginAction("grabquicktexture3")]
+		public void GrabQuickTexture3() { GrabQuickTexture(3); }
+		[BeginAction("grabquicktexture4")]
+		public void GrabQuickTexture4() { GrabQuickTexture(4); }
+		[BeginAction("grabquicktexture5")]
+		public void GrabQuickTexture5() { GrabQuickTexture(5); }
+		[BeginAction("grabquicktexture6")]
+		public void GrabQuickTexture6() { GrabQuickTexture(6); }
+		[BeginAction("grabquicktexture7")]
+		public void GrabQuickTexture7() { GrabQuickTexture(7); }
+		[BeginAction("grabquicktexture8")]
+		public void GrabQuickTexture8() { GrabQuickTexture(8); }
+		[BeginAction("grabquicktexture9")]
+		public void GrabQuickTexture9() { GrabQuickTexture(9); }
+		[BeginAction("grabquicktexture10")]
+		public void GrabQuickTexture10() { GrabQuickTexture(0); }
 
-        public void GrabQuickTexture(int slot)
-        {
-            PreActionNoChange();
-            IVisualEventReceiver target = GetTargetEventReceiver(true);
-            string texture = target.GetTextureName();
-            General.Map.Options.QuickTextures[slot] = texture;
-            General.Interface.DisplayStatus(StatusType.Action, "Grabbed texture " + texture + " into slot " + slot + ".");
-            PostAction();
-        }
+		public void GrabQuickTexture(int slot)
+		{
+			PreActionNoChange();
+			IVisualEventReceiver target = GetTargetEventReceiver(true);
+			string texture = target.GetTextureName();
+			General.Map.Options.QuickTextures[slot] = texture;
+			General.Interface.DisplayStatus(StatusType.Action, "Grabbed texture " + texture + " into slot " + slot + ".");
+			PostAction();
+		}
 
-        [BeginAction("applyquicktexture1")]
-        public void ApplyQuickTexture1() { ApplyQuickTexture(1); }
-        [BeginAction("applyquicktexture2")]
-        public void ApplyQuickTexture2() { ApplyQuickTexture(2); }
-        [BeginAction("applyquicktexture3")]
-        public void ApplyQuickTexture3() { ApplyQuickTexture(3); }
-        [BeginAction("applyquicktexture4")]
-        public void ApplyQuickTexture4() { ApplyQuickTexture(4); }
-        [BeginAction("applyquicktexture5")]
-        public void ApplyQuickTexture5() { ApplyQuickTexture(5); }
-        [BeginAction("applyquicktexture6")]
-        public void ApplyQuickTexture6() { ApplyQuickTexture(6); }
-        [BeginAction("applyquicktexture7")]
-        public void ApplyQuickTexture7() { ApplyQuickTexture(7); }
-        [BeginAction("applyquicktexture8")]
-        public void ApplyQuickTexture8() { ApplyQuickTexture(8); }
-        [BeginAction("applyquicktexture9")]
-        public void ApplyQuickTexture9() { ApplyQuickTexture(9); }
-        [BeginAction("applyquicktexture10")]
-        public void ApplyQuickTexture10() { ApplyQuickTexture(0); }
+		[BeginAction("applyquicktexture1")]
+		public void ApplyQuickTexture1() { ApplyQuickTexture(1); }
+		[BeginAction("applyquicktexture2")]
+		public void ApplyQuickTexture2() { ApplyQuickTexture(2); }
+		[BeginAction("applyquicktexture3")]
+		public void ApplyQuickTexture3() { ApplyQuickTexture(3); }
+		[BeginAction("applyquicktexture4")]
+		public void ApplyQuickTexture4() { ApplyQuickTexture(4); }
+		[BeginAction("applyquicktexture5")]
+		public void ApplyQuickTexture5() { ApplyQuickTexture(5); }
+		[BeginAction("applyquicktexture6")]
+		public void ApplyQuickTexture6() { ApplyQuickTexture(6); }
+		[BeginAction("applyquicktexture7")]
+		public void ApplyQuickTexture7() { ApplyQuickTexture(7); }
+		[BeginAction("applyquicktexture8")]
+		public void ApplyQuickTexture8() { ApplyQuickTexture(8); }
+		[BeginAction("applyquicktexture9")]
+		public void ApplyQuickTexture9() { ApplyQuickTexture(9); }
+		[BeginAction("applyquicktexture10")]
+		public void ApplyQuickTexture10() { ApplyQuickTexture(0); }
 
-        public void ApplyQuickTexture(int slot)
-        {
-            string texture = null;
-            General.Map.Options.QuickTextures.TryGetValue(slot, out texture);
+		public void ApplyQuickTexture(int slot)
+		{
+			string texture = null;
+			General.Map.Options.QuickTextures.TryGetValue(slot, out texture);
 
-            if (new string[] { null, "-", ""}.Contains(texture))
-            {
-                General.Interface.DisplayStatus(StatusType.Action, "No texture in slot " + slot + " - grab one first");
-            }
-            else
-            {
-                PreAction(UndoGroup.None);
-                ApplySelectTexture(texture, false);
-                General.Interface.DisplayStatus(StatusType.Action, "Applied texture \"" + texture + "\" to selection");
-            }
-            PostAction();
-        }
+			if (new string[] { null, "-", ""}.Contains(texture))
+			{
+				General.Interface.DisplayStatus(StatusType.Action, "No texture in slot " + slot + " - grab one first");
+			}
+			else
+			{
+				PreAction(UndoGroup.None);
+				ApplySelectTexture(texture, false);
+				General.Interface.DisplayStatus(StatusType.Action, "Applied texture \"" + texture + "\" to selection");
+			}
+			PostAction();
+		}
 
-        [BeginAction("visualedit", BaseAction = true)]
+		[BeginAction("visualedit", BaseAction = true)]
 		public void BeginEdit()
 		{
 			PreAction(UndoGroup.None);
@@ -2200,45 +2200,45 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			PostAction();
 		}
 
-	    [BeginAction("raisesector1")]
-	    public void RaiseSector1() {
-	        PreAction(UndoGroup.SectorHeightChange);
-	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-	        foreach (IVisualEventReceiver i in objs)
-	            i.OnChangeTargetHeight(1);
-	        PostAction();
-	    }
+	[BeginAction("raisesector1")]
+	public void RaiseSector1() {
+		PreAction(UndoGroup.SectorHeightChange);
+		List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+		foreach (IVisualEventReceiver i in objs)
+			i.OnChangeTargetHeight(1);
+		PostAction();
+	}
 
-	    [BeginAction("lowersector1")]
-	    public void LowerSector1() {
-	        PreAction(UndoGroup.SectorHeightChange);
-	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-	        foreach (IVisualEventReceiver i in objs)
-	            i.OnChangeTargetHeight(-1);
-	        PostAction();
-	    }
+	[BeginAction("lowersector1")]
+	public void LowerSector1() {
+		PreAction(UndoGroup.SectorHeightChange);
+		List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+		foreach (IVisualEventReceiver i in objs)
+			i.OnChangeTargetHeight(-1);
+		PostAction();
+	}
 
-	    [BeginAction("raisesector128")]
-	    public void RaiseSector128() {
-	        PreAction(UndoGroup.SectorHeightChange);
-	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-	        foreach (IVisualEventReceiver i in objs)
-	            i.OnChangeTargetHeight(128);
-	        PostAction();
-	    }
+	[BeginAction("raisesector128")]
+	public void RaiseSector128() {
+		PreAction(UndoGroup.SectorHeightChange);
+		List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+		foreach (IVisualEventReceiver i in objs)
+			i.OnChangeTargetHeight(128);
+		PostAction();
+	}
 
-	    [BeginAction("lowersector128")]
-	    public void LowerSector128() {
-	        PreAction(UndoGroup.SectorHeightChange);
-	        List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-	        foreach (IVisualEventReceiver i in objs)
-	            i.OnChangeTargetHeight(-128);
-	        PostAction();
-	    }
+	[BeginAction("lowersector128")]
+	public void LowerSector128() {
+		PreAction(UndoGroup.SectorHeightChange);
+		List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
+		foreach (IVisualEventReceiver i in objs)
+			i.OnChangeTargetHeight(-128);
+		PostAction();
+	}
 
 
-        //mxd
-        [BeginAction("raisesectortonearest")]
+		//mxd
+		[BeginAction("raisesectortonearest")]
 		public void RaiseSectorToNearest() 
 		{
 			Dictionary<Sector, VisualFloor> floors = new Dictionary<Sector, VisualFloor>();
@@ -3258,13 +3258,13 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			PreAction(UndoGroup.None);
 			List<IVisualEventReceiver> objs = GetSelectedObjects(true, true, true, true);
-            foreach (IVisualEventReceiver i in objs)
-            {
-                if (i is BaseVisualThing)
-                    visiblethings.Remove(((BaseVisualThing)i).Thing); // [ZZ] if any
-                i.OnDelete();
-            }
-            PostAction();
+			foreach (IVisualEventReceiver i in objs)
+			{
+				if (i is BaseVisualThing)
+					visiblethings.Remove(((BaseVisualThing)i).Thing); // [ZZ] if any
+				i.OnDelete();
+			}
+			PostAction();
 
 			ClearSelection();
 		}
@@ -3302,8 +3302,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			foreach(IVisualEventReceiver i in objs) 
 			{
 				BaseVisualThing thing = (BaseVisualThing)i;
-                visiblethings.Remove(thing.Thing); // [ZZ] if any
-                thing.Thing.Fields.BeforeFieldsChange();
+				visiblethings.Remove(thing.Thing); // [ZZ] if any
+				thing.Thing.Fields.BeforeFieldsChange();
 				thing.Thing.Dispose();
 				thing.Dispose();
 			}
@@ -3311,11 +3311,11 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			General.Map.IsChanged = true;
 			General.Map.ThingsFilter.Update();
 
-            // [ZZ] Clear selected things.
-            ClearSelection(false, false, true, false, false);
+			// [ZZ] Clear selected things.
+			ClearSelection(false, false, true, false, false);
 
-            // Update event lines
-            renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
+			// Update event lines
+			renderer.SetEventLines(LinksCollector.GetHelperShapes(General.Map.ThingsFilter.VisibleThings, blockmap));
 		}
 
 		//mxd. We'll just use currently selected objects 
@@ -4398,10 +4398,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				Sidedef side1 = forward ? ld.Front : ld.Back;
 				Sidedef side2 = forward ? ld.Back : ld.Front;
 
-                // [ZZ] I don't know what logic here is.
-                //      I'm going to check if any side is marked, and if so, don't add.
-                if ((side1 != null && side1.Marked) ||
-                    (side2 != null && side2.Marked)) continue;
+				// [ZZ] I don't know what logic here is.
+				//	  I'm going to check if any side is marked, and if so, don't add.
+				if ((side1 != null && side1.Marked) ||
+					(side2 != null && side2.Marked)) continue;
 
 				if((ld.Start == v) && (side1 != null) && !side1.Marked) 
 				{
