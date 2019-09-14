@@ -17,14 +17,16 @@
 #region ================== Namespaces
 
 using CodeImp.DoomBuilder.Map;
+using System.Collections.Generic;
 using System.Threading;
+using System;
 
 #endregion
 
 namespace CodeImp.DoomBuilder.BuilderModes
 {
 	[ErrorChecker("Check missing textures", true, 80)]
-	public class CheckMissingTextures : ErrorChecker
+	public class CheckMissingTextures : BaseCheckTextures
 	{
 		#region ================== Constants
 
@@ -35,10 +37,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		#region ================== Constructor / Destructor
 
 		// Constructor
-		public CheckMissingTextures()
+		public CheckMissingTextures() : base()
 		{
-			// Total progress is done when all lines are checked
-			SetTotalProgress(General.Map.Map.Sidedefs.Count / PROGRESS_STEP);
 		}
 
 		#endregion
@@ -51,18 +51,50 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			int progress = 0;
 			int stepprogress = 0;
 
+			Build3DFloorCache();
+
 			// Go for all the sidedefs
 			foreach(Sidedef sd in General.Map.Map.Sidedefs)
 			{
 				// Check upper texture. Also make sure not to return a false
 				// positive if the sector on the other side has the ceiling
 				// set to be sky
-				if(sd.HighRequired() && sd.HighTexture == "-")
-				{
-					if(sd.Line.Action == 181 && sd.Line.Args[1] > 0) continue; //mxd. Ceiling slopes doesn't require upper texture
-					if(sd.Other != null && sd.Other.Sector.CeilTexture != General.Map.Config.SkyFlatName)
+				if (sd.LongHighTexture == MapSet.EmptyLongName) {
+					if (sd.HighRequired())
 					{
-						SubmitResult(new ResultMissingTexture(sd, SidedefPart.Upper));
+						if (sd.Line.Action == 181 && sd.Line.Args[1] > 0) continue; //mxd. Ceiling slopes doesn't require upper texture
+						if (sd.Other != null && sd.Other.Sector.CeilTexture != General.Map.Config.SkyFlatName)
+						{
+							SubmitResult(new ResultMissingTexture(sd, SidedefPart.Upper));
+						}
+					}
+					else if (sd.Other != null)
+					{
+						// Check if the sidedef's sector is a 3D floor. Since it points toward the 3D floor it only needs a texture if inside rendering is enabled
+						if (sd.Sector.Tags.Count > 0)
+						{
+							foreach (int tag in sd.Sector.Tags)
+							{
+								if (sector3dfloors.ContainsKey(tag) && sector3dfloors[tag].HasFlag(Flags3DFloor.UseUpper) && sector3dfloors[tag].HasFlag(Flags3DFloor.RenderInside))
+								{
+									SubmitResult(new ResultMissingTexture(sd, SidedefPart.Upper));
+									break;
+								}
+							}
+						}
+
+						// Check if the other sidedef's sector is a 3D floor, since we still might need a texture on this one depending on the flags
+						if (sd.Other.Sector.Tags.Count > 0)
+						{
+							foreach (int tag in sd.Other.Sector.Tags)
+							{
+								if (sector3dfloors.ContainsKey(tag) && sector3dfloors[tag].HasFlag(Flags3DFloor.UseUpper))
+								{
+									SubmitResult(new ResultMissingTexture(sd, SidedefPart.Upper));
+									break;
+								}
+							}
+						}
 					}
 				}
 
@@ -75,13 +107,45 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				// Check lower texture. Also make sure not to return a false
 				// positive if the sector on the other side has the floor
 				// set to be sky
-				if(sd.LowRequired() && sd.LowTexture == "-")
+				if(sd.LongLowTexture == MapSet.EmptyLongName)
 				{
-					if(sd.Line.Action == 181 && sd.Line.Args[0] > 0) continue; //mxd. Floor slopes doesn't require lower texture
-					if(sd.Other != null && sd.Other.Sector.FloorTexture != General.Map.Config.SkyFlatName)
+					if (sd.LowRequired())
 					{
-						SubmitResult(new ResultMissingTexture(sd, SidedefPart.Lower));
+						if (sd.Line.Action == 181 && sd.Line.Args[0] > 0) continue; //mxd. Floor slopes doesn't require lower texture
+						if (sd.Other != null && sd.Other.Sector.FloorTexture != General.Map.Config.SkyFlatName)
+						{
+							SubmitResult(new ResultMissingTexture(sd, SidedefPart.Lower));
+						}
 					}
+					else if (sd.Other != null)
+					{
+						// Check if the sidedef's sector is a 3D floor. Since it points toward the 3D floor it only needs a texture if inside rendering is enabled
+						if (sd.Sector.Tags.Count > 0)
+						{
+							foreach (int tag in sd.Sector.Tags)
+							{
+								if (sector3dfloors.ContainsKey(tag) && sector3dfloors[tag].HasFlag(Flags3DFloor.UseLower) && sector3dfloors[tag].HasFlag(Flags3DFloor.RenderInside))
+								{
+									SubmitResult(new ResultMissingTexture(sd, SidedefPart.Lower));
+									break;
+								}
+							}
+						}
+
+						// Check if the other sidedef's sector is a 3D floor, since we still might need a texture on this one depending on the flags
+						if (sd.Other.Sector.Tags.Count > 0)
+						{
+							foreach (int tag in sd.Other.Sector.Tags)
+							{
+								if (sector3dfloors.ContainsKey(tag) && sector3dfloors[tag].HasFlag(Flags3DFloor.UseLower))
+								{
+									SubmitResult(new ResultMissingTexture(sd, SidedefPart.Lower));
+									break;
+								}
+							}
+						}
+					}
+
 				}
 
 				// Handle thread interruption

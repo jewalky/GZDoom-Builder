@@ -104,6 +104,8 @@ namespace CodeImp.DoomBuilder.Data
 			this.longname = Lump.MakeLongName(this.name);
 			this.virtualname = filepathname.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 			this.filepathname = filepathname;
+
+			ComputeNamesWidth(); // biwa
 		}
 
 		// This loads the image

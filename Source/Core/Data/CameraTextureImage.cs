@@ -113,6 +113,8 @@ namespace CodeImp.DoomBuilder.Data
 
 			base.SetName(name);
 			this.virtualname = "[CAMERA TEXTURES]" + Path.AltDirectorySeparatorChar + name;
+
+			ComputeNamesWidth(); // biwa
 		}
 
 		#endregion

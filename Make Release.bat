@@ -21,8 +21,8 @@ CALL "%STUDIODIR%\Common7\Tools\vsvars32.bat"
 
 MKDIR "Release"
 
-git checkout "Source/Core/Properties/AssemblyInfo.cs" > NUL
-git checkout "Source/Plugins/BuilderModes/Properties/AssemblyInfo.cs" > NUL
+git.exe checkout "Source/Core/Properties/AssemblyInfo.cs" > NUL
+git.exe checkout "Source/Plugins/BuilderModes/Properties/AssemblyInfo.cs" > NUL
 
 ECHO.
 ECHO Writing GIT log file...
@@ -31,7 +31,7 @@ IF EXIST "Release\Changelog.xml" DEL /F /Q "Release\Changelog.xml" > NUL
 (
 echo [OB]?xml version="1.0" encoding="UTF-8"?[CB]
 echo [OB]log[CB]
-git log master --since=2012-04-17 --pretty=format:"[OB]logentry commit=\"%%h\"[CB]%%n[OB]author[CB]%%an[OB]/author[CB]%%n[OB]date[CB]%%aI[OB]/date[CB]%%n[OB]msg[CB]%%B[OB]/msg[CB]%%n[OB]/logentry[CB]"
+git.exe log master --since=2012-04-17 --pretty=format:"[OB]logentry commit=\"%%h\"[CB]%%n[OB]author[CB]%%an[OB]/author[CB]%%n[OB]date[CB]%%aI[OB]/date[CB]%%n[OB]msg[CB]%%B[OB]/msg[CB]%%n[OB]/logentry[CB]"
 echo [OB]/log[CB]
 ) >"Release\Changelog.xml"
 IF %ERRORLEVEL% NEQ 0 GOTO ERRORFAIL
@@ -180,8 +180,8 @@ IF NOT EXIST "Release\GZDB-Bugfix Setup.exe" GOTO FILEFAIL
 
 REN "Release\GZDB-Bugfix Setup.exe" "GZDB-Bugfix R%REVISIONNUMBER% Setup.exe"
 
-git checkout "Source\Core\Properties\AssemblyInfo.cs" > NUL
-git checkout "Source\Plugins\BuilderModes\Properties\AssemblyInfo.cs" > NUL
+git.exe checkout "Source\Core\Properties\AssemblyInfo.cs" > NUL
+git.exe checkout "Source\Plugins\BuilderModes\Properties\AssemblyInfo.cs" > NUL
 
 ECHO.
 ECHO.     BUILD DONE !

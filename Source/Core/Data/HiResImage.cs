@@ -83,6 +83,8 @@ namespace CodeImp.DoomBuilder.Data
 			this.displayname = this.name;
 			this.shortname = this.name;
 			this.longname = Lump.MakeLongName(this.name);
+
+			ComputeNamesWidth(); // biwa
 		}
 
 		internal void ApplySettings(ImageData overridden)

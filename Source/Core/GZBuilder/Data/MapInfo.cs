@@ -50,6 +50,9 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
         // [ZZ]
         private float pixelratio;
 
+		// biwa
+		private bool forceworldpanning;
+
 		#endregion
 
 		#region ================== Properties
@@ -77,6 +80,9 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 
         // [ZZ]
         public float PixelRatio { get { return pixelratio; } internal set { pixelratio = value; isdefined = true; } }
+
+		// biwa
+		public bool ForceWorldPanning { get { return forceworldpanning; } internal set { forceworldpanning = value; isdefined = true; } }
 
 		#endregion
 

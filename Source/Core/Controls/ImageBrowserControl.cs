@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Linq; // biwa
 using CodeImp.DoomBuilder.Data;
 using CodeImp.DoomBuilder.Windows;
 
@@ -474,11 +475,15 @@ namespace CodeImp.DoomBuilder.Controls
         //      C# not Java.
 		public void AddItem(ImageData image, string tooltip = "")
 		{
-            // check if there are already items with this texturename.
-            // remove them.
             ImageBrowserItem newItem = new ImageBrowserItem(image, tooltip, uselongtexturenames);
-            items.RemoveAll(item => item.TextureName == newItem.TextureName);
 			items.Add(newItem);
+		}
+
+		// biwa. Removes all duplicates. That was done each time in AddItem before. Much faster
+		// to do it in one go. Not sure when there are actually duplicates
+		public void MakeTexturesUnique()
+		{
+			items = items.GroupBy(item => item.TextureName).Select(item => item.Last()).ToList();
 		}
 
 		// This fills the list based on the objectname filter

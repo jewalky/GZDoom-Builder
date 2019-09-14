@@ -85,6 +85,8 @@ namespace CodeImp.DoomBuilder.Data
 			{
 				this.shortname = this.shortname.Substring(0, DataManager.CLASIC_IMAGE_NAME_LENGTH);
 			}
+
+			ComputeNamesWidth(); // biwa
 		}
 
 		// This adds a patch to the texture

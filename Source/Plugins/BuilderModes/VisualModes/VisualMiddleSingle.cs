@@ -117,11 +117,16 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			
 			// Get texture offsets
 			Vector2D tof = new Vector2D(Sidedef.OffsetX, Sidedef.OffsetY);
+
 			tof = tof + toffset;
-			tof = tof / tscaleAbs;
-			if(General.Map.Config.ScaledTextureOffsets && !base.Texture.WorldPanning)
+
+			// biwa. Also take the ForceWorldPanning MAPINFO entry into account
+			if (General.Map.Config.ScaledTextureOffsets && (!base.Texture.WorldPanning && !General.Map.Data.MapInfo.ForceWorldPanning))
+			{
+				tof = tof / tscaleAbs;
 				tof = tof * base.Texture.Scale;
-			
+			}
+
 			// Determine texture coordinates plane as they would be in normal circumstances.
 			// We can then use this plane to find any texture coordinate we need.
 			// The logic here is the same as in the original VisualMiddleSingle (except that
@@ -236,12 +241,17 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		protected override void MoveTextureOffset(int offsetx, int offsety)
 		{
 			Sidedef.Fields.BeforeFieldsChange();
+			bool worldpanning = this.Texture.WorldPanning || General.Map.Data.MapInfo.ForceWorldPanning;
 			float oldx = Sidedef.Fields.GetValue("offsetx_mid", 0.0f);
 			float oldy = Sidedef.Fields.GetValue("offsety_mid", 0.0f);
 			float scalex = Sidedef.Fields.GetValue("scalex_mid", 1.0f);
 			float scaley = Sidedef.Fields.GetValue("scaley_mid", 1.0f);
-			Sidedef.Fields["offsetx_mid"] = new UniValue(UniversalType.Float, GetRoundedTextureOffset(oldx, offsetx, scalex, Texture.Width)); //mxd
-			Sidedef.Fields["offsety_mid"] = new UniValue(UniversalType.Float, GetRoundedTextureOffset(oldy, offsety, scaley, Texture.Height)); //mxd
+			bool textureloaded = (Texture != null && Texture.IsImageLoaded); //mxd
+			float width = textureloaded ? (worldpanning ? this.Texture.ScaledWidth / scalex : this.Texture.Width) : -1; // biwa
+			float height = textureloaded ? (worldpanning ? this.Texture.ScaledHeight / scaley : this.Texture.Height) : -1; // biwa
+
+			Sidedef.Fields["offsetx_mid"] = new UniValue(UniversalType.Float, GetNewTexutreOffset(oldx, offsetx, width)); //mxd // biwa
+			Sidedef.Fields["offsety_mid"] = new UniValue(UniversalType.Float, GetNewTexutreOffset(oldy, offsety, height)); //mxd // biwa
 		}
 
 		protected override Point GetTextureOffset()

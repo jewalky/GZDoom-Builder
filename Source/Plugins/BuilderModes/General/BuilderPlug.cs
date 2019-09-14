@@ -107,6 +107,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private bool editnewthing;
 		private bool editnewsector;
 		private bool additiveselect;
+		private bool additivepaintselect;
 		private bool autoclearselection;
 		private bool visualmodeclearselection;
 		private string copiedtexture;
@@ -159,6 +160,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public bool EditNewThing { get { return editnewthing; } }
 		public bool EditNewSector { get { return editnewsector; } }
 		public bool AdditiveSelect { get { return additiveselect; } }
+		public bool AdditivePaintSelect { get { return additivepaintselect; } }
 		public bool AutoClearSelection { get { return autoclearselection; } }
 		public bool VisualModeClearSelection { get { return visualmodeclearselection; } }
 		public string CopiedTexture { get { return copiedtexture; } set { copiedtexture = value; } }
@@ -276,6 +278,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			editnewthing = General.Settings.ReadPluginSetting("editnewthing", true);
 			editnewsector = General.Settings.ReadPluginSetting("editnewsector", false);
 			additiveselect = General.Settings.ReadPluginSetting("additiveselect", false);
+			additivepaintselect = General.Settings.ReadPluginSetting("additivepaintselect", additiveselect); // use the same value as additiveselect by default
 			autoclearselection = General.Settings.ReadPluginSetting("autoclearselection", false);
 			visualmodeclearselection = General.Settings.ReadPluginSetting("visualmodeclearselection", false);
 			stitchrange = General.Settings.ReadPluginSetting("stitchrange", 20);

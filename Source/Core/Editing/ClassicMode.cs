@@ -82,6 +82,7 @@ namespace CodeImp.DoomBuilder.Editing
 		//mxd. used in "Play From Here" Action
 		private Thing playerStart;
 		private Vector3D playerStartPosition;
+		private bool playerStartIsTempThing;
 		
 		#endregion
 
@@ -701,12 +702,28 @@ namespace CodeImp.DoomBuilder.Editing
 		{
 			if(testFromCurrentPosition) 
 			{
-				if(!mouseinside)
+				if (!mouseinside)
 				{
 					General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: mouse is outside editing window!");
 					return false;
 				}
-				
+
+				//now check if cursor is located inside a sector
+				Sector s = General.Map.Map.GetSectorByCoordinates(mousemappos);
+
+				if (s == null)
+				{
+					General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: mouse cursor must be inside a sector!");
+					return false;
+				}
+
+				//41 = player's height in Doom. Is that so in all other games as well?
+				if (s.CeilHeight - s.FloorHeight < 41)
+				{
+					General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: sector is too low!");
+					return false;
+				}
+
 				//find Single Player Start. Should be type 1 in all games
 				Thing start = null;
 				
@@ -714,6 +731,11 @@ namespace CodeImp.DoomBuilder.Editing
 				{
 					if(t.Type == 1) 
 					{
+						// biwa. In Hexen format and UDMF a map can have multiple valid player starts because of
+						// hubs. The player by default stats at the player start withe arg0 set to 0
+						if ((General.Map.HEXEN || General.Map.UDMF) && t.Args[0] != 0)
+							continue;
+
 						//store thing and position
 						if(start == null) 
 						{
@@ -729,24 +751,22 @@ namespace CodeImp.DoomBuilder.Editing
 
 				if(start == null) 
 				{
-					General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: no Player 1 start found!");
-					return false;
-				}
+					// biwa. If there's no existing valid player start create one
+					playerStartIsTempThing = true;
+					start = General.Map.Map.CreateThing();
 
-				//now check if cursor is located inside a sector
-				Sector s = General.Map.Map.GetSectorByCoordinates(mousemappos);
-
-				if(s == null)
+					if (start != null)
+					{
+						General.Settings.ApplyDefaultThingSettings(start);
+						start.Type = 1;
+					} else
+					{
+						General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: couldn't create player start!");
+						return false;
+					}
+				} else
 				{
-					General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: mouse cursor must be inside a sector!");
-					return false;
-				}
-
-				//41 = player's height in Doom. Is that so in all other games as well?
-				if(s.CeilHeight - s.FloorHeight < 41) 
-				{
-					General.MainWindow.DisplayStatus(StatusType.Warning, "Can't test from current position: sector is too low!");
-					return false;
+					playerStartIsTempThing = false;
 				}
 				
 				//store initial position
@@ -766,6 +786,10 @@ namespace CodeImp.DoomBuilder.Editing
 			{
 				//restore position
 				playerStart.Move(playerStartPosition);
+
+				if (playerStartIsTempThing) // biwa
+					General.Map.Map.RemoveThing(playerStart.Index);
+
 				playerStart = null;
 			}
 		}

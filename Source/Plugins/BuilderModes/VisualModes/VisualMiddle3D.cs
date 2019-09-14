@@ -149,11 +149,16 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			
 			// Get texture offsets
 			Vector2D tof = new Vector2D(Sidedef.OffsetX, Sidedef.OffsetY) + new Vector2D(sourceside.OffsetX, sourceside.OffsetY);
+
 			tof = tof + toffset1 + toffset2;
-			tof = tof / tscaleAbs;
-			if(General.Map.Config.ScaledTextureOffsets && !base.Texture.WorldPanning)
+
+			// biwa. Also take the ForceWorldPanning MAPINFO entry into account
+			if (General.Map.Config.ScaledTextureOffsets && (!base.Texture.WorldPanning && !General.Map.Data.MapInfo.ForceWorldPanning))
+			{
+				tof = tof / tscaleAbs;
 				tof = tof * base.Texture.Scale;
-			
+			}
+
 			// For Vavoom type 3D floors the ceiling is lower than floor and they are reversed.
 			// We choose here.
 			float sourcetopheight = extrafloor.VavoomType ? sourceside.Sector.FloorHeight : sourceside.Sector.CeilHeight;
@@ -407,12 +412,17 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		protected override void MoveTextureOffset(int offsetx, int offsety)
 		{
 			Sidedef.Fields.BeforeFieldsChange();
+			bool worldpanning = this.Texture.WorldPanning || General.Map.Data.MapInfo.ForceWorldPanning;
 			float oldx = Sidedef.Fields.GetValue("offsetx_mid", 0.0f);
 			float oldy = Sidedef.Fields.GetValue("offsety_mid", 0.0f);
-			float scalex = extrafloor.Linedef.Front.Fields.GetValue("scalex_mid", 1.0f); //mxd
-			float scaley = extrafloor.Linedef.Front.Fields.GetValue("scaley_mid", 1.0f); //mxd
-			Sidedef.Fields["offsetx_mid"] = new UniValue(UniversalType.Float, GetRoundedTextureOffset(oldx, offsetx, scalex, Texture.Width)); //mxd
-			Sidedef.Fields["offsety_mid"] = new UniValue(UniversalType.Float, GetRoundedTextureOffset(oldy, offsety, scaley, Texture.Height)); //mxd
+			float scalex = extrafloor.Linedef.Front.Fields.GetValue("scalex_mid", 1.0f);
+			float scaley = extrafloor.Linedef.Front.Fields.GetValue("scaley_mid", 1.0f);
+			bool textureloaded = (Texture != null && Texture.IsImageLoaded); //mxd
+			float width = textureloaded ? (worldpanning ? this.Texture.ScaledWidth / scalex : this.Texture.Width) : -1; // biwa
+			float height = textureloaded ? (worldpanning ? this.Texture.ScaledHeight / scaley : this.Texture.Height) : -1; // biwa
+
+			Sidedef.Fields["offsetx_mid"] = new UniValue(UniversalType.Float, GetNewTexutreOffset(oldx, offsetx, width)); //mxd // biwa
+			Sidedef.Fields["offsety_mid"] = new UniValue(UniversalType.Float, GetNewTexutreOffset(oldy, offsety, height)); //mxd // biwa
 		}
 
 		protected override Point GetTextureOffset()

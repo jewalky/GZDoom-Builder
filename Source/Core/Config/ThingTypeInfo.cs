@@ -71,6 +71,7 @@ namespace CodeImp.DoomBuilder.Config
 		private bool bright; //mxd
 		private bool arrow;
 		private float radius;
+		private float renderradius;
 		private float height;
 		private int distancechecksq; //mxd. Contains squared value or int.MaxValue when not set
 		private bool hangs;
@@ -120,6 +121,7 @@ namespace CodeImp.DoomBuilder.Config
 		public bool Bright { get { return bright; } } //mxd
 		public bool Arrow { get { return arrow; } }
 		public float Radius { get { return radius; } }
+		public float RenderRadius { get { return renderradius; } }
 		public float Height { get { return height; } }
 		public int DistanceCheckSq { get { return distancechecksq; } } //mxd
 		public bool Hangs { get { return hangs; } }
@@ -177,6 +179,7 @@ namespace CodeImp.DoomBuilder.Config
 			this.bright = false; //mxd
 			this.arrow = true;
 			this.radius = 10f;
+			this.renderradius = 10f;
 			this.height = 20f;
 			this.distancechecksq = int.MaxValue; //mxd
 			this.hangs = false;
@@ -552,6 +555,9 @@ namespace CodeImp.DoomBuilder.Config
 			// Size
 			if(actor.HasPropertyWithValue("radius")) radius = actor.GetPropertyValueInt("radius", 0);
 			if(actor.HasPropertyWithValue("height")) height = actor.GetPropertyValueInt("height", 0);
+			if (actor.HasPropertyWithValue("renderradius")) renderradius = actor.GetPropertyValueInt("renderradius", 0);
+			if (renderradius == 0)
+				renderradius = radius;
 
 			//mxd. DistanceCheck. The value is CVAR. Also we'll need squared value
 			if(actor.HasPropertyWithValue("distancecheck"))

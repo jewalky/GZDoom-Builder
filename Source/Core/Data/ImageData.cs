@@ -58,6 +58,8 @@ namespace CodeImp.DoomBuilder.Data
 		protected bool ismasked; //mxd. If true, has pixels with zero alpha
 		protected bool hasLongName; //mxd. Texture name is longer than DataManager.CLASIC_IMAGE_NAME_LENGTH
 		protected bool hasPatchWithSameName; //mxd
+		protected int namewidth; // biwa
+		protected int shortnamewidth; // biwa
 
 		//mxd. Hashing
 		private static int hashcounter;
@@ -123,6 +125,8 @@ namespace CodeImp.DoomBuilder.Data
 		public virtual float ScaledHeight { get { return (float)Math.Round(height * scale.y); } }
 		public virtual Vector2D Scale { get { return scale; } }
 		public bool WorldPanning { get { return worldpanning; } }
+		public int NameWidth {  get { return namewidth; } } // biwa
+		public int ShortNameWidth { get { return shortnamewidth; } } // biwa
 
 		#endregion
 
@@ -206,6 +210,8 @@ namespace CodeImp.DoomBuilder.Data
 			this.virtualname = name; //mxd
 			this.displayname = name; //mxd
 			this.longname = Lump.MakeLongName(name); //mxd
+
+			ComputeNamesWidth(); // biwa
 		}
 		
 		// This unloads the image
@@ -217,6 +223,15 @@ namespace CodeImp.DoomBuilder.Data
 				bitmap = null;
 				imagestate = ImageLoadState.None;
 			}
+		}
+
+		// biwa. Computing the widths in the constructor of ImageBrowserItem accumulates to taking forever when loading many images,
+		// like when showing the texture browser of huge texture sets like OTEX
+		internal void ComputeNamesWidth()
+		{
+			//mxd. Calculate names width
+			namewidth = (int)Math.Ceiling(General.Interface.MeasureString(name, SystemFonts.MessageBoxFont, 10000, StringFormat.GenericTypographic).Width) + 6;
+			shortnamewidth = (int)Math.Ceiling(General.Interface.MeasureString(shortname, SystemFonts.MessageBoxFont, 10000, StringFormat.GenericTypographic).Width) + 6;
 		}
 
 		// This returns the bitmap image

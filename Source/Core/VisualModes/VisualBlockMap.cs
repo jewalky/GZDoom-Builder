@@ -266,8 +266,8 @@ namespace CodeImp.DoomBuilder.VisualModes
 		public void AddThing(Thing t)
 		{
 			//mxd
-			Point p1 = GetBlockCoordinates(new Vector2D(t.Position.x - t.Size, t.Position.y - t.Size));
-			Point p2 = GetBlockCoordinates(new Vector2D(t.Position.x + t.Size, t.Position.y + t.Size));
+			Point p1 = GetBlockCoordinates(new Vector2D(t.Position.x - t.RenderSize, t.Position.y - t.RenderSize));
+			Point p2 = GetBlockCoordinates(new Vector2D(t.Position.x + t.RenderSize, t.Position.y + t.RenderSize));
 			for(int x = p1.X; x <= p2.X; x++)
 			{
 				for(int y = p1.Y; y <= p2.Y; y++)

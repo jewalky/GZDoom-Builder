@@ -895,7 +895,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					if(l != highlighted) 
 					{
 						//toggle selected state
-						if(General.Interface.ShiftState ^ BuilderPlug.Me.AdditiveSelect)
+						if(General.Interface.ShiftState ^ BuilderPlug.Me.AdditivePaintSelect)
 							l.Selected = true;
 						else if(General.Interface.CtrlState)
 							l.Selected = false;
