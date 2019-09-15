@@ -87,9 +87,6 @@ namespace CodeImp.DoomBuilder.Map
 		private bool uselongtexturenames;
 		private bool useresourcesinreadonlymode;
 
-		// List that represents the palette for quick texture access
-		private Dictionary<int, string> quicktextures = new Dictionary<int, string>();
-
 		//mxd. Position and scale
 		private readonly Vector2D viewposition;
 		private readonly float viewscale;
@@ -147,8 +144,6 @@ namespace CodeImp.DoomBuilder.Map
 		//mxd
 		public bool UseLongTextureNames { get { return uselongtexturenames; } set { uselongtexturenames = value; } }
 		public bool UseResourcesInReadonlyMode { get { return useresourcesinreadonlymode; } set { useresourcesinreadonlymode = value; } }
-
-		public Dictionary<int, string> QuickTextures { get { return quicktextures; } set { quicktextures = value; } }
 
 		//mxd. Position and scale
 		public Vector2D ViewPosition { get { return viewposition; } }
@@ -238,12 +233,6 @@ namespace CodeImp.DoomBuilder.Map
 			overridefloorheight = this.mapconfig.ReadSetting("overridefloorheight", false);
 			overrideceilheight = this.mapconfig.ReadSetting("overrideceilheight", false);
 			overridebrightness = this.mapconfig.ReadSetting("overridebrightness", false);
-
-			//Read quick textures
-			for (int slot = 0; slot < 10; slot++)
-			{
-				this.quicktextures[slot] = this.mapconfig.ReadSetting("quicktexture" + slot, "");
-			}
 
 			//mxd
 			uselongtexturenames = longtexturenamessupported && this.mapconfig.ReadSetting("uselongtexturenames", false);
@@ -339,15 +328,6 @@ namespace CodeImp.DoomBuilder.Map
 			//mxd. Save selection groups
 			General.Map.Map.WriteSelectionGroups(mapconfig);
 
-			//Save quick textures, if any
-			for (int slot = 0; slot < 10; slot++)
-			{
-				if (General.Map.Options.QuickTextures.ContainsKey(slot))
-				{
-					mapconfig.WriteSetting("quicktexture" + slot, General.Map.Options.QuickTextures[slot]);
-				}
-			}
-
 			//mxd. Save Tag Labels
 			if (tagLabels.Count > 0) 
 			{
@@ -399,8 +379,9 @@ namespace CodeImp.DoomBuilder.Map
 			if(!string.IsNullOrEmpty(scriptcompiler))
 				mapconfig.WriteSetting("scriptcompiler", scriptcompiler);
 
-			// Write grid settings
+			// Write grid and quick texture settings
 			General.Map.Grid.WriteToConfig(mapconfig, "grid");
+			General.Map.QuickTextures.WriteToConfig(mapconfig, "quicktextures");
 
 			//mxd. Write script document settings to config
 			int sdcounter = 0;
@@ -574,6 +555,12 @@ namespace CodeImp.DoomBuilder.Map
 		internal void ApplyGridSettings()
 		{
 			General.Map.Grid.ReadFromConfig(mapconfig, "grid");
+		}
+
+		// This loads the grid settings
+		internal void ApplyQuickTextureSettings()
+		{
+			General.Map.QuickTextures.ReadFromConfig(mapconfig, "quicktextures");
 		}
 
 		//mxd. This reads stored selection groups from the map configuration

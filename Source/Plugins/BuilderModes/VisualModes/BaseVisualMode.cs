@@ -1697,7 +1697,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		}
 
 		// Apply texture change
-		public void ApplySelectTexture(string texture, bool flat)
+		public int ApplySelectTexture(string texture, bool flat)
 		{
 			List<IVisualEventReceiver> objs;
 			
@@ -1716,6 +1716,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			{
 				i.ApplyTexture(texture);
 			}
+			return objs.Count;
 		}
 
 		// This returns all selected objects
@@ -2121,9 +2122,19 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			PreActionNoChange();
 			IVisualEventReceiver target = GetTargetEventReceiver(true);
-			string texture = target.GetTextureName();
-			General.Map.Options.QuickTextures[slot] = texture;
-			General.Interface.DisplayStatus(StatusType.Action, "Grabbed texture " + texture + " into slot " + slot + ".");
+			bool isFlat = false;
+			if (!(target is BaseVisualGeometrySidedef) && !(target is BaseVisualGeometrySector)) {
+				General.Interface.DisplayStatus(StatusType.Action, "Can't grab a texture from this!");
+				PostAction();
+				return;
+			}
+			if (target is BaseVisualGeometrySector)
+			{
+				isFlat = true;
+			}
+			string name = target.GetTextureName();
+			General.Map.QuickTextures.UpdateQuickTexture(slot, new TextureOrFlatName(name, isFlat));
+			General.Interface.DisplayStatus(StatusType.Action, "Grabbed " + (isFlat ? "flat" : "texture") + " " + name + " into slot " + slot + ".");
 			PostAction();
 		}
 
@@ -2150,18 +2161,22 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 		public void ApplyQuickTexture(int slot)
 		{
-			string texture = null;
-			General.Map.Options.QuickTextures.TryGetValue(slot, out texture);
+			TextureOrFlatName textureOrFlat = General.Map.QuickTextures.GetQuickTexture(slot);
 
-			if (new string[] { null, "-", ""}.Contains(texture))
+			if (textureOrFlat == null)
 			{
-				General.Interface.DisplayStatus(StatusType.Action, "No texture in slot " + slot + " - grab one first");
+				General.Interface.DisplayStatus(StatusType.Action, "Nothing in slot " + slot + " - grab a texture or flat first");
+				return;
+			}
+			PreAction(UndoGroup.None);
+			int texturesApplied = ApplySelectTexture(textureOrFlat.LumpName, textureOrFlat.IsFlat);
+			if (texturesApplied > 0)
+			{
+				General.Interface.DisplayStatus(StatusType.Action, "Applied " + (textureOrFlat.IsFlat ? "flat" : "texture") + " \"" + textureOrFlat.LumpName + "\" to " + texturesApplied + " surfaces in selection");
 			}
 			else
 			{
-				PreAction(UndoGroup.None);
-				ApplySelectTexture(texture, false);
-				General.Interface.DisplayStatus(StatusType.Action, "Applied texture \"" + texture + "\" to selection");
+				General.Interface.DisplayStatus(StatusType.Info, "Could not apply " + (textureOrFlat.IsFlat ? "flat" : "texture") + " \"" + textureOrFlat.LumpName + "\" to any surfaces in selection");
 			}
 			PostAction();
 		}

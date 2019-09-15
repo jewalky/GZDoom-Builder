@@ -162,6 +162,9 @@
       <DependentUpon>ArgumentBox.cs</DependentUpon>
     </Compile>
     <Compile Include="Controls\FolderSelectDialog.cs" />
+    <Compile Include="Controls\TextureOrFlatSelectorControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="Controls\TransparentTrackBar.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -182,6 +185,7 @@
     </Compile>
     <Compile Include="Data\DirectoryReader.cs" />
     <Compile Include="Data\FileImage.cs" />
+    <Compile Include="Data\TextureOrFlatName.cs" />
     <Compile Include="Data\FlatImage.cs" />
     <Compile Include="Data\ImageLoadState.cs" />
     <Compile Include="Data\Scripting\ZScriptScriptHandler.cs" />
@@ -198,6 +202,7 @@
     <Compile Include="Editing\EditMode.cs" />
     <Compile Include="Editing\EditModeAttribute.cs" />
     <Compile Include="Editing\EditModeInfo.cs" />
+    <Compile Include="Editing\QuickTextureSetup.cs" />
     <Compile Include="Editing\GridSetup.cs" />
     <Compile Include="Editing\NullThingsFilter.cs" />
     <Compile Include="Editing\ThingsFilter.cs" />
@@ -1506,7 +1511,9 @@
       <DependentUpon>VertexEditForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>echo Current Output Directory: %25cd%25
 echo Copying platform-appropriate DevIL.dll file.

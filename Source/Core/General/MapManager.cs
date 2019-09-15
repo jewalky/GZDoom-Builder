@@ -80,6 +80,7 @@ namespace CodeImp.DoomBuilder
 		private Renderer3D renderer3d;
 		private WADReader tempwadreader;
 		private GridSetup grid;
+		private QuickTextureSetup quickTextures;
 		private UndoManager undoredo;
 		private CopyPasteManager copypaste;
 		private Launcher launcher;
@@ -115,6 +116,7 @@ namespace CodeImp.DoomBuilder
 		public GameConfiguration Config { get { return config; } }
 		public ConfigurationInfo ConfigSettings { get { return configinfo; } }
 		public GridSetup Grid { get { return grid; } }
+		public QuickTextureSetup QuickTextures { get { return quickTextures; } }
 		public UndoManager UndoRedo { get { return undoredo; } }
 		internal CopyPasteManager CopyPaste { get { return copypaste; } }
 		public IMapSetIO FormatInterface { get { return io; } }
@@ -154,6 +156,7 @@ namespace CodeImp.DoomBuilder
 
 			// Basic objects
 			grid = new GridSetup();
+			quickTextures = new QuickTextureSetup();
 			undoredo = new UndoManager();
 			copypaste = new CopyPasteManager();
 			launcher = new Launcher(this);
@@ -189,6 +192,7 @@ namespace CodeImp.DoomBuilder
 				// Dispose
 				maploading = true; //mxd
 				if(grid != null) grid.Dispose();
+				if(quickTextures != null) quickTextures.Dispose();
 				if(launcher != null) launcher.Dispose();
 				if(copypaste != null) copypaste.Dispose();
 				if(undoredo != null) undoredo.Dispose();
@@ -204,6 +208,7 @@ namespace CodeImp.DoomBuilder
 				if(graphics != null) graphics.Dispose();
 				visualcamera = null;
 				grid = null;
+				quickTextures = null;
 				launcher = null;
 				copypaste = null;
 				undoredo = null;
@@ -323,6 +328,7 @@ namespace CodeImp.DoomBuilder
 
 			// Update structures
 			options.ApplyGridSettings();
+			options.ApplyQuickTextureSettings();
 			map.UpdateConfiguration();
 			map.Update();
 			thingsfilter.Update();
@@ -438,6 +444,7 @@ namespace CodeImp.DoomBuilder
 
 			// Update structures
 			options.ApplyGridSettings();
+			options.ApplyQuickTextureSettings();
 			map.UpdateConfiguration();
 			map.SnapAllToAccuracy();
 			map.Update();
