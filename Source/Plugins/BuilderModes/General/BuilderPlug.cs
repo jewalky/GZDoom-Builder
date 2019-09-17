@@ -92,6 +92,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private MenusForm menusform;
 		private FindReplaceForm findreplaceform;
 		private ErrorCheckForm errorcheckform;
+		private QuickTextureForm quicktextureform;
 		private PreferencesForm preferencesform;
 		
 		// Dockers
@@ -151,6 +152,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public MenusForm MenusForm { get { return menusform; } }
 		public FindReplaceForm FindReplaceForm { get { return findreplaceform ?? (findreplaceform = new FindReplaceForm()); } }
 		public ErrorCheckForm ErrorCheckForm { get { return errorcheckform ?? (errorcheckform = new ErrorCheckForm()); } }
+		public QuickTextureForm QuickTextureForm { get { return quicktextureform ?? (quicktextureform = new QuickTextureForm()); } }
 		public PreferencesForm PreferencesForm { get { return preferencesform; } }
 
 		// Settings
@@ -260,7 +262,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					errorcheckform.Dispose();
 					errorcheckform = null;
 				}
-				
+				if (quicktextureform != null)
+				{
+					quicktextureform.Dispose();
+					quicktextureform = null;
+				}
+
 				// Done
 				me = null;
 				base.Dispose();
@@ -359,7 +366,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					}
 					else
 					{
-                        color = PixelColor.Modulate(PixelColor.FromInt(s.Fields.GetValue("lightcolor", -1)), PixelColor.FromInt(s.Fields.GetValue("color_floor", -1))).ToInt();
+						color = PixelColor.Modulate(PixelColor.FromInt(s.Fields.GetValue("lightcolor", -1)), PixelColor.FromInt(s.Fields.GetValue("color_floor", -1))).ToInt();
 						light = s.Fields.GetValue("lightfloor", 0);
 						absolute = s.Fields.GetValue("lightfloorabsolute", false);
 					}
@@ -381,14 +388,14 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					}
 				}
 			}
-            else // [ZZ] proper fallback please.
-            {
-                for (int i = 0; i < vertices.Length; i++)
-                {
-                    vertices[i].u = vertices[i].u / 64;
-                    vertices[i].v = -vertices[i].v / 64;
-                }
-            }
+			else // [ZZ] proper fallback please.
+			{
+				for (int i = 0; i < vertices.Length; i++)
+				{
+					vertices[i].u = vertices[i].u / 64;
+					vertices[i].v = -vertices[i].v / 64;
+				}
+			}
 		}
 
 		// When ceiling surface geometry is created for classic modes
@@ -419,8 +426,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					} 
 					else 
 					{
-                        color = PixelColor.Modulate(PixelColor.FromInt(s.Fields.GetValue("lightcolor", -1)), PixelColor.FromInt(s.Fields.GetValue("color_ceiling", -1))).ToInt();
-                        light = s.Fields.GetValue("lightceiling", 0);
+						color = PixelColor.Modulate(PixelColor.FromInt(s.Fields.GetValue("lightcolor", -1)), PixelColor.FromInt(s.Fields.GetValue("color_ceiling", -1))).ToInt();
+						light = s.Fields.GetValue("lightceiling", 0);
 						absolute = s.Fields.GetValue("lightceilingabsolute", false);
 					}
 
@@ -441,15 +448,15 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					}
 				}
 			}
-            else // [ZZ] proper fallback please.
-            {
-                for (int i = 0; i < vertices.Length; i++)
-                {
-                    vertices[i].u = vertices[i].u / 64;
-                    vertices[i].v = -vertices[i].v / 64;
-                }
-            }
-        }
+			else // [ZZ] proper fallback please.
+			{
+				for (int i = 0; i < vertices.Length; i++)
+				{
+					vertices[i].u = vertices[i].u / 64;
+					vertices[i].v = -vertices[i].v / 64;
+				}
+			}
+		}
 
 		// When the editing mode changes
 		public override bool OnModeChange(EditMode oldmode, EditMode newmode)
@@ -519,8 +526,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			General.Interface.RemoveDocker(drawingOverridesDocker);
 		}
 
-        // Map closed
-        public override void OnMapCloseEnd()
+		// Map closed
+		public override void OnMapCloseEnd()
 		{
 			base.OnMapCloseEnd();
 			undoredopanel.UpdateList();
@@ -580,7 +587,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			PixelColor lightcolor = PixelColor.FromInt(color);
 			PixelColor brightness = PixelColor.FromInt(General.Map.Renderer2D.CalculateBrightness(light));
 			PixelColor finalcolor = PixelColor.Modulate(lightcolor, brightness);
-            color = finalcolor.WithAlpha(255).ToInt();
+			color = finalcolor.WithAlpha(255).ToInt();
 
 			// Do the math for all vertices
 			for(int i = 0; i < vertices.Length; i++) 
@@ -808,6 +815,14 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				WavefrontExporter e = new WavefrontExporter();
 				e.Export(sectors, data);
 			}
+		}
+
+		[BeginAction("quicktexturesetup")]
+		private void SetupQuickTextures()
+		{
+			//The quick textures form will handle loading/saving - all we have to do here is open the form
+			QuickTextureForm quickTextureForm = new QuickTextureForm();
+			quickTextureForm.Show((Form)General.Interface);
 		}
 
 		#endregion

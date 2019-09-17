@@ -329,7 +329,7 @@ namespace CodeImp.DoomBuilder.Map
 			General.Map.Map.WriteSelectionGroups(mapconfig);
 
 			//mxd. Save Tag Labels
-			if(tagLabels.Count > 0) 
+			if (tagLabels.Count > 0) 
 			{
 				ListDictionary tagLabelsData = new ListDictionary();
 				int counter = 1;
@@ -379,8 +379,9 @@ namespace CodeImp.DoomBuilder.Map
 			if(!string.IsNullOrEmpty(scriptcompiler))
 				mapconfig.WriteSetting("scriptcompiler", scriptcompiler);
 
-			// Write grid settings
+			// Write grid and quick texture settings
 			General.Map.Grid.WriteToConfig(mapconfig, "grid");
+			General.Map.QuickTextures.WriteToConfig(mapconfig, "quicktextures");
 
 			//mxd. Write script document settings to config
 			int sdcounter = 0;
@@ -554,6 +555,12 @@ namespace CodeImp.DoomBuilder.Map
 		internal void ApplyGridSettings()
 		{
 			General.Map.Grid.ReadFromConfig(mapconfig, "grid");
+		}
+
+		// This loads the grid settings
+		internal void ApplyQuickTextureSettings()
+		{
+			General.Map.QuickTextures.ReadFromConfig(mapconfig, "quicktextures");
 		}
 
 		//mxd. This reads stored selection groups from the map configuration

@@ -63,6 +63,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.alignsectorlinedefsitem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
 			this.makedooritem = new System.Windows.Forms.ToolStripMenuItem();
+			this.itemquicktexturesetup = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
 			this.selectSimilarSectors = new System.Windows.Forms.ToolStripMenuItem();
 			this.thingsmenu = new System.Windows.Forms.ToolStripMenuItem();
@@ -861,7 +862,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
             this.separatorcopyprops,
             this.itemcopyprops,
             this.itempasteprops,
-            this.itempastepropsoptions});
+            this.itempastepropsoptions,
+			this.itemquicktexturesetup});
 			this.editmenuitem.Name = "editmenuitem";
 			this.editmenuitem.Size = new System.Drawing.Size(39, 20);
 			this.editmenuitem.Text = "Edit";
@@ -897,6 +899,15 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			this.itempastepropsoptions.Tag = "classicpastepropertieswithoptions";
 			this.itempastepropsoptions.Text = "Paste Properties Special...";
 			this.itempastepropsoptions.Click += new System.EventHandler(this.InvokeTaggedAction);
+			// 
+			// itemquicktexturesetup
+			// 
+			this.itemquicktexturesetup.Image = global::CodeImp.DoomBuilder.BuilderModes.Properties.Resources.Door;
+			this.itemquicktexturesetup.Name = "itemquicktexturesetup";
+			this.itemquicktexturesetup.Size = new System.Drawing.Size(219, 22);
+			this.itemquicktexturesetup.Tag = "builder_quicktexturesetup";
+			this.itemquicktexturesetup.Text = "Quick Textures...";
+			this.itemquicktexturesetup.Click += new System.EventHandler(this.InvokeTaggedAction);
 			// 
 			// viewmenuitem
 			// 
@@ -1008,6 +1019,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
 		private System.Windows.Forms.ToolStripButton buttonMakeDoor;
 		private System.Windows.Forms.ToolStripMenuItem makedooritem;
+		private System.Windows.Forms.ToolStripMenuItem itemquicktexturesetup;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
 		private System.Windows.Forms.MenuStrip fileMenuStrip;
 		private System.Windows.Forms.ToolStripMenuItem exportStripMenuItem;

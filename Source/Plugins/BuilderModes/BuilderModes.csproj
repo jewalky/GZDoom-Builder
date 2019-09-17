@@ -181,6 +181,12 @@
     <Compile Include="Interface\PreferencesForm.Designer.cs">
       <DependentUpon>PreferencesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Interface\QuickTextureForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Interface\QuickTextureForm.Designer.cs">
+      <DependentUpon>QuickTextureForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -196,6 +202,9 @@
     <Compile Include="ClassicModes\VerticesMode.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Interface\QuickTextureForm.resx">
+      <DependentUpon>QuickTextureForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Resources\Actions.cfg" />
   </ItemGroup>
   <ItemGroup>
@@ -221,6 +230,10 @@
       <Project>{818B3D10-F791-4C3F-9AF5-BB2D0079B63C}</Project>
       <Name>Builder</Name>
       <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ColorPicker\ColorPicker.csproj">
+      <Project>{A4761900-0EA3-4FE4-A919-847FD5080EFC}</Project>
+      <Name>ColorPicker</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -691,6 +704,9 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\QuickTextures.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
