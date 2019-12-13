@@ -49,7 +49,11 @@ special
 	-19633:ZD_rand(2),
 	-19634:ZD_srand(1),
 	-19635:ZD_rand_savestate(0),
-	-19636:ZD_rand_restorestate(0);
+	-19636:ZD_rand_restorestate(0),
+	-19637:Arti_Execute(2,5),
+	-19638:Arti_ExecuteAlways(2,5),
+	-19639:Arti_NamedExecute(2,5),
+	-19640:Arti_NamedExecuteAlways(2,5);
 
 // Team specifiers you can use with GetTeamScore/SetTeamScore ---------------
  
