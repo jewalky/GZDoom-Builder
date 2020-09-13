@@ -1230,6 +1230,7 @@ namespace CodeImp.DoomBuilder.Windows
 				Cursor.Position = display.PointToScreen(new Point(display.ClientSize.Width / 2, display.ClientSize.Height / 2)); //mxd
 				Cursor.Clip = display.RectangleToScreen(display.ClientRectangle);
 				Cursor.Hide();
+				this.menumain.Enabled = false;
 			}
 		}
 
@@ -1247,6 +1248,7 @@ namespace CodeImp.DoomBuilder.Windows
 				Cursor.Clip = Rectangle.Empty;
 				Cursor.Position = display.PointToScreen(new Point(display.ClientSize.Width / 2, display.ClientSize.Height / 2));
 				Cursor.Show();
+				this.menumain.Enabled = true;
 			}
 		}
 		
@@ -4003,8 +4005,17 @@ namespace CodeImp.DoomBuilder.Windows
 			// Show sector edit dialog
 			VertexEditForm f = new VertexEditForm();
 			DisableProcessing(); //mxd
+			#if NO_WIN32
+			BreakExclusiveMouseInput();
+			f.Closed += (object sender, EventArgs e) => {
+				ResumeExclusiveMouseInput();
+				EnableProcessing(); //mxd
+			};
+			#endif
 			f.Setup(vertices, allowPositionChange);
+			#if !NO_WIN32
 			EnableProcessing(); //mxd
+			#endif
 			f.OnValuesChanged += EditForm_OnValuesChanged;
 			editformopen = true; //mxd
 			DialogResult result = f.ShowDialog(this);
@@ -4030,8 +4041,17 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				LinedefEditFormUDMF f = new LinedefEditFormUDMF(selectfront, selectback);
 				DisableProcessing(); //mxd
+				#if NO_WIN32
+				BreakExclusiveMouseInput();
+				f.Closed += (object sender, EventArgs e) => {
+					ResumeExclusiveMouseInput();
+					EnableProcessing(); //mxd
+				};
+				#endif
 				f.Setup(lines, selectfront, selectback);
-				EnableProcessing(); //mxd
+				#if !NO_WIN32
+				EnableProcessing();
+				#endif
 				f.OnValuesChanged += EditForm_OnValuesChanged;
 				editformopen = true; //mxd
 				result = f.ShowDialog(this);
@@ -4042,8 +4062,17 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				LinedefEditForm f = new LinedefEditForm();
 				DisableProcessing(); //mxd
+				#if NO_WIN32
+				BreakExclusiveMouseInput();
+				f.Closed += (object sender, EventArgs e) => {
+					ResumeExclusiveMouseInput();
+					EnableProcessing(); //mxd
+				};
+				#endif
 				f.Setup(lines);
-				EnableProcessing(); //mxd
+				#if !NO_WIN32
+				EnableProcessing();
+				#endif
 				f.OnValuesChanged += EditForm_OnValuesChanged;
 				editformopen = true; //mxd
 				result = f.ShowDialog(this);
@@ -4064,8 +4093,17 @@ namespace CodeImp.DoomBuilder.Windows
 			{ 
 				SectorEditFormUDMF f = new SectorEditFormUDMF();
 				DisableProcessing(); //mxd
+				#if NO_WIN32
+				BreakExclusiveMouseInput();
+				f.Closed += (object sender, EventArgs e) => {
+					ResumeExclusiveMouseInput();
+					EnableProcessing(); //mxd
+				};
+				#endif
 				f.Setup(sectors);
+				#if !NO_WIN32
 				EnableProcessing(); //mxd
+				#endif
 				f.OnValuesChanged += EditForm_OnValuesChanged;
 				editformopen = true; //mxd
 				result = f.ShowDialog(this);
@@ -4076,8 +4114,17 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				SectorEditForm f = new SectorEditForm();
 				DisableProcessing(); //mxd
+				#if NO_WIN32
+				BreakExclusiveMouseInput();
+				f.Closed += (object sender, EventArgs e) => {
+					ResumeExclusiveMouseInput();
+					EnableProcessing(); //mxd
+				};
+				#endif
 				f.Setup(sectors);
+				#if !NO_WIN32
 				EnableProcessing(); //mxd
+				#endif
 				f.OnValuesChanged += EditForm_OnValuesChanged;
 				editformopen = true; //mxd
 				result = f.ShowDialog(this);
@@ -4098,8 +4145,17 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				ThingEditFormUDMF f = new ThingEditFormUDMF();
 				DisableProcessing(); //mxd
+				#if NO_WIN32
+				BreakExclusiveMouseInput();
+				f.Closed += (object sender, EventArgs e) => {
+					ResumeExclusiveMouseInput();
+					EnableProcessing(); //mxd
+				};
+				#endif
 				f.Setup(things);
+				#if !NO_WIN32
 				EnableProcessing(); //mxd
+				#endif
 				f.OnValuesChanged += EditForm_OnValuesChanged;
 				editformopen = true; //mxd
 				result = f.ShowDialog(this);
@@ -4110,8 +4166,17 @@ namespace CodeImp.DoomBuilder.Windows
 			{
 				ThingEditForm f = new ThingEditForm();
 				DisableProcessing(); //mxd
+				#if NO_WIN32
+				BreakExclusiveMouseInput();
+				f.Closed += (object sender, EventArgs e) => {
+					ResumeExclusiveMouseInput();
+					EnableProcessing(); //mxd
+				};
+				#endif
 				f.Setup(things);
+				#if !NO_WIN32
 				EnableProcessing(); //mxd
+				#endif
 				f.OnValuesChanged += EditForm_OnValuesChanged;
 				editformopen = true; //mxd
 				result = f.ShowDialog(this);
