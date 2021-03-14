@@ -1414,7 +1414,7 @@ namespace CodeImp.DoomBuilder.Windows
 			if(ctrl) mod |= (int)Keys.Control;
 			
 			// Don't process any keys when they are meant for other input controls
-			if((ActiveControl == null) || (ActiveControl == display))
+			if((e.KeyData != Keys.None) && ((ActiveControl == null) || (ActiveControl == display)))
 			{
 				// Invoke any actions associated with this key
 				General.Actions.UpdateModifiers(mod);
