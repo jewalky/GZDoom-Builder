@@ -39,6 +39,8 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 	{
 		#region ================== Variables
 
+		private MapSet map;
+
 		#endregion
 
 		#region ================== Properties
@@ -64,6 +66,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		public MapWrapper()
 		{
+			map = General.Map.Map;
 		}
 
 		#endregion
@@ -85,6 +88,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			return things.ToArray();
 		}
 
+		/// <summary>
+		/// Returns an array of all sectors in the map
+		/// </summary>
+		/// <returns>`Array` of `Sector`s</returns>
 		public SectorWrapper[] getSectors()
 		{
 			List<SectorWrapper> sectors = new List<SectorWrapper>(General.Map.Map.Sectors.Count);
@@ -99,7 +106,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// Returns an array of all sidedefs in the map
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>`Array` of `Linedef`s</returns>
 		public SidedefWrapper[] getSidedefs()
 		{
 			List<SidedefWrapper> sidedefs = new List<SidedefWrapper>(General.Map.Map.Sidedefs.Count);
@@ -111,6 +118,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			return sidedefs.ToArray();
 		}
 
+		/// <summary>
+		/// Returns an array of all linedefs in the map
+		/// </summary>
+		/// <returns>`Array` of `Sidedef`s</returns>
 		public LinedefWrapper[] getLinedefs()
 		{
 			List<LinedefWrapper> linedefs = new List<LinedefWrapper>(General.Map.Map.Linedefs.Count);
@@ -122,6 +133,15 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			return linedefs.ToArray();
 		}
 
+		/// <summary>
+		/// Creates a new `Vertex` at the given position. The position can be a `Vector2D` or an `Array` of two numbers.
+		/// ```
+		/// var v1 = Map.createVertex(new Vector2D(32, 64));
+		/// var v2 = Map.createVertex([ 32, 64 ]);
+		/// ```
+		/// </summary>
+		/// <param name="pos">Position where the `Vertex` should be created at</param>
+		/// <returns>The created `Vertex`</returns>
 		public VertexWrapper createVertex(object pos)
 		{
 			try
@@ -140,6 +160,18 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 		}
 
+		/// <summary>
+		/// Creates a new `Thing` at the given position. The position can be a `Vector2D` or an `Array` of two numbers. A thing type can be supplied optionally.
+		/// ```
+		/// var t1 = Map.createThing(new Vector2D(32, 64));
+		/// var t2 = Map.createThing([ 32, 64 ]);
+		/// var t3= Map.createThing(new Vector2D(32, 64), 3001); // Create an Imp
+		/// var t4 = Map.createThing([ 32, 64 ], 3001); // Create an Imp
+		/// ```
+		/// </summary>
+		/// <param name="pos">Position where the `Thing` should be created at</param>
+		/// <param name="type">Thing type (optional)</param>
+		/// <returns></returns>
 		public ThingWrapper createThing(object pos, int type=0)
 		{
 			try
@@ -171,6 +203,16 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			{
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
 			}
+		}
+
+		public void beginAddRemove()
+		{
+			map.BeginAddRemove();
+		}
+
+		public void endAddRemove()
+		{
+			map.EndAddRemove();
 		}
 
 		#endregion

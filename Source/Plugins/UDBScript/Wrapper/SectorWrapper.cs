@@ -300,8 +300,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		internal override void AfterFieldsUpdate()
 		{
-			sector.UpdateFloorSurface();
-			sector.UpdateCeilingSurface();
+			sector.UpdateNeeded = true;
 		}
 
 		#endregion

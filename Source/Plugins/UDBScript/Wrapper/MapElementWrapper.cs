@@ -30,8 +30,10 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
+using CodeImp.DoomBuilder.Types;
 
 #endregion
 
@@ -47,6 +49,26 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		#region ================== Properties
 
+		/// <summary>
+		/// UDMF fields. It's an object with the fields as properties.
+		/// ```
+		/// s.fields.comment = 'This is a comment';
+		/// s.fields['comment'] = 'This is a comment'; // Also  works
+		/// s.fields.xscalefloor = 2.0;
+		/// t.score = 100;
+		/// ```
+		/// It is also possible to define new fields:
+		/// ```
+		/// s.fields.user_myboolfield = true;
+		/// ```
+		/// There are some restrictions, though:
+		/// - it only works for fields that are not in the base UDMF standard, since those are handled directly in the respective class
+		/// - it does not work for flags. While they are technically also UDMF fields, they are handled in the `flags` field of the respective class (where applicable)
+		/// - JavaScript does not distinguish between integer and floating point numbers, it only has floating point numbers (of double precision). For fields where UDB knows that they are integers this it not a problem, since it'll automatically convert the floating point numbers to integers (dropping the fractional part). However, if you need to specify an integer value for an unknown or custom field you have to work around this limitation, using the `UniValue` class:
+		/// ```
+		/// s.fields.user_myintfield = new UniValue(0, 25); // Sets the 'user_myintfield' field to an integer value of 25
+		/// ```
+		/// </summary>
 		public ExpandoObject fields
 		{
 			get
@@ -61,68 +83,116 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 					o.Add(f.Key, f.Value.Value);
 
 				// Create event that gets called when a property is changed. This sets the flag
-				((INotifyPropertyChanged)eo).PropertyChanged += new PropertyChangedEventHandler((sender, ea) => {
+				((INotifyPropertyChanged)eo).PropertyChanged += new PropertyChangedEventHandler((sender, ea) =>	{
 					PropertyChangedEventArgs pcea = ea as PropertyChangedEventArgs;
 					IDictionary<string, object> so = sender as IDictionary<string, object>;
-
-					// Only allow known flags to be set
-					//if (!General.Map.Config.ThingFlags.Keys.Contains(pcea.PropertyName))
-					//	throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("UDMF field name '" + pcea.PropertyName + "' is not valid.");
-
-					// New value must be bool
-					//if (!(so[pcea.PropertyName] is bool))
-					//	throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Flag values must be bool.");
 
 					string pname = pcea.PropertyName;
 					object newvalue = null;
 
-					// Types of old and new value must match
-					if (element.Fields.ContainsKey(pname))
-					{
-						Type oldtype = element.Fields[pname].Value.GetType();
-						Type newtype = so[pname].GetType();
-						object oldvalue = element.Fields[pname].Value;
+					// If this property was changed, but doesn't exist, then it was deleted and we should not do anything
+					if (!so.ContainsKey(pname))
+						return;
 
-						if (so[pname] is double && (oldvalue is int) || (oldvalue is double))
+					if (pname != pname.ToLowerInvariant())
+						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("UDMF field names must be lowercase");
+
+					// Make sure the given field is not a flag (at least for now)
+					if((element is Linedef && General.Map.Config.LinedefFlags.Keys.Contains(pname)) ||
+						(element is Sidedef && General.Map.Config.SidedefFlags.Keys.Contains(pname)) ||
+						(element is Sector && General.Map.Config.SectorFlags.Keys.Contains(pname)) ||
+						(element is Thing && General.Map.Config.ThingFlags.Keys.Contains(pname))
+					)
+					{
+						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("You are trying to modify a flag through the UDMF fields. Please use the 'flags' property instead.");
+					}
+
+					if (element.Fields.ContainsKey(pname)) // Field already exists
+					{
+						if (so[pname] != null)
 						{
-							if (oldvalue is int)
+							object oldvalue = element.Fields[pname].Value;
+
+							if (so[pname] is double && ((oldvalue is int) || (oldvalue is double)))
 							{
-								newvalue = Convert.ToInt32((double)so[pname]);
+								if (oldvalue is int)
+									newvalue = Convert.ToInt32((double)so[pname]);
+								else if (oldvalue is double)
+									newvalue = (double)so[pname];
 							}
-							else if(oldvalue is double)
+							else if (so[pname] is string && oldvalue is string)
 							{
-								newvalue = (double)so[pname];
+								newvalue = (string)so[pname];
 							}
+							else if (so[pname] is bool && oldvalue is bool)
+							{
+								newvalue = (bool)so[pname];
+							}
+							else
+								throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("UDMF field '" + pname + "' is of incompatible type for value " + so[pname]);
 						}
-						else if(so[pname] is string && oldvalue is string)
-						{
-							newvalue = (string)so[pname];
-						}
-						else if(so[pname] is UniValue)
-						{
-							newvalue = ((UniValue)so[pname]).GetValue();
-						}
-						else
-						//if (!oldvalue.GetType().Equals(so[pname].GetType()))
-							throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("UDMF field '" + pcea.PropertyName + "' is of incompatible type for value " + so[pname]);
 					}
 					else // Property name doesn't exist yet
 					{
-						//General.map.Config.
+						List<UniversalFieldInfo> ufis = null;
+
+						// Get known UDMF fields for the element type
+						if (element is Sector)
+							ufis = General.Map.Config.SectorFields;
+						else if (element is Thing)
+							ufis = General.Map.Config.ThingFields;
+						else if (element is Linedef)
+							ufis = General.Map.Config.LinedefFields;
+						else if (element is Sidedef)
+							ufis = General.Map.Config.SidedefFields;
+						else if (element is Vertex)
+							ufis = General.Map.Config.VertexFields;
+						else
+							throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("element is of unsupported type");
+
+						// Check if there's a known field with the name
+						UniversalFieldInfo ufi = ufis.Where(e => e.Name == pname).FirstOrDefault();
+
+						if (ufi == null) // Not a known UniversalField, so no further checks needed
+						{
+							if (so[pname] is UniValue) // Special handling when a UniValue is given. This is important when the user wants to supply an int, since they don't exist in JS
+								newvalue = GetConvertedUniValue((UniValue)so[pname]);
+							else
+								newvalue = so[pname];
+						}
+						else
+						{
+							if (so[pname] is double && ufi.Default is double)
+								newvalue = (double)so[pname];
+							else if (so[pname] is double && ufi.Default is int)
+								newvalue = Convert.ToInt32((double)so[pname]);
+							else if (so[pname] is bool && ufi.Default is bool)
+								newvalue = (bool)so[pname];
+							else if (so[pname] is string && ufi.Default is string)
+								newvalue = (string)so[pname];
+							else
+								throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("UDMF field '" + pname + "' is of incompatible type for value " + so[pname]);
+						}
 					}
 
-					//if (old.Value.GetType() != so[pcea.PropertyName].GetType())
-					//	throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("UDMF field '" + pcea.PropertyName + "' is of type ");
-
-					if(newvalue == null)
-						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Something went wront while trying to assing a value to an UDMF field");
-
 					element.Fields.BeforeFieldsChange();
-					UniFields.SetFloat(element.Fields, pcea.PropertyName, (double)so[pcea.PropertyName]);
+
+					if (newvalue == null) // Remove the field when null was passed
+					{
+						element.Fields.Remove(pname);
+						so.Remove(pname);
+					}
+					else if (newvalue is double)
+						UniFields.SetFloat(element.Fields, pname, (double)newvalue);
+					else if (newvalue is int)
+						UniFields.SetInteger(element.Fields, pname, (int)newvalue);
+					else if (newvalue is string)
+						UniFields.SetString(element.Fields, pname, (string)newvalue, string.Empty);
+					else if (newvalue is bool)
+						element.Fields[pname] = new UniValue(UniversalType.Boolean, (bool)newvalue);
 
 					AfterFieldsUpdate();
 				});
-
 
 				return eo;
 			}
@@ -175,6 +245,74 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 				else
 					throw new CantConvertToVectorException("Data must be a Vector2D, or an array of numbers.");
 			}
+		}
+
+		internal object GetConvertedUniValue(UniValue uv)
+		{
+			switch ((UniversalType)uv.Type)
+			{
+				case UniversalType.AngleRadians:
+				case UniversalType.AngleDegreesFloat:
+				case UniversalType.Float:
+					return Convert.ToDouble(uv.Value);
+				case UniversalType.AngleDegrees:
+				case UniversalType.AngleByte: //mxd
+				case UniversalType.Color:
+				case UniversalType.EnumBits:
+				case UniversalType.EnumOption:
+				case UniversalType.Integer:
+				case UniversalType.LinedefTag:
+				case UniversalType.LinedefType:
+				case UniversalType.SectorEffect:
+				case UniversalType.SectorTag:
+				case UniversalType.ThingTag:
+				case UniversalType.ThingType:
+					return Convert.ToInt32(uv.Value);
+				case UniversalType.Boolean:
+					return Convert.ToBoolean(uv.Value);
+				case UniversalType.Flat:
+				case UniversalType.String:
+				case UniversalType.Texture:
+				case UniversalType.EnumStrings:
+				case UniversalType.ThingClass:
+					return Convert.ToString(uv.Value);
+			}
+
+			return null;
+		}
+
+		internal Type GetTypeFromUniversalType(int type)
+		{
+			switch ((UniversalType)type)
+			{
+				case UniversalType.AngleRadians:
+				case UniversalType.AngleDegreesFloat:
+				case UniversalType.Float:
+					return typeof(double);
+				case UniversalType.AngleDegrees:
+				case UniversalType.AngleByte: //mxd
+				case UniversalType.Color:
+				case UniversalType.EnumBits:
+				case UniversalType.EnumOption:
+				case UniversalType.Integer:
+				case UniversalType.LinedefTag:
+				case UniversalType.LinedefType:
+				case UniversalType.SectorEffect:
+				case UniversalType.SectorTag:
+				case UniversalType.ThingTag:
+				case UniversalType.ThingType:
+					return typeof(int);
+				case UniversalType.Boolean:
+					return typeof(bool);
+				case UniversalType.Flat:
+				case UniversalType.String:
+				case UniversalType.Texture:
+				case UniversalType.EnumStrings:
+				case UniversalType.ThingClass:
+					return typeof(string);
+			}
+
+			return null;
 		}
 
 		#endregion

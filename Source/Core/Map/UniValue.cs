@@ -184,40 +184,6 @@ namespace CodeImp.DoomBuilder.Map
 			}
 		}
 
-		public object GetValue()
-		{
-			switch ((UniversalType)type)
-			{
-				case UniversalType.AngleRadians:
-				case UniversalType.AngleDegreesFloat:
-				case UniversalType.Float:
-					return (double)value;
-				case UniversalType.AngleDegrees:
-				case UniversalType.AngleByte: //mxd
-				case UniversalType.Color:
-				case UniversalType.EnumBits:
-				case UniversalType.EnumOption:
-				case UniversalType.Integer:
-				case UniversalType.LinedefTag:
-				case UniversalType.LinedefType:
-				case UniversalType.SectorEffect:
-				case UniversalType.SectorTag:
-				case UniversalType.ThingTag:
-				case UniversalType.ThingType:
-					return (int)value;
-				case UniversalType.Boolean:
-					return (bool)value;
-				case UniversalType.Flat:
-				case UniversalType.String:
-				case UniversalType.Texture:
-				case UniversalType.EnumStrings:
-				case UniversalType.ThingClass:
-					return (string)value;
-			}
-
-			return null;
-		}
-		
 		// This validates a UDMF field name and returns the valid part
 		public static string ValidateName(string name)
 		{
