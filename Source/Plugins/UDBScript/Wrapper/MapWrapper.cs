@@ -264,6 +264,59 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 		}
 
+		/// <summary>
+		/// Draws lines. Data has to be an `Array` of `Array` of numbers, `Vector2D`s, `Vector3D`s, or objects with x and y properties.
+		/// Note that the first and last element have to be at the same positions to make a complete drawing.
+		/// ```
+		/// Map.DrawLines([
+		///		new Vector2D(64, 0),
+		///		new Vector2D(128, 0),
+		///		new Vector2D(128, 64),
+		///		new Vector2D(64, 64),
+		///		new Vector2D(64, 0)
+		///	]);
+		///	
+		/// Map.DrawLines([
+		///		[ 0, 0 ],
+		///		[ 64, 0 ],
+		///		[ 64, 64 ],
+		///		[ 0, 64 ],
+		///		[ 0, 0 ]
+		/// ]);
+		/// ```
+		/// </summary>
+		/// <param name="data">`Array` of positions</param>
+		/// <returns>`true` is drawing was successful, `false` if it wasn't</returns>
+		public bool drawLines(object data)
+		{
+			if (!data.GetType().IsArray)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Data must be supplied as an array");
+
+			List<DrawnVertex> vertices = new List<DrawnVertex>();
+
+			foreach(object item in (object[])data)
+			{
+				try
+				{
+					Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(item, false);
+					DrawnVertex dv = new DrawnVertex();
+					dv.pos = v;
+					dv.stitch = dv.stitchline = true;
+					vertices.Add(dv);
+				}
+				catch (CantConvertToVectorException e)
+				{
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+				}
+			}
+
+			if(vertices.Count < 3)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Array must have at least 3 values");
+
+			return Tools.DrawLines(vertices);
+		}
+
+		#endregion
 
 		#region ================== Marks
 
@@ -585,6 +638,8 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		#endregion
+
+		#region ================== Creation
 
 		/// <summary>
 		/// Creates a new `Vertex` at the given position. The position can be a `Vector2D` or an `Array` of two numbers.
