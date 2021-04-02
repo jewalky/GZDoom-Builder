@@ -572,6 +572,17 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			return new LinedefWrapper(linedef.Split(v.Vertex));
 		}
 
+		/// <summary>
+		/// Deletes the linedef. Note that this will result in unclosed sectors unless it has the same sectors on both sides.
+		/// </summary>
+		public void delete()
+		{
+			if (linedef.IsDisposed)
+				return;
+
+			linedef.Dispose();
+		}
+
 		#endregion
 	}
 }

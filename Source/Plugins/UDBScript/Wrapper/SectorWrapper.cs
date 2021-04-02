@@ -155,6 +155,15 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the selected property can not be accessed.");
 
 				sector.Selected = value;
+
+				// Make update lines selection
+				foreach (Sidedef sd in sector.Sidedefs)
+				{
+					bool front, back;
+					if (sd.Line.Front != null) front = sd.Line.Front.Sector.Selected; else front = false;
+					if (sd.Line.Back != null) back = sd.Line.Back.Sector.Selected; else back = false;
+					sd.Line.Selected = front | back;
+				}
 			}
 		}
 
@@ -398,6 +407,65 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector to join with is disposed, the join method can not be used.");
 
 			sector.Join(other);
+		}
+
+		/// <summary>
+		/// Deletes the sector and its sidedefs
+		/// </summary>
+		public void delete()
+		{
+			if (sector.IsDisposed)
+				return;
+
+			// Taken right from SectorsMode.DeleteItem()
+			List<Linedef> lines = new List<Linedef>(sector.Sidedefs.Count);
+			foreach (Sidedef side in sector.Sidedefs) lines.Add(side.Line);
+
+			General.Map.Map.BeginAddRemove();
+
+			// Dispose the sector
+			sector.Dispose();
+
+			// Check all the lines
+			for (int i = lines.Count - 1; i >= 0; i--)
+			{
+				// If the line has become orphaned, remove it
+				if ((lines[i].Front == null) && (lines[i].Back == null))
+				{
+					// Remove line
+					lines[i].Dispose();
+				}
+				else
+				{
+					// If the line only has a back side left, flip the line and sides
+					if ((lines[i].Front == null) && (lines[i].Back != null))
+					{
+						lines[i].FlipVertices();
+						lines[i].FlipSidedefs();
+					}
+
+					//mxd. Check textures.
+					if (lines[i].Front.MiddleRequired() && lines[i].Front.LongMiddleTexture == MapSet.EmptyLongName)
+					{
+						if (lines[i].Front.LongHighTexture != MapSet.EmptyLongName)
+						{
+							lines[i].Front.SetTextureMid(lines[i].Front.HighTexture);
+						}
+						else if (lines[i].Front.LongLowTexture != MapSet.EmptyLongName)
+						{
+							lines[i].Front.SetTextureMid(lines[i].Front.LowTexture);
+						}
+					}
+
+					//mxd. Do we still need high/low textures?
+					lines[i].Front.RemoveUnneededTextures(false);
+
+					// Update sided flags
+					lines[i].ApplySidedFlags();
+				}
+			}
+
+			General.Map.Map.EndAddRemove();
 		}
 
 		#endregion

@@ -518,12 +518,19 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 		}
 
-		public void dispose()
+		/// <summary>
+		/// Deletes the thing
+		/// </summary>
+		public void delete()
 		{
-			if (thing.IsDisposed)
-				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Thing is disposed, the dispose method can not be accessed.");
+			//if (thing.IsDisposed)
+			//	throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Thing is disposed, the dispose method can not be accessed.");
 
-			thing.Dispose();
+			if (!thing.IsDisposed)
+			{
+				thing.Dispose();
+				General.Map.ThingsFilter.Update();
+			}
 		}
 
 		#endregion

@@ -369,6 +369,17 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			vertex.Join(other.vertex);
 		}
 
+		/// <summary>
+		/// Deletes the vertex. Note that this can result in unclosed sectors.
+		/// </summary>
+		public void delete()
+		{
+			if (vertex.IsDisposed)
+				return;
+
+			vertex.Dispose();
+		}
+
 		#endregion
 	}
 }
