@@ -226,9 +226,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		//mxd
 		internal void UpdateSkyRenderFlag()
 		{
-			renderassky = (Sidedef.Other != null && Sidedef.Sector != null && Sidedef.Other.Sector != null 
-				&& Sidedef.Sector.CeilTexture == General.Map.Config.SkyFlatName 
-				&& Sidedef.Other.Sector.CeilTexture == General.Map.Config.SkyFlatName);
+			renderassky = (Sidedef.Other != null && Sidedef.Sector != null && Sidedef.Other.Sector != null
+				&& Sidedef.Other.Sector.CeilTexture == General.Map.Config.SkyFlatName
+				&& (Sidedef.Sector.CeilTexture == General.Map.Config.SkyFlatName || Sidedef.HighTexture == "-")
+				);
 		}
 		
 		#endregion

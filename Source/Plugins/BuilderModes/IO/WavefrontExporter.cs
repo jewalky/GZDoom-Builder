@@ -11,6 +11,7 @@ using CodeImp.DoomBuilder.Data;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Rendering;
+using CodeImp.DoomBuilder.VisualModes;
 using CodeImp.DoomBuilder.Windows;
 using CodeImp.DoomBuilder.BuilderModes.Interface;
 using System.Windows.Forms;
@@ -41,6 +42,8 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 		public bool NormalizeLowestVertex;
 		public bool CenterModel;
 		public bool ZScript;
+		public bool GenerateCode;
+		public bool GenerateModeldef;
 
 		// Actor properties and flags
 		public int Radius;
@@ -49,32 +52,6 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 		public bool NoGravity;
 		public bool SpawnOnCeiling;
 		public bool Solid;
-
-		/*
-		public WavefrontExportSettings(string name, string path, float scale, bool fixScale, bool exportTextures, string actorName, string basePath, string actorPath, string modelPath, List<string> skipTextures, bool ignoreControlSectors) 
-		{
-			ObjName = name;
-			ObjPath = path;
-			Scale = scale;
-			FixScale = fixScale;
-			ExportTextures = exportTextures;
-
-			ActorName = actorName;
-			BasePath = basePath;
-			ActorPath = actorPath;
-			ModelPath = modelPath;
-			SkipTextures = skipTextures;
-			IgnoreControlSectors = ignoreControlSectors;
-
-			Radius = 20;
-			Height = 16;
-
-			Valid = false;
-			Obj = string.Empty;
-			Textures = null;
-			Flats = null;
-		}
-		*/
 
 		public WavefrontExportSettings(WavefrontSettingsForm form)
 		{
@@ -93,6 +70,8 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 			NormalizeLowestVertex = form.NormalizeLowestVertex;
 			CenterModel = form.CenterModel;
 			ZScript = form.ZScript;
+			GenerateCode = form.GenerateCode;
+			GenerateModeldef = form.GenerateModeldef;
 
 			NoGravity = form.NoGravity;
 			SpawnOnCeiling = form.SpawnOnCeiling;
@@ -283,79 +262,85 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 			else
 			{
 				// Create ZScript or DECORATE
-				Stream stream;
-				string path = Path.Combine(settings.ActorPath, settings.ActorName);
-
-				if (settings.ZScript)
+				if (settings.GenerateCode)
 				{
-					stream = BuilderPlug.Me.GetResourceStream("ObjExportZScriptTemplate.txt");
-					path += ".zs";
-				}
-				else
-				{
-					stream = BuilderPlug.Me.GetResourceStream("ObjExportDecorateTemplate.txt");
-					path += ".txt";
-				}
+					Stream stream;
+					string path = Path.Combine(settings.ActorPath, settings.ActorName);
 
-				using (StreamReader reader = new StreamReader(stream, Encoding.ASCII))
-				{
-					string template = reader.ReadToEnd();
+					if (settings.ZScript)
+					{
+						stream = BuilderPlug.Me.GetResourceStream("ObjExportZScriptTemplate.txt");
+						path += ".zs";
+					}
+					else
+					{
+						stream = BuilderPlug.Me.GetResourceStream("ObjExportDecorateTemplate.txt");
+						path += ".txt";
+					}
 
-					template = template.Replace("{ActorName}", settings.ActorName);
-					template = template.Replace("{Sprite}", settings.Sprite);
-					template = template.Replace("{FlagNoGravity}", settings.NoGravity ? "+NOGRAVITY" : "");
-					template = template.Replace("{FlagSpawnOnCeiling}", settings.SpawnOnCeiling ? "+SPAWNCEILING" : "");
-					template = template.Replace("{FlagSolid}", settings.Solid ? "+SOLID" : "");
-					template = template.Replace("{FlagInvulnerable}", settings.Solid ? "+INVULNERABLE" : "");
-					template = template.Replace("{FlagNoDamage}", settings.Solid ? "+NODAMAGE" : "");
-					template = template.Replace("{FlagShootable}", settings.Solid ? "+SHOOTABLE" : "");
-					template = template.Replace("{FlagNotAutoAimed}", settings.Solid ? "+NOTAUTOAIMED" : "");
-					template = template.Replace("{FlagNeverTarget}", settings.Solid ? "+NEVERTARGET" : "");
-					template = template.Replace("{FlagDontThrust}", settings.Solid ? "+DONTTHRUST" : "");
-					template = template.Replace("{PropRadius}", settings.Radius.ToString());
-					template = template.Replace("{PropHeight}", settings.Height.ToString());
+					using (StreamReader reader = new StreamReader(stream, Encoding.ASCII))
+					{
+						string template = reader.ReadToEnd();
 
-					// Make sure the directory is there
-					Directory.CreateDirectory(Path.GetDirectoryName(path));
+						template = template.Replace("{ActorName}", settings.ActorName);
+						template = template.Replace("{Sprite}", settings.Sprite);
+						template = template.Replace("{FlagNoGravity}", settings.NoGravity ? "+NOGRAVITY" : "");
+						template = template.Replace("{FlagSpawnOnCeiling}", settings.SpawnOnCeiling ? "+SPAWNCEILING" : "");
+						template = template.Replace("{FlagSolid}", settings.Solid ? "+SOLID" : "");
+						template = template.Replace("{FlagInvulnerable}", settings.Solid ? "+INVULNERABLE" : "");
+						template = template.Replace("{FlagNoDamage}", settings.Solid ? "+NODAMAGE" : "");
+						template = template.Replace("{FlagShootable}", settings.Solid ? "+SHOOTABLE" : "");
+						template = template.Replace("{FlagNotAutoAimed}", settings.Solid ? "+NOTAUTOAIMED" : "");
+						template = template.Replace("{FlagNeverTarget}", settings.Solid ? "+NEVERTARGET" : "");
+						template = template.Replace("{FlagDontThrust}", settings.Solid ? "+DONTTHRUST" : "");
+						template = template.Replace("{PropRadius}", settings.Radius.ToString());
+						template = template.Replace("{PropHeight}", settings.Height.ToString());
 
-					using (StreamWriter sw = new StreamWriter(path, false))
-						sw.Write(template);
+						// Make sure the directory is there
+						Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+						using (StreamWriter sw = new StreamWriter(path, false))
+							sw.Write(template);
+					}
 				}
 
 				// Create MODELDEF
-				stream = BuilderPlug.Me.GetResourceStream("ObjExportModeldefTemplate.txt");
-
-				using (StreamReader reader = new StreamReader(stream, Encoding.ASCII))
+				if (settings.GenerateModeldef)
 				{
-					path = Path.Combine(settings.BasePath, "modeldef." + settings.ActorName + ".txt");
-					string template = reader.ReadToEnd();
+					Stream stream = BuilderPlug.Me.GetResourceStream("ObjExportModeldefTemplate.txt");
 
-					// The path to the model is relative to the base path, so generate the base path
-					string basepath = settings.BasePath.Trim();
-					string modelpath = settings.ModelPath.Trim();
+					using (StreamReader reader = new StreamReader(stream, Encoding.ASCII))
+					{
+						string path = Path.Combine(settings.BasePath, "modeldef." + settings.ActorName + ".txt");
+						string template = reader.ReadToEnd();
 
-					// Make sue there's a directory separator at the end of the paths, otherwise it'll not work correctly
-					if (!basepath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-						basepath += Path.DirectorySeparatorChar;
+						// The path to the model is relative to the base path, so generate the base path
+						string basepath = settings.BasePath.Trim();
+						string modelpath = settings.ModelPath.Trim();
 
-					if (!modelpath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-						modelpath += Path.DirectorySeparatorChar;
+						// Make sue there's a directory separator at the end of the paths, otherwise it'll not work correctly
+						if (!basepath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+							basepath += Path.DirectorySeparatorChar;
 
-					Uri baseUri = new Uri(basepath);
-					Uri modelUri = new Uri(modelpath);
+						if (!modelpath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+							modelpath += Path.DirectorySeparatorChar;
 
-					Uri relativeUri = baseUri.MakeRelativeUri(modelUri);
-					string relativepath = Uri.UnescapeDataString(relativeUri.OriginalString);
+						Uri baseUri = new Uri(basepath);
+						Uri modelUri = new Uri(modelpath);
 
-					template = template.Replace("{ActorName}", settings.ActorName);
-					template = template.Replace("{ModelPath}", relativepath);
-					template = template.Replace("{Sprite}", settings.Sprite);
+						Uri relativeUri = baseUri.MakeRelativeUri(modelUri);
+						string relativepath = Uri.UnescapeDataString(relativeUri.OriginalString);
 
-					// Make sure the directory is there
-					Directory.CreateDirectory(Path.GetDirectoryName(path));
+						template = template.Replace("{ActorName}", settings.ActorName);
+						template = template.Replace("{ModelPath}", relativepath);
+						template = template.Replace("{Sprite}", settings.Sprite);
 
-					using (StreamWriter sw = new StreamWriter(path, false))
-						sw.Write(template);
+						// Make sure the directory is there
+						Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+						using (StreamWriter sw = new StreamWriter(path, false))
+							sw.Write(template);
+					}
 				}
 			}
 
@@ -559,7 +544,7 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 					if (!skipTextures.Contains(texture))
 					{
 						CheckTextureName(ref flatgeo, ref texture);
-						flatgeo[texture].AddRange(OptimizeGeometry(vc.Vertices, (vc.ExtraFloor.VavoomType ? vc.GeometryType : VisualModes.VisualGeometryType.FLOOR)));
+						flatgeo[texture].AddRange(OptimizeGeometry(vc.Vertices, (vc.ExtraFloor.VavoomType ? vc.GeometryType : VisualGeometryType.FLOOR)));
 					}
 				}
 
@@ -570,7 +555,7 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 					if (!skipTextures.Contains(texture))
 					{
 						CheckTextureName(ref flatgeo, ref texture);
-						flatgeo[texture].AddRange(OptimizeGeometry(vf.Vertices, (vf.ExtraFloor.VavoomType ? vf.GeometryType : VisualModes.VisualGeometryType.CEILING)));
+						flatgeo[texture].AddRange(OptimizeGeometry(vf.Vertices, (vf.ExtraFloor.VavoomType ? vf.GeometryType : VisualGeometryType.CEILING)));
 					}
 				}
 
@@ -596,25 +581,19 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 
 		#region ================== Surface optimization
 
-		private static List<WorldVertex[]> OptimizeGeometry(WorldVertex[] verts, VisualModes.VisualGeometryType geotype)
+		private static List<WorldVertex[]> OptimizeGeometry(WorldVertex[] verts, VisualGeometryType geotype)
 		{
 			return OptimizeGeometry(verts, geotype, false);
 		}
 
-		private static List<WorldVertex[]> OptimizeGeometry(WorldVertex[] verts, VisualModes.VisualGeometryType geotype, bool skiprectoptimization) 
+		private static List<WorldVertex[]> OptimizeGeometry(WorldVertex[] verts, VisualGeometryType geotype, bool skiprectoptimization) 
 		{
 			List<WorldVertex[]> groups = new List<WorldVertex[]>();
 
-			if(!skiprectoptimization && verts.Length == 6) //rectangular surface
+			// Only do optimizations for walls right now. Doing them blindly for floors/ceilings will cause problems with concave sectors with 4 corners
+			if(!skiprectoptimization && verts.Length == 6 && (geotype != VisualGeometryType.CEILING && geotype != VisualGeometryType.FLOOR)) //rectangular surface
 			{
-				if(geotype == VisualModes.VisualGeometryType.CEILING) 
-				{
-					verts = new[] { verts[2], verts[5], verts[1], verts[0] };
-				} 
-				else 
-				{
-					verts = new[] { verts[5], verts[2], verts[1], verts[0] };
-				}
+				verts = new[] { verts[5], verts[2], verts[1], verts[0] };
 				groups.Add(verts);
 			} 
 			else 
@@ -658,8 +637,10 @@ namespace CodeImp.DoomBuilder.BuilderModes.IO
 					Dictionary<WorldVertex, VertexIndices> vertsData = new Dictionary<WorldVertex, VertexIndices>();
 					foreach(WorldVertex[] verts in group.Value) 
 					{
-						//vertex normals. biwa not sure why I need to invert the normal, but it seems to be necessary
-						Vector3D n = new Vector3D(verts[0].nx, verts[0].ny, verts[0].nz).GetNormal() * -1;
+						//vertex normals. biwa not sure why I need to invert the normal's y component, but it seems to be necessary
+						Vector3D n = new Vector3D(verts[0].nx, verts[0].ny, verts[0].nz).GetNormal();
+						n.y *= -1;
+
 						int ni;
 						if(uniqueNormals.ContainsKey(n)) 
 						{

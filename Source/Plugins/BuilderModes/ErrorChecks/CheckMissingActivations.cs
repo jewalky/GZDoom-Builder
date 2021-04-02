@@ -31,7 +31,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
                 return;
             }
 
-            // Go for all vertices
+            // Go for all linedefs
             foreach (Linedef l in General.Map.Map.Linedefs)
             {
                 int action = l.Action;
@@ -43,7 +43,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
                 {
                     foreach (LinedefActivateInfo ai in General.Map.Config.LinedefActivates)
                     {
-                        if (flags.ContainsKey(ai.Key) && flags[ai.Key] == true)
+                        if (flags.ContainsKey(ai.Key) && flags[ai.Key] == true && ai.IsTrigger)
                         {
                             hasActivation = true;
                             break;

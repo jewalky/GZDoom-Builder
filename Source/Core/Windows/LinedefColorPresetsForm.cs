@@ -99,7 +99,7 @@ namespace CodeImp.DoomBuilder.Windows
 
 			if(activations.Count > 0)
 			{
-				activations.Insert(0, new LinedefActivateInfo("-1", "Any activation"));
+				activations.Insert(0, new LinedefActivateInfo("-1", "Any activation", true));
 
 				if(General.Map.UDMF)
 				{

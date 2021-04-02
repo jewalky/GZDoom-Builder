@@ -39,11 +39,13 @@
 			this.nudScale = new System.Windows.Forms.NumericUpDown();
 			this.label2 = new System.Windows.Forms.Label();
 			this.gbGZDoom = new System.Windows.Forms.GroupBox();
+			this.cbGenerateCode = new System.Windows.Forms.CheckBox();
+			this.cbGenerateModeldef = new System.Windows.Forms.CheckBox();
 			this.actorNameError = new System.Windows.Forms.PictureBox();
-			this.groupBox3 = new System.Windows.Forms.GroupBox();
+			this.gbActorFormat = new System.Windows.Forms.GroupBox();
 			this.rbZScript = new System.Windows.Forms.RadioButton();
 			this.rbDecorate = new System.Windows.Forms.RadioButton();
-			this.groupBox2 = new System.Windows.Forms.GroupBox();
+			this.gbActorSettings = new System.Windows.Forms.GroupBox();
 			this.tbSprite = new System.Windows.Forms.TextBox();
 			this.label7 = new System.Windows.Forms.Label();
 			this.cbSolid = new System.Windows.Forms.CheckBox();
@@ -76,8 +78,8 @@
 			((System.ComponentModel.ISupportInitialize)(this.nudScale)).BeginInit();
 			this.gbGZDoom.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.actorNameError)).BeginInit();
-			this.groupBox3.SuspendLayout();
-			this.groupBox2.SuspendLayout();
+			this.gbActorFormat.SuspendLayout();
+			this.gbActorSettings.SuspendLayout();
 			this.groupBox1.SuspendLayout();
 			this.groupBox4.SuspendLayout();
 			this.SuspendLayout();
@@ -112,7 +114,7 @@
 			// export
 			// 
 			this.export.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.export.Location = new System.Drawing.Point(279, 518);
+			this.export.Location = new System.Drawing.Point(279, 575);
 			this.export.Name = "export";
 			this.export.Size = new System.Drawing.Size(75, 23);
 			this.export.TabIndex = 7;
@@ -124,7 +126,7 @@
 			// 
 			this.cancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.cancel.Location = new System.Drawing.Point(360, 518);
+			this.cancel.Location = new System.Drawing.Point(360, 575);
 			this.cancel.Name = "cancel";
 			this.cancel.Size = new System.Drawing.Size(75, 23);
 			this.cancel.TabIndex = 8;
@@ -182,9 +184,11 @@
 			// 
 			// gbGZDoom
 			// 
+			this.gbGZDoom.Controls.Add(this.cbGenerateCode);
+			this.gbGZDoom.Controls.Add(this.cbGenerateModeldef);
 			this.gbGZDoom.Controls.Add(this.actorNameError);
-			this.gbGZDoom.Controls.Add(this.groupBox3);
-			this.gbGZDoom.Controls.Add(this.groupBox2);
+			this.gbGZDoom.Controls.Add(this.gbActorFormat);
+			this.gbGZDoom.Controls.Add(this.gbActorSettings);
 			this.gbGZDoom.Controls.Add(this.bResetPaths);
 			this.gbGZDoom.Controls.Add(this.tbActorName);
 			this.gbGZDoom.Controls.Add(this.label6);
@@ -201,9 +205,31 @@
 			this.gbGZDoom.Controls.Add(this.cbExportForGZDoom);
 			this.gbGZDoom.Location = new System.Drawing.Point(15, 141);
 			this.gbGZDoom.Name = "gbGZDoom";
-			this.gbGZDoom.Size = new System.Drawing.Size(420, 368);
+			this.gbGZDoom.Size = new System.Drawing.Size(420, 425);
 			this.gbGZDoom.TabIndex = 6;
 			this.gbGZDoom.TabStop = false;
+			// 
+			// cbGenerateCode
+			// 
+			this.cbGenerateCode.AutoSize = true;
+			this.cbGenerateCode.Location = new System.Drawing.Point(8, 161);
+			this.cbGenerateCode.Name = "cbGenerateCode";
+			this.cbGenerateCode.Size = new System.Drawing.Size(171, 17);
+			this.cbGenerateCode.TabIndex = 25;
+			this.cbGenerateCode.Text = "Generate ZScript/DECORATE";
+			this.cbGenerateCode.UseVisualStyleBackColor = true;
+			this.cbGenerateCode.CheckedChanged += new System.EventHandler(this.cbGenerateCode_CheckedChanged);
+			// 
+			// cbGenerateModeldef
+			// 
+			this.cbGenerateModeldef.AutoSize = true;
+			this.cbGenerateModeldef.Location = new System.Drawing.Point(8, 184);
+			this.cbGenerateModeldef.Name = "cbGenerateModeldef";
+			this.cbGenerateModeldef.Size = new System.Drawing.Size(132, 17);
+			this.cbGenerateModeldef.TabIndex = 25;
+			this.cbGenerateModeldef.Text = "Generate MODELDEF";
+			this.cbGenerateModeldef.UseVisualStyleBackColor = true;
+			this.cbGenerateModeldef.CheckedChanged += new System.EventHandler(this.cbGenerateModeldef_CheckedChanged);
 			// 
 			// actorNameError
 			// 
@@ -215,16 +241,16 @@
 			this.actorNameError.TabStop = false;
 			this.actorNameError.Visible = false;
 			// 
-			// groupBox3
+			// gbActorFormat
 			// 
-			this.groupBox3.Controls.Add(this.rbZScript);
-			this.groupBox3.Controls.Add(this.rbDecorate);
-			this.groupBox3.Location = new System.Drawing.Point(8, 286);
-			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Size = new System.Drawing.Size(170, 73);
-			this.groupBox3.TabIndex = 14;
-			this.groupBox3.TabStop = false;
-			this.groupBox3.Text = "Actor format";
+			this.gbActorFormat.Controls.Add(this.rbZScript);
+			this.gbActorFormat.Controls.Add(this.rbDecorate);
+			this.gbActorFormat.Location = new System.Drawing.Point(10, 340);
+			this.gbActorFormat.Name = "gbActorFormat";
+			this.gbActorFormat.Size = new System.Drawing.Size(170, 73);
+			this.gbActorFormat.TabIndex = 14;
+			this.gbActorFormat.TabStop = false;
+			this.gbActorFormat.Text = "Actor format";
 			// 
 			// rbZScript
 			// 
@@ -249,19 +275,19 @@
 			this.rbDecorate.Text = "DECORATE";
 			this.rbDecorate.UseVisualStyleBackColor = true;
 			// 
-			// groupBox2
+			// gbActorSettings
 			// 
-			this.groupBox2.Controls.Add(this.tbSprite);
-			this.groupBox2.Controls.Add(this.label7);
-			this.groupBox2.Controls.Add(this.cbSolid);
-			this.groupBox2.Controls.Add(this.cbSpawnOnCeiling);
-			this.groupBox2.Controls.Add(this.cbNoGravity);
-			this.groupBox2.Location = new System.Drawing.Point(9, 158);
-			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(169, 119);
-			this.groupBox2.TabIndex = 13;
-			this.groupBox2.TabStop = false;
-			this.groupBox2.Text = "Actor settings";
+			this.gbActorSettings.Controls.Add(this.tbSprite);
+			this.gbActorSettings.Controls.Add(this.label7);
+			this.gbActorSettings.Controls.Add(this.cbSolid);
+			this.gbActorSettings.Controls.Add(this.cbSpawnOnCeiling);
+			this.gbActorSettings.Controls.Add(this.cbNoGravity);
+			this.gbActorSettings.Location = new System.Drawing.Point(11, 212);
+			this.gbActorSettings.Name = "gbActorSettings";
+			this.gbActorSettings.Size = new System.Drawing.Size(169, 122);
+			this.gbActorSettings.TabIndex = 13;
+			this.gbActorSettings.TabStop = false;
+			this.gbActorSettings.Text = "Actor settings";
 			// 
 			// tbSprite
 			// 
@@ -423,7 +449,7 @@
 			this.groupBox1.Controls.Add(this.bAddFlat);
 			this.groupBox1.Controls.Add(this.bAddTexture);
 			this.groupBox1.Controls.Add(this.lbSkipTextures);
-			this.groupBox1.Location = new System.Drawing.Point(184, 158);
+			this.groupBox1.Location = new System.Drawing.Point(186, 212);
 			this.groupBox1.Name = "groupBox1";
 			this.groupBox1.Size = new System.Drawing.Size(222, 201);
 			this.groupBox1.TabIndex = 15;
@@ -534,7 +560,7 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.CancelButton = this.cancel;
-			this.ClientSize = new System.Drawing.Size(447, 553);
+			this.ClientSize = new System.Drawing.Size(447, 610);
 			this.Controls.Add(this.groupBox4);
 			this.Controls.Add(this.gbGZDoom);
 			this.Controls.Add(this.label2);
@@ -556,10 +582,10 @@
 			this.gbGZDoom.ResumeLayout(false);
 			this.gbGZDoom.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.actorNameError)).EndInit();
-			this.groupBox3.ResumeLayout(false);
-			this.groupBox3.PerformLayout();
-			this.groupBox2.ResumeLayout(false);
-			this.groupBox2.PerformLayout();
+			this.gbActorFormat.ResumeLayout(false);
+			this.gbActorFormat.PerformLayout();
+			this.gbActorSettings.ResumeLayout(false);
+			this.gbActorSettings.PerformLayout();
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox4.ResumeLayout(false);
 			this.groupBox4.PerformLayout();
@@ -599,13 +625,13 @@
 		private System.Windows.Forms.Label label6;
 		private System.Windows.Forms.Label label5;
 		private System.Windows.Forms.Button bResetPaths;
-		private System.Windows.Forms.GroupBox groupBox2;
+		private System.Windows.Forms.GroupBox gbActorSettings;
 		private System.Windows.Forms.CheckBox cbNoGravity;
 		private System.Windows.Forms.CheckBox cbSpawnOnCeiling;
 		private System.Windows.Forms.CheckBox cbSolid;
 		private System.Windows.Forms.RadioButton rbDecorate;
 		private System.Windows.Forms.RadioButton rbZScript;
-		private System.Windows.Forms.GroupBox groupBox3;
+		private System.Windows.Forms.GroupBox gbActorFormat;
 		private System.Windows.Forms.TextBox tbSprite;
 		private System.Windows.Forms.Label label7;
 		private System.Windows.Forms.GroupBox groupBox4;
@@ -614,5 +640,7 @@
 		private System.Windows.Forms.CheckBox cbIgnoreControlSectors;
 		private System.Windows.Forms.PictureBox actorNameError;
 		private System.Windows.Forms.ToolTip toolTip1;
+		private System.Windows.Forms.CheckBox cbGenerateCode;
+		private System.Windows.Forms.CheckBox cbGenerateModeldef;
 	}
 }

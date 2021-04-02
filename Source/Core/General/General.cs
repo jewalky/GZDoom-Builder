@@ -560,6 +560,25 @@ namespace CodeImp.DoomBuilder
 			// Cannot find that nodebuilder
 			return null;
 		}
+
+		/// <summary>
+		/// Saves the program's configuration
+		/// </summary>
+		internal static void SaveSettings()
+		{
+			// Save settings configuration
+			if (!General.NoSettings)
+				General.Settings.Save(Path.Combine(settingspath, SETTINGS_FILE));
+		}
+
+		/// <summary>
+		/// Saves the game configuration settings, like engine, resources etc.
+		/// </summary>
+		internal static void SaveGameSettings()
+		{
+			// Save game configuration settings
+			if (configs != null) foreach (ConfigurationInfo ci in configs) ci.SaveSettings();
+		}
 		
 		#endregion
 
@@ -1002,13 +1021,12 @@ namespace CodeImp.DoomBuilder
 				
 				// Save action controls
 				actions.SaveSettings();
-				
-				// Save game configuration settings
-				if(configs != null) foreach(ConfigurationInfo ci in configs) ci.SaveSettings();
-				
-				// Save settings configuration
-				if(!General.NoSettings)
-					settings.Save(Path.Combine(settingspath, SETTINGS_FILE));
+
+				// Save game settings
+				SaveGameSettings();
+
+				// Save program configuration
+				SaveSettings();
 				
 				// Clean up
 				if(map != null) { map.Dispose(); map = null; }

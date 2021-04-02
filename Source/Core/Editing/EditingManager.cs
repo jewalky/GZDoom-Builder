@@ -248,9 +248,10 @@ namespace CodeImp.DoomBuilder.Editing
 			{
 				foreach(EditModeInfo emi in allmodes)
 				{
-					// Include the mode if it supports current map format (mxd)
+					// Include the mode if it supports current map format (mxd) and map features
 					// Also include the mode when it is listed and enabled or when it's not optional
 					if( (emi.Attributes.SupportedMapFormats == null || Array.IndexOf(emi.Attributes.SupportedMapFormats, General.Map.Config.FormatInterface) != -1) &&
+						(emi.Attributes.RequiredMapFeatures == null || General.Map.Config.SupportsMapFeatures(emi.Attributes.RequiredMapFeatures)) &&
 						((General.Map.ConfigSettings.EditModes.ContainsKey(emi.Type.FullName) && 
 						General.Map.ConfigSettings.EditModes[emi.Type.FullName] ) 
 						 || !emi.IsOptional) )
@@ -367,6 +368,9 @@ namespace CodeImp.DoomBuilder.Editing
 				// Engage new mode
 				if(newmode != null)
 				{
+					if (newmode.Attributes.IsDeprecated)
+						General.ErrorLogger.Add(ErrorType.Warning, "The editing mode \"" + newmode.Attributes.DisplayName + "\" is deprecated and will be removed in the future. " + newmode.Attributes.DeprecationMessage);
+
 					newmode.OnEngage();
 					General.Plugins.OnEditEngage(oldmode, newmode);
 				}

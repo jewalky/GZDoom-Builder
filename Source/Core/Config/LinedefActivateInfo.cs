@@ -34,6 +34,7 @@ namespace CodeImp.DoomBuilder.Config
 		private int intkey;
 		private string key;
 		private string title;
+		private bool istrigger;
 		
 		#endregion
 
@@ -42,17 +43,19 @@ namespace CodeImp.DoomBuilder.Config
 		public int Index { get { return intkey; } }
 		public string Key { get { return key; } }
 		public string Title { get { return title; } }
+		public bool IsTrigger { get { return istrigger; } }
 
 		#endregion
 
 		#region ================== Constructor / Disposer
 
 		// Constructor
-		internal LinedefActivateInfo(string key, string title)
+		internal LinedefActivateInfo(string key, string title, bool istrigger)
 		{
 			// Initialize
 			this.key = key;
 			this.title = title;
+			this.istrigger = istrigger;
 			
 			// Try parsing key as int for comparison
 			if(!int.TryParse(key, out intkey)) intkey = 0;

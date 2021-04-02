@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Data;
 using CodeImp.DoomBuilder.Rendering;
@@ -51,25 +52,36 @@ namespace CodeImp.DoomBuilder.ZDoom
 
 			// Continue until at the end of the stream
 			HashSet<string> knowntypes = new HashSet<string> { "int", "float", "color", "bool", "string" };
+			HashSet<string> flags = new HashSet<string> { "noarchive", "cheat", "latch" };
 			while(SkipWhitespace(true))
 			{
 				string token = ReadToken().ToLowerInvariant();
 				if(string.IsNullOrEmpty(token)) continue;
 
-				//<scope> [noarchive] <type> <name> [= <defaultvalue>];
+				//<scope> [noarchive] [cheat] [latch] <type> <name> [= <defaultvalue>];
 				switch(token)
 				{
-					case "user": case "server":
+					case "user":
+					case "server":
+					case "nosave":
+						// read (skip) flags
+						while(true)
+						{
+							string flagtoken;
+
+							SkipWhitespace(true);
+							flagtoken = ReadToken().ToLowerInvariant();
+
+							if(!flags.Contains(flagtoken))
+							{
+								DataStream.Seek(-flagtoken.Length - 1, SeekOrigin.Current);
+								break;
+							}
+						}
+
 						// Type
 						SkipWhitespace(true);
 						string type = ReadToken().ToLowerInvariant();
-
-						// Can be "noarchive" keyword
-						if(type == "noarchive")
-						{
-							SkipWhitespace(true);
-							type = ReadToken().ToLowerInvariant();
-						}
 
 						if(!knowntypes.Contains(type))
 						{

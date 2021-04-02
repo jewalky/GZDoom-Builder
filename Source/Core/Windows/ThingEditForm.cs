@@ -51,6 +51,7 @@ namespace CodeImp.DoomBuilder.Windows
 		private static bool useabsoluteheight; //mxd
 		private List<ThingProperties> thingprops; //mxd
 		private Dictionary<string, string> flagsrename; //mxd
+		private bool oldmapischanged;
 
 		private struct ThingProperties //mxd
 		{
@@ -141,6 +142,7 @@ namespace CodeImp.DoomBuilder.Windows
 		public void Setup(ICollection<Thing> things)
 		{
 			preventchanges = true;
+			oldmapischanged = General.Map.IsChanged;
             undocreated = false;
             argscontrol.Reset();
 
@@ -466,7 +468,16 @@ namespace CodeImp.DoomBuilder.Windows
 		private void cancel_Click(object sender, EventArgs e)
 		{
 			//mxd. Perform undo?
-			if(undocreated) General.Map.UndoRedo.WithdrawUndo();
+			if (undocreated)
+			{
+				General.Map.UndoRedo.WithdrawUndo();
+
+				// Changing certain properties of the thing, like its type, will set General.Map.IsChanged to true.
+				// But if cancel is pressed and the changes are discarded, and the map was not changed before, we have to force
+				// General.Map.IsChanged back to false
+				if (General.Map.IsChanged && oldmapischanged == false)
+					General.Map.ForceMapIsChangedFalse();
+			}
 			
 			// Be gone
 			this.DialogResult = DialogResult.Cancel;

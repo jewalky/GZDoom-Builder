@@ -29,9 +29,9 @@
 //**    It will give you online info about the ZDaemon extensions.
 //**
 //***************************************************************************
- 
+
 // ZDaemon ACSF Functions ---------------------------------------------------
- 
+
 special
 //	-19620:GetTeamScore(1),			//already defined in zspecial.acs
 //	-19621:SetTeamScore(2),			//already defined in zspecial.acs
@@ -53,50 +53,63 @@ special
 	-19637:Arti_Execute(2,5),
 	-19638:Arti_ExecuteAlways(2,5),
 	-19639:Arti_NamedExecute(2,5),
-	-19640:Arti_NamedExecuteAlways(2,5);
+	-19640:Arti_NamedExecuteAlways(2,5),
+	-19641:ZD_SetActorCameraHeight(2),
+	-19642:ZD_SetMarineSkin(2),
+	-19643:ZD_GetSkinName(1),
+	-19644:ZD_GetSkinTopIndex(0),
+	-19645:ZD_GetGameInfo(1),
+	-19646:ZD_GetMarineSkin(1);
 
 // Team specifiers you can use with GetTeamScore/SetTeamScore ---------------
- 
-//#define TEAM_BLUE               0		//already defined in zdefs.acs
-//#define TEAM_RED                1		//already defined in zdefs.acs
-#define TEAM_GREEN              2
-#define TEAM_WHITE              3
+
+//#define TEAM_BLUE                  0		//already defined in zdefs.acs
+//#define TEAM_RED                   1		//already defined in zdefs.acs
+#define TEAM_GREEN                 2
+#define TEAM_WHITE                 3
 
 // More Properties you can use with GetPlayerInfo/SetPlayerInfo -------------
 
-#define PLAYERINFO_ITEMS        100
-#define PLAYERINFO_HEALTH       101
-#define PLAYERINFO_ARMOR        102
-#define PLAYERINFO_SECRETS      103
-#define PLAYERINFO_KILLS        104
-#define PLAYERINFO_DEATHS       105
-#define PLAYERINFO_SUICIDES     106
-#define PLAYERINFO_PTS_1        107
-#define PLAYERINFO_PTS_2        108
-#define PLAYERINFO_PTS_3        109
-#define PLAYERINFO_TIME	        110
-#define PLAYERINFO_USR_1        111
-#define PLAYERINFO_USR_2        112
-#define PLAYERINFO_USR_3        113
-#define PLAYERINFO_USR_4        114
-#define PLAYERINFO_USR_5        115
-#define PLAYERINFO_USR_6        116
-#define PLAYERINFO_USR_7        117
-#define PLAYERINFO_USR_8        118
-#define PLAYERINFO_USR_9        119
-#define PLAYERINFO_USR_10       120
-#define PLAYERINFO_MORPHTICS    121
-#define PLAYERINFO_MORPHED      122
-#define PLAYERINFO_READYWEAPON  123
+#define PLAYERINFO_ITEMS           100
+#define PLAYERINFO_HEALTH          101
+#define PLAYERINFO_ARMOR           102
+#define PLAYERINFO_SECRETS         103
+#define PLAYERINFO_KILLS           104
+#define PLAYERINFO_DEATHS          105
+#define PLAYERINFO_SUICIDES        106
+#define PLAYERINFO_PTS_1           107
+#define PLAYERINFO_PTS_2           108
+#define PLAYERINFO_PTS_3           109
+#define PLAYERINFO_TIME            110
+#define PLAYERINFO_USR_1           111
+#define PLAYERINFO_USR_2           112
+#define PLAYERINFO_USR_3           113
+#define PLAYERINFO_USR_4           114
+#define PLAYERINFO_USR_5           115
+#define PLAYERINFO_USR_6           116
+#define PLAYERINFO_USR_7           117
+#define PLAYERINFO_USR_8           118
+#define PLAYERINFO_USR_9           119
+#define PLAYERINFO_USR_10          120
+#define PLAYERINFO_MORPHTICS       121
+#define PLAYERINFO_MORPHED         122
+#define PLAYERINFO_READYWEAPON     123
 
 // Return values for PLAYERINFO_MORPHED -------------------------------------
 
-#define MORPHEDTO_NONE          0
-#define MORPHEDTO_CHICK         1
-#define MORPHEDTO_PIG           2
+#define MORPHEDTO_NONE             0
+#define MORPHEDTO_CHICK            1
+#define MORPHEDTO_PIG              2
 
 // Return values for NetMode ------------------------------------------------
 
-#define NM_SINGLEPLAYER         1
-#define NM_SERVER               2
-#define NM_CLIENT               3
+#define NM_SINGLEPLAYER            1
+#define NM_SERVER                  2
+#define NM_CLIENT                  3
+
+// Return values for ZD_GetGameInfo -----------------------------------------
+
+#define ZD_GAMEINFO_SURVIVALRESET  0
+#define ZD_GAMEINFO_IN_OVERTIME    1
+#define ZD_GAMEINFO_IN_WARMUP      2
+#define ZD_GAMEINFO_IN_LOBBY       3

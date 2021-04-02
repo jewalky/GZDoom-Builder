@@ -91,7 +91,7 @@ namespace CodeImp.DoomBuilder.Editing
 					if(stream != null)
 					{
 						buttonimage = Image.FromStream(stream);
-						buttondesc = attr.DisplayName;
+						buttondesc = attr.DisplayName + (attribs.IsDeprecated ? " (deprecated)" : "");
 						buttonorder = attr.ButtonOrder;
 					}
 				}

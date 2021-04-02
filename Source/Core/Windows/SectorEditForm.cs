@@ -41,6 +41,7 @@ namespace CodeImp.DoomBuilder.Windows
 		private List<SectorProperties> sectorprops; //mxd
 		private bool preventchanges; //mxd
 		private bool undocreated; //mxd
+		private bool oldmapischanged;
 
 		private struct SectorProperties //mxd
 		{
@@ -90,7 +91,8 @@ namespace CodeImp.DoomBuilder.Windows
 		public void Setup(ICollection<Sector> sectors)
 		{
 			preventchanges = true; //mxd
-            undocreated = false;
+			oldmapischanged = General.Map.IsChanged;
+			undocreated = false;
             // Keep this list
             this.sectors = sectors;
 			if(sectors.Count > 1) this.Text = "Edit Sectors (" + sectors.Count + ")";
@@ -345,7 +347,16 @@ namespace CodeImp.DoomBuilder.Windows
 		private void cancel_Click(object sender, EventArgs e)
 		{
 			//mxd. perform undo
-			if(undocreated) General.Map.UndoRedo.WithdrawUndo();
+			if (undocreated)
+			{
+				General.Map.UndoRedo.WithdrawUndo();
+
+				// Changing certain properties of the sector, like floor/ceiling textures will set General.Map.IsChanged to true.
+				// But if cancel is pressed and the changes are discarded, and the map was not changed before, we have to force
+				// General.Map.IsChanged back to false
+				if (General.Map.IsChanged && oldmapischanged == false)
+					General.Map.ForceMapIsChangedFalse();
+			}
 			
 			// And be gone
 			this.DialogResult = DialogResult.Cancel;

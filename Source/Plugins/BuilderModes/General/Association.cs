@@ -31,6 +31,31 @@ using CodeImp.DoomBuilder.Windows;
 
 namespace CodeImp.DoomBuilder.BuilderModes
 {
+	public struct UDMFFieldAssociationX
+	{
+		public string Property;
+		public string Modify;
+		public UniValue Value;
+
+		public UDMFFieldAssociationX(string property, string modify, UniValue value)
+		{
+			Property = property;
+			Modify = modify;
+			Value = value;
+		}
+
+		public UniValue GetValue()
+		{
+			if(Value.Type == 0)
+			{
+				if (Modify == "abs")
+					return new UniValue(0, Math.Abs((int)Value.Value));
+			}
+
+			return new UniValue(0, 0);
+		}
+	}
+
 	public class Association
 	{
 		private HashSet<int> tags;
@@ -264,6 +289,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				bool addforward = false;
 				bool addreverse = false;
 
+				if (s == element)
+					continue;
+
 				// Check for forward association (from the element to the sector)
 				if (hassectortags && actiontags[(int)UniversalType.SectorTag].Overlaps(s.Tags))
 					addforward = true;
@@ -282,6 +310,35 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 					if (addreverse)
 						AddLineToAction(showreverselabel ? GetActionDescription(element) : string.Empty, sectorcenter, center);
+				}
+
+				// Check arbitrary UDMF field associations
+				foreach (UniversalFieldInfo ufi in General.Map.Config.SectorFields)
+				{
+					if (ufi.Associations.Count == 0)
+						continue;
+
+					UniValue ouv;
+
+					if (element.Fields.TryGetValue(ufi.Name, out ouv))
+					{
+						foreach (KeyValuePair<string, UDMFFieldAssociation> kvp in ufi.Associations)
+						{
+							UniValue uv;
+							if (s.Fields.TryGetValue(kvp.Key, out uv))
+							{
+								if(UniValuesMatch(uv, ouv, kvp.Value.Modify, ufi.Default))
+								{
+									Vector2D sectorcenter = (s.Labels.Count > 0 ? s.Labels[0].position : new Vector2D(s.BBox.X + s.BBox.Width / 2, s.BBox.Y + s.BBox.Height / 2));
+
+									if(showforwardlabel && kvp.Value.NeverShowEventLines == false)
+										AddLineToAction(kvp.Key + ": " + uv.Value, center, sectorcenter);
+
+									sectors.Add(s);
+								}
+							}
+						}
+					}
 				}
 			}
 
@@ -717,6 +774,99 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			return newpositions;
 		}
 
+		/// <summary>
+		/// Checks if the type and value of two UniValues match. Takes modifiers into account
+		/// </summary>
+		/// <param name="uv1">First UniValue</param>
+		/// <param name="uv2">Second UniValue</param>
+		/// <param name="ufam">Modifier</param>
+		/// <returns>True if values match</returns>
+		private bool UniValuesMatch(UniValue uv1, UniValue uv2, UDMFFieldAssociationModifier ufam, object def)
+		{
+			if (uv1.Type != uv2.Type)
+				return false;
+
+			switch ((UniversalType)uv1.Type)
+			{
+				case UniversalType.AngleRadians:
+				case UniversalType.AngleDegreesFloat:
+				case UniversalType.Float:
+					double d1 = (double)uv1.Value;
+					double d2 = (double)uv2.Value;
+
+					if(ufam == UDMFFieldAssociationModifier.Absolute)
+					{
+						d1 = Math.Abs(d1);
+						d2 = Math.Abs(d2);
+					}
+
+					if (d1 == d2)
+						return true;
+
+					break;
+
+				case UniversalType.AngleDegrees:
+				case UniversalType.AngleByte:
+				case UniversalType.Color:
+				case UniversalType.EnumBits:
+				case UniversalType.EnumOption:
+				case UniversalType.Integer:
+				case UniversalType.LinedefTag:
+				case UniversalType.LinedefType:
+				case UniversalType.SectorEffect:
+				case UniversalType.SectorTag:
+				case UniversalType.ThingTag:
+				case UniversalType.ThingType:
+					int i1 = (int)uv1.Value;
+					int i2 = (int)uv2.Value;
+
+					if (ufam == UDMFFieldAssociationModifier.Absolute)
+					{
+						i1 = Math.Abs(i1);
+						i2 = Math.Abs(i2);
+					}
+
+					if (i1 == i2 && i1 != (int)def)
+						return true;
+
+					break;
+
+				case UniversalType.Boolean:
+					if ((bool)uv1.Value == (bool)uv2.Value)
+						return true;
+					break;
+
+				case UniversalType.Flat:
+				case UniversalType.String:
+				case UniversalType.Texture:
+				case UniversalType.EnumStrings:
+				case UniversalType.ThingClass:
+					if ((string)uv1.Value == (string)uv2.Value)
+						return true;
+					break;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Checks if the given sector has UDMF fields that have associations
+		/// </summary>
+		/// <param name="sector">Sector to check</param>
+		/// <returns>True if the sector has UDMF fiels associations</returns>
+		public static bool SectorHasUDMFFieldAssociations(Sector sector)
+		{
+			if (sector == null || sector.IsDisposed || sector.Fields == null)
+				return false;
+
+			foreach (UniversalFieldInfo ufi in General.Map.Config.SectorFields)
+			{
+				if (sector.Fields.ContainsKey(ufi.Name))
+					return true;
+			}
+
+			return false;
+		}
 
 		/// <summary>
 		/// Renders associated things and sectors in the indication color.
@@ -785,10 +935,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		public void Plot()
 		{
 			foreach(Linedef ld in linedefs)
-				renderer.PlotLinedef(ld, General.Colors.Indication);
+				if(!ld.IsDisposed) renderer.PlotLinedef(ld, General.Colors.Indication);
 
 			foreach (Sector s in sectors)
-				renderer.PlotSector(s, General.Colors.Indication);
+				if(!s.IsDisposed) renderer.PlotSector(s, General.Colors.Indication);
 		}
 
 		// This compares an association

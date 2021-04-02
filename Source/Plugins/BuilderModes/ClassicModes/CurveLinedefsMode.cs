@@ -502,7 +502,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 					if(panel.Angle == 0 && (Math.Sign(offset - prevoffset) != Math.Sign(panel.Distance)))
 					{
 						// Set new distance without triggering the update...
-						panel.SetValues(panel.Vertices, -panel.Distance, panel.Angle, panel.FixedCurve, panel.FixedCurveOutwards);
+						panel.SetValues(panel.Vertices, -panel.Distance, panel.Angle, panel.FixedCurve, !panel.FixedCurveOutwards);
 
 						// Recalculate affected values...
 						perpendicular *= -1;

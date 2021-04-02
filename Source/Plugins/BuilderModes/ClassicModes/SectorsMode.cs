@@ -441,10 +441,10 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			// are or were drawn we need to redraw the entire display.
 
 			// Previous association highlights something?
-			bool completeredraw = (highlighted != null) && (highlighted.Tag != 0);
+			bool completeredraw = (highlighted != null) && (highlighted.Tag != 0 || Association.SectorHasUDMFFieldAssociations(highlighted));
 
 			// Set highlight association
-			if(s != null && s.Tag != 0) 
+			if(s != null && (s.Tag != 0 || Association.SectorHasUDMFFieldAssociations(s)))
 			{
 				highlightasso.Set(s);
 			} 
@@ -454,7 +454,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			}
 
 			// New association highlights something?
-			if((s != null) && (s.Tag != 0)) completeredraw = true;
+			if((s != null) && (s.Tag != 0 || Association.SectorHasUDMFFieldAssociations(s))) completeredraw = true;
 
 			// Change label color
 			if((highlighted != null) && !highlighted.IsDisposed)
@@ -2103,6 +2103,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 				//mxd. Clear selection info
 				General.Interface.DisplayStatus(StatusType.Selection, string.Empty);
+
+				if (highlighted != null && !highlighted.IsDisposed)
+					highlightasso.Set(highlighted);
 
 				// Recreate the blockmap
 				CreateBlockmap();

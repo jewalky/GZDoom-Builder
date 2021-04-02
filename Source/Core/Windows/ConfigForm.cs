@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.Data;
@@ -88,7 +89,7 @@ namespace CodeImp.DoomBuilder.Windows
 				// Is this mode selectable by the user?
 				if(emi.IsOptional)
 				{
-					lvi = listmodes.Items.Add(emi.Attributes.DisplayName);
+					lvi = listmodes.Items.Add(emi.Attributes.DisplayName + (emi.Attributes.IsDeprecated ? " (deprecated)" : ""));
 					lvi.Tag = emi;
 					lvi.SubItems.Add(emi.Plugin.Plug.Name);
 					lvi.UseItemStyleForSubItems = true; //mxd
@@ -196,17 +197,26 @@ namespace CodeImp.DoomBuilder.Windows
 					EditModeInfo emi = (lvi.Tag as EditModeInfo);
 
 					//mxd. Disable item if the mode does not support current map format
-					if(emi.Attributes.SupportedMapFormats != null &&
-					    Array.IndexOf(emi.Attributes.SupportedMapFormats, gameconfig.FormatInterface) == -1) 
+					if (emi.Attributes.SupportedMapFormats != null &&
+						Array.IndexOf(emi.Attributes.SupportedMapFormats, gameconfig.FormatInterface) == -1)
 					{
-						lvi.Text = emi.Attributes.DisplayName + " (map format not supported)";
+						lvi.Text = emi.Attributes.DisplayName + " (map format not supported" + (emi.Attributes.IsDeprecated ? ", deprecated" : "") + ")";
 						lvi.ForeColor = SystemColors.GrayText;
 						lvi.BackColor = SystemColors.InactiveBorder;
 						lvi.Checked = false;
-					} 
-					else 
+
+						continue;
+					}
+					else if (emi.Attributes.RequiredMapFeatures != null && !gameconfig.SupportsMapFeatures(emi.Attributes.RequiredMapFeatures))
 					{
-						lvi.Text = emi.Attributes.DisplayName;
+						lvi.Text = emi.Attributes.DisplayName + " (map feature not supported)";
+						lvi.ForeColor = SystemColors.GrayText;
+						lvi.BackColor = SystemColors.InactiveBorder;
+						lvi.Checked = false;
+					}
+					else
+					{
+						lvi.Text = emi.Attributes.DisplayName + (emi.Attributes.IsDeprecated ? " (deprecated)" : "");
 						lvi.ForeColor = SystemColors.WindowText;
 						lvi.BackColor = SystemColors.Window;
 						lvi.Checked = (configinfo.EditModes.ContainsKey(emi.Type.FullName) && configinfo.EditModes[emi.Type.FullName]);
@@ -405,6 +415,8 @@ namespace CodeImp.DoomBuilder.Windows
 				General.Configs[i].Enabled = ci.Enabled;
 				if(ci.Changed) General.Configs[i].Apply(ci);
 			}
+
+			General.SaveGameSettings();
 			
 			// Close
 			this.DialogResult = DialogResult.OK;

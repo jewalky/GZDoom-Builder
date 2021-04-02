@@ -2708,6 +2708,17 @@ namespace CodeImp.DoomBuilder
 			renderer2d.GridVisibilityChanged();
 		}
 
+		/// <summary>
+		/// This forces the "changed" variable to "false", which is normally not possible when setting the "IsChanged" property.
+		/// USE WITH CARE! This should only be used in very specific circumstances, where the "IsChanged" property is set to true
+		/// because of internal behavior
+		/// </summary>
+		internal void ForceMapIsChangedFalse()
+		{
+			changed = false;
+			General.MainWindow.UpdateMapChangedStatus();
+		}
+
 		#endregion
 	}
 }

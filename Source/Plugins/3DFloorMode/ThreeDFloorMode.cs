@@ -53,6 +53,7 @@ namespace CodeImp.DoomBuilder.ThreeDFloorMode
 			  ButtonOrder = int.MinValue + 501,	// Position of the button (lower is more to the left)
 			  ButtonGroup = "000_editing",
 			  SupportedMapFormats = new[] { "HexenMapSetIO", "UniversalMapSetIO" },
+			  RequiredMapFeatures = new[] { "Effect3DFloorSupport" },
 			  UseByDefault = true,
 			  SafeStartMode = false,
 			  Volatile = false)]
@@ -94,6 +95,7 @@ namespace CodeImp.DoomBuilder.ThreeDFloorMode
 		bool paintselectpressed;
 
 		private List<ThreeDFloor> threedfloors;
+		private BlockMap<BlockEntry> blockmap;
 
 		#endregion
 
@@ -564,6 +566,23 @@ namespace CodeImp.DoomBuilder.ThreeDFloorMode
 						sd.Line.Selected = front | back;
 					}
 
+					// Also (de)select things?
+					if (General.Interface.AltState ^ BuilderModes.BuilderPlug.Me.SyncronizeThingEdit)
+					{
+						List<BlockEntry> belist = blockmap.GetSquareRange(s.BBox);
+
+						foreach (BlockEntry be in belist)
+						{
+							foreach (Thing t in be.Things)
+							{
+								// Always determine the thing's current sector because it might have change since the last determination
+								t.DetermineSector(blockmap);
+
+								if (t.Sector == s && t.Selected != s.Selected) t.Selected = s.Selected;
+							}
+						}
+					}
+
 					// Update all other labels
 					UpdateLabels();
 				}
@@ -653,8 +672,25 @@ namespace CodeImp.DoomBuilder.ThreeDFloorMode
 			*/
 		}
 
+		/// <summary>
+		/// Create a blockmap containing sectors and things. This is used to speed determining which sector a
+		/// thing is in when synchronized thing editing is enabled
+		/// </summary>
+		private void CreateBlockmap()
+		{
+			RectangleF area = MapSet.CreateArea(General.Map.Map.Vertices);
+			area = MapSet.IncreaseArea(area, General.Map.Map.Things);
+			blockmap = new BlockMap<BlockEntry>(area);
+			blockmap.AddSectorsSet(General.Map.Map.Sectors);
+			blockmap.AddThingsSet(General.Map.Map.Things);
+
+			// Don't add linedefs here. They are only needed for paint select, so let's save some
+			// time (and add them when paint select is used t he first time)
+			//addedlinedefstoblockmap = false;
+		}
+
 		#endregion
-		
+
 		#region ================== Events
 
 		public override void OnHelp()
@@ -691,10 +727,38 @@ namespace CodeImp.DoomBuilder.ThreeDFloorMode
 			General.Interface.AddButton(BuilderModes.BuilderPlug.Me.MenusForm.ViewSelectionNumbers);
 			BuilderModes.BuilderPlug.Me.MenusForm.ViewSelectionNumbers.Click += ViewSelectionNumbers_Click;
 
+			// Synchronize thing editing from BuilderModes
+			General.Interface.AddButton(BuilderModes.BuilderPlug.Me.MenusForm.SyncronizeThingEditButton);
+
 			General.Interface.AddButton(BuilderPlug.Me.MenusForm.RelocateControlSectors);
 
 			// Convert geometry selection to sectors only
 			General.Map.Map.ConvertSelection(SelectionType.Sectors);
+
+			// Create the blockmap
+			CreateBlockmap();
+
+			// Select things in the selected sectors if synchronized thing editing is enabled
+			if (BuilderModes.BuilderPlug.Me.SyncronizeThingEdit)
+			{
+				ICollection<Sector> sectors = General.Map.Map.GetSelectedSectors(true);
+
+				foreach (Sector s in sectors)
+				{
+					List<BlockEntry> belist = blockmap.GetSquareRange(s.BBox);
+
+					foreach (BlockEntry be in belist)
+					{
+						foreach (Thing t in be.Things)
+						{
+							// Always determine the thing's current sector because it might have change since the last determination
+							t.DetermineSector(blockmap);
+
+							if (t.Sector == s && t.Selected != s.Selected) t.Selected = s.Selected;
+						}
+					}
+				}
+			}
 
 			// Make text labels for sectors
 			SetupLabels();
@@ -727,6 +791,8 @@ namespace CodeImp.DoomBuilder.ThreeDFloorMode
 			// Remove the button and event handler for view selection numbers
 			General.Interface.RemoveButton(BuilderModes.BuilderPlug.Me.MenusForm.ViewSelectionNumbers);
 			BuilderModes.BuilderPlug.Me.MenusForm.ViewSelectionNumbers.Click -= ViewSelectionNumbers_Click;
+
+			General.Interface.RemoveButton(BuilderModes.BuilderPlug.Me.MenusForm.SyncronizeThingEditButton);
 
 			General.Interface.RemoveButton(BuilderPlug.Me.MenusForm.RelocateControlSectors);
 
@@ -844,6 +910,9 @@ namespace CodeImp.DoomBuilder.ThreeDFloorMode
 					updateOverlaySurfaces();
 					UpdateOverlay();
 					renderer.Present();
+
+					// Thing selection state may've changed
+					if (General.Interface.AltState ^ BuilderModes.BuilderPlug.Me.SyncronizeThingEdit) General.Interface.RedrawDisplay();
 				}
 			}
 

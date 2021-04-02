@@ -299,7 +299,7 @@ namespace CodeImp.DoomBuilder.Windows
 			if(General.Editing.Mode != null)
 			{
 				General.MainWindow.CheckEditModeButton(General.Editing.Mode.EditModeButtonName);
-				General.MainWindow.DisplayModeName(General.Editing.Mode.Attributes.DisplayName);
+				General.MainWindow.DisplayModeName(General.Editing.Mode.Attributes.DisplayName + (General.Editing.Mode.Attributes.IsDeprecated ? " (deprecated)" : ""));
 			}
 			else
 			{
@@ -1414,7 +1414,7 @@ namespace CodeImp.DoomBuilder.Windows
 			if(ctrl) mod |= (int)Keys.Control;
 			
 			// Don't process any keys when they are meant for other input controls
-			if((ActiveControl == null) || (ActiveControl == display))
+			if((e.KeyData != Keys.None) && ((ActiveControl == null) || (ActiveControl == display)))
 			{
 				// Invoke any actions associated with this key
 				General.Actions.UpdateModifiers(mod);
@@ -2661,6 +2661,9 @@ namespace CodeImp.DoomBuilder.Windows
 					General.Settings.WriteSetting("recentfiles.file" + i, recentitems[i].Tag.ToString());
 				}
 			}
+
+			// Save program configuration
+			General.SaveSettings();
 		}
 		
 		// This adds a recent file to the list
@@ -2703,6 +2706,8 @@ namespace CodeImp.DoomBuilder.Windows
 
 			// Hide the no recent item
 			itemnorecent.Visible = false;
+
+			SaveRecentFiles();
 		}
 
 		//mxd
@@ -2711,7 +2716,7 @@ namespace CodeImp.DoomBuilder.Windows
 			foreach(ToolStripMenuItem item in recentitems)
 				menufile.DropDownItems.Remove(item);
 
-			SaveRecentFiles();
+			//SaveRecentFiles();
 			CreateRecentFiles();
 		}
 
@@ -2948,6 +2953,9 @@ namespace CodeImp.DoomBuilder.Windows
 		[BeginAction("aligngridtolinedef")]
 		protected void AlignGridToLinedef()
 		{
+			if (General.Map == null)
+				return;
+
 			if (General.Map.Map.SelectedLinedefsCount != 1)
 			{
 				General.Interface.DisplayStatus(StatusType.Warning, "Exactly one linedef must be selected");
@@ -2965,6 +2973,9 @@ namespace CodeImp.DoomBuilder.Windows
 		[BeginAction("setgridorigintovertex")]
 		protected void SetGridOriginToVertex()
 		{
+			if (General.Map == null)
+				return;
+
 			if (General.Map.Map.SelectedVerticessCount != 1)
 			{
 				General.Interface.DisplayStatus(StatusType.Warning, "Exactly one vertex must be selected");
@@ -3423,9 +3434,12 @@ namespace CodeImp.DoomBuilder.Windows
 				UpdateInterface();
 				General.Editing.UpdateCurrentEditModes();
 				General.Plugins.ProgramReconfigure();
-				
+
+				// Save program configuration
+				General.SaveSettings();
+
 				// Reload resources if a map is open
-				if((General.Map != null) && cfgform.ReloadResources) General.Actions.InvokeAction("builder_reloadresources");
+				if ((General.Map != null) && cfgform.ReloadResources) General.Actions.InvokeAction("builder_reloadresources");
 				
 				// Redraw display
 				RedrawDisplay();
@@ -3449,6 +3463,9 @@ namespace CodeImp.DoomBuilder.Windows
 				ApplyShortcutKeys();
 				General.Colors.CreateCorrectionTable();
 				General.Plugins.ProgramReconfigure();
+
+				// Save program configuration
+				General.SaveSettings();
 				
 				// Map opened?
 				if(General.Map != null)

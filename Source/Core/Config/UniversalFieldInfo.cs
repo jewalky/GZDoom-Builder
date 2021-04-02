@@ -26,6 +26,26 @@ using CodeImp.DoomBuilder.Types;
 
 namespace CodeImp.DoomBuilder.Config
 {
+	public enum UDMFFieldAssociationModifier
+	{
+		None,
+		Absolute
+	}
+
+	public struct UDMFFieldAssociation
+	{
+		public string Property;
+		public UDMFFieldAssociationModifier Modify;
+		public bool NeverShowEventLines;
+
+		public UDMFFieldAssociation(string property, UDMFFieldAssociationModifier modify, bool nevershoweventlines)
+		{
+			Property = property;
+			Modify = modify;
+			NeverShowEventLines = nevershoweventlines;
+		}
+	}
+
 	public class UniversalFieldInfo : IComparable<UniversalFieldInfo>
 	{
 		#region ================== Constants
@@ -39,6 +59,7 @@ namespace CodeImp.DoomBuilder.Config
 		private int type;
 		private object defaultvalue;
 		private EnumList enumlist;
+		private Dictionary<string, UDMFFieldAssociation> associations;
 
 		#endregion
 
@@ -48,6 +69,7 @@ namespace CodeImp.DoomBuilder.Config
 		public int Type { get { return type; } }
 		public object Default { get { return defaultvalue; } }
 		public EnumList Enum { get { return enumlist; } }
+		public Dictionary<string, UDMFFieldAssociation> Associations { get { return associations; } }
 
 		#endregion
 
@@ -60,6 +82,7 @@ namespace CodeImp.DoomBuilder.Config
 
 			// Initialize
 			this.name = name.ToLowerInvariant();
+			associations = new Dictionary<string, UDMFFieldAssociation>();
 
 			// Read type
 			this.type = cfg.ReadSetting(setting + ".type", int.MinValue);
@@ -99,7 +122,29 @@ namespace CodeImp.DoomBuilder.Config
 					enumlist = new EnumList(enumsetting as IDictionary);
 				}
 			}
-			
+
+			// Read associations
+			IDictionary assocdict = cfg.ReadSetting(setting + ".associations", new Hashtable());
+			foreach (DictionaryEntry section in assocdict)
+			{
+				string property = cfg.ReadSetting(setting + ".associations." + section.Key + ".property", string.Empty);
+				string modifystr = cfg.ReadSetting(setting + ".associations." + section.Key + ".modify", string.Empty);
+				bool nevershoweventlines = cfg.ReadSetting(setting + ".associations." + section.Key + ".nevershoweventlines", false);
+				UDMFFieldAssociationModifier ufam = UDMFFieldAssociationModifier.None;
+
+				if(!string.IsNullOrWhiteSpace(property))
+				{
+					switch (modifystr)
+					{
+						case "abs":
+							ufam = UDMFFieldAssociationModifier.Absolute;
+							break;
+					}
+
+					associations[property] = new UDMFFieldAssociation(property, ufam, nevershoweventlines);
+				}
+			}
+
 			// We have no destructor
 			GC.SuppressFinalize(this);
 		}

@@ -47,6 +47,7 @@ namespace CodeImp.DoomBuilder.Windows
 		private bool preventchanges; //mxd
 		private bool undocreated; //mxd
 		private List<VertexProperties> vertexprops; //mxd
+		private bool oldmapischanged;
 
 		private struct VertexProperties //mxd
 		{
@@ -118,6 +119,7 @@ namespace CodeImp.DoomBuilder.Windows
 		public void Setup(ICollection<Vertex> vertices, bool allowPositionChange)
 		{
 			preventchanges = true; //mxd
+			oldmapischanged = General.Map.IsChanged;
 			
 			// Keep this list
 			this.vertices = vertices;
@@ -356,7 +358,16 @@ namespace CodeImp.DoomBuilder.Windows
 		private void cancel_Click(object sender, EventArgs e)
 		{
 			//mxd. Perform undo if required
-			if(undocreated) General.Map.UndoRedo.WithdrawUndo();
+			if (undocreated)
+			{
+				General.Map.UndoRedo.WithdrawUndo();
+
+				// Changing certain properties of the vertex, like the position, will set General.Map.IsChanged to true.
+				// But if cancel is pressed and the changes are discarded, and the map was not changed before, we have to force
+				// General.Map.IsChanged back to false
+				if (General.Map.IsChanged && oldmapischanged == false)
+					General.Map.ForceMapIsChangedFalse();
+			}
 			
 			// And close
 			this.DialogResult = DialogResult.Cancel;

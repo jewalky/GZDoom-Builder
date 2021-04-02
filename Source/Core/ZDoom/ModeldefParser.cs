@@ -214,11 +214,20 @@ namespace CodeImp.DoomBuilder.ZDoom
 										}
 
 										// Texture name will be empty when skin path is embedded in the model
-										string skinname = (!string.IsNullOrEmpty(mds.SkinNames[fs.ModelIndex]) ? mds.SkinNames[fs.ModelIndex].ToLowerInvariant() : string.Empty);
+										string skinname = mds.SkinNames.ContainsKey(fs.ModelIndex) ? mds.SkinNames[fs.ModelIndex].ToLowerInvariant() : string.Empty;
 
 										md.SkinNames.Add(skinname);
-										md.SurfaceSkinNames.Add(mds.SurfaceSkinNames[fs.ModelIndex]);
-										md.ModelNames.Add(mds.ModelNames[fs.ModelIndex].ToLowerInvariant());
+
+										if (mds.SurfaceSkinNames.ContainsKey(fs.ModelIndex))
+											md.SurfaceSkinNames.Add(mds.SurfaceSkinNames[fs.ModelIndex]);
+										else
+											md.SurfaceSkinNames.Add(new Dictionary<int, string>());
+
+										if (mds.ModelNames.ContainsKey(fs.ModelIndex))
+											md.ModelNames.Add(mds.ModelNames[fs.ModelIndex].ToLowerInvariant());
+										else
+											md.ModelNames.Add(string.Empty);
+
 										md.FrameNames.Add(fs.FrameName);
 										md.FrameIndices.Add(fs.FrameIndex);
 									}

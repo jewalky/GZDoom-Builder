@@ -1524,8 +1524,6 @@
   </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>echo Current Output Directory: %25cd%25
-echo Copying platform-appropriate DevIL.dll file.
-copy /Y ..\DevIL\$(PlatformName)\DevIL.dll .\
 echo Copying platform-appropriate Updater.ini.
 copy /Y ..\UpdaterConfig\Updater-$(PlatformName).ini Updater.ini</PreBuildEvent>
   </PropertyGroup>

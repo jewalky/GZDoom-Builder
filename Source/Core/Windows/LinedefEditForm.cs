@@ -42,6 +42,7 @@ namespace CodeImp.DoomBuilder.Windows
 		private List<LinedefProperties> linedefprops; //mxd
 		private bool preventchanges;
 		private bool undocreated; //mxd
+		private bool oldmapischanged;
 
 		private struct LinedefProperties //mxd
 		{
@@ -151,6 +152,7 @@ namespace CodeImp.DoomBuilder.Windows
 		public void Setup(ICollection<Linedef> lines)
 		{
 			preventchanges = true;
+			oldmapischanged = General.Map.IsChanged;
 
             argscontrol.Reset();
             undocreated = false;
@@ -464,7 +466,16 @@ namespace CodeImp.DoomBuilder.Windows
 		private void cancel_Click(object sender, EventArgs e)
 		{
 			//mxd. Let's pretend nothing of this really happened...
-			if(undocreated) General.Map.UndoRedo.WithdrawUndo();
+			if (undocreated)
+			{
+				General.Map.UndoRedo.WithdrawUndo();
+
+				// Changing certain properties of the linedef, like textures will set General.Map.IsChanged to true.
+				// But if cancel is pressed and the changes are discarded, and the map was not changed before, we have to force
+				// General.Map.IsChanged back to false
+				if (General.Map.IsChanged && oldmapischanged == false)
+					General.Map.ForceMapIsChangedFalse();
+			}
 			
 			// Be gone
 			this.DialogResult = DialogResult.Cancel;

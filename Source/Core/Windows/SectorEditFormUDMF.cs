@@ -43,6 +43,8 @@ namespace CodeImp.DoomBuilder.Windows
 		private Vector2D globalslopepivot;
 		private Dictionary<Sector, Vector2D> slopepivots;
 
+		private bool oldmapischanged;
+
 		#endregion
 
 		#region ================== Structs
@@ -306,7 +308,8 @@ namespace CodeImp.DoomBuilder.Windows
 		public void Setup(ICollection<Sector> sectors) 
 		{
 			preventchanges = true; //mxd
-            undocreated = false;
+			oldmapischanged = General.Map.IsChanged;
+			undocreated = false;
             // Keep this list
             this.sectors = sectors;
 			if(sectors.Count > 1) this.Text = "Edit Sectors (" + sectors.Count + ")";
@@ -395,8 +398,11 @@ namespace CodeImp.DoomBuilder.Windows
 			floorRenderStyle.SelectedIndex = renderstyles.IndexOf(sc.Fields.GetValue("renderstylefloor", "translucent"));
 
 			// Portal render style
-			ceilportalrenderstyle.SelectedIndex = portalrenderstyles.IndexOf(sc.Fields.GetValue("portal_ceil_overlaytype", "translucent"));
-			floorportalrenderstyle.SelectedIndex = portalrenderstyles.IndexOf(sc.Fields.GetValue("portal_floor_overlaytype", "translucent"));
+			if (portalrenderstyles.Count > 0)
+			{
+				ceilportalrenderstyle.SelectedIndex = portalrenderstyles.IndexOf(sc.Fields.GetValue("portal_ceil_overlaytype", portalrenderstyles[0]));
+				floorportalrenderstyle.SelectedIndex = portalrenderstyles.IndexOf(sc.Fields.GetValue("portal_floor_overlaytype", portalrenderstyles[0]));
+			}
 
 			// Damage
 			damagetype.Text = sc.Fields.GetValue("damagetype", NO_DAMAGETYPE);
@@ -530,9 +536,9 @@ namespace CodeImp.DoomBuilder.Windows
 					floorRenderStyle.SelectedIndex = -1;
 
 				// Portal render style
-				if(ceilportalrenderstyle.SelectedIndex > -1 && ceilportalrenderstyle.SelectedIndex != portalrenderstyles.IndexOf(s.Fields.GetValue("portal_ceil_overlaytype", "translucent")))
+				if(ceilportalrenderstyle.SelectedIndex > -1 && ceilportalrenderstyle.SelectedIndex != portalrenderstyles.IndexOf(s.Fields.GetValue("portal_ceil_overlaytype", portalrenderstyles[0])))
 					ceilportalrenderstyle.SelectedIndex = -1;
-				if(floorportalrenderstyle.SelectedIndex > -1 && floorportalrenderstyle.SelectedIndex != portalrenderstyles.IndexOf(s.Fields.GetValue("portal_floor_overlaytype", "translucent")))
+				if(floorportalrenderstyle.SelectedIndex > -1 && floorportalrenderstyle.SelectedIndex != portalrenderstyles.IndexOf(s.Fields.GetValue("portal_floor_overlaytype", portalrenderstyles[0])))
 					floorportalrenderstyle.SelectedIndex = -1;
 
 				// Damage
@@ -873,9 +879,9 @@ namespace CodeImp.DoomBuilder.Windows
 				if(portalrenderstyles.Count > 0)
 				{
 					if(ceilportalrenderstyle.SelectedIndex > -1)
-						UniFields.SetString(s.Fields, "portal_ceil_overlaytype", portalrenderstyles[ceilportalrenderstyle.SelectedIndex], "translucent");
+						UniFields.SetString(s.Fields, "portal_ceil_overlaytype", portalrenderstyles[ceilportalrenderstyle.SelectedIndex], portalrenderstyles[0]);
 					if(floorportalrenderstyle.SelectedIndex > -1)
-						UniFields.SetString(s.Fields, "portal_floor_overlaytype", portalrenderstyles[floorportalrenderstyle.SelectedIndex], "translucent");
+						UniFields.SetString(s.Fields, "portal_floor_overlaytype", portalrenderstyles[floorportalrenderstyle.SelectedIndex], portalrenderstyles[0]);
 				}
 
 				//Damage
@@ -939,7 +945,16 @@ namespace CodeImp.DoomBuilder.Windows
 		private void cancel_Click(object sender, EventArgs e) 
 		{
 			//mxd. Let's pretend nothing of this really happened...
-			if(undocreated) General.Map.UndoRedo.WithdrawUndo();
+			if (undocreated)
+			{
+				General.Map.UndoRedo.WithdrawUndo();
+
+				// Changing certain properties of the sector, like floor/ceiling textures will set General.Map.IsChanged to true.
+				// But if cancel is pressed and the changes are discarded, and the map was not changed before, we have to force
+				// General.Map.IsChanged back to false
+				if (General.Map.IsChanged && oldmapischanged == false)
+					General.Map.ForceMapIsChangedFalse();
+			}
 			
 			// Be gone
 			this.DialogResult = DialogResult.Cancel;
@@ -1838,13 +1853,18 @@ namespace CodeImp.DoomBuilder.Windows
 		private void ceilingslopecontrol_OnResetClicked(object sender, EventArgs e) 
 		{
 			MakeUndo(); //mxd
-			ceilingslopecontrol.SetOffset(General.GetByIndex(sectors, 0).CeilHeight, true);
+			Sector fs = General.GetByIndex(sectors, 0);
+			Plane p = new Plane(fs.CeilSlope, fs.CeilSlopeOffset);
+			fs.UpdateBBox();
+			ceilingslopecontrol.SetOffset((int)Math.Round(p.GetZ(fs.BBox.X + fs.BBox.Width / 2, fs.BBox.Y + fs.BBox.Height / 2)), true);
 			
 			foreach(Sector s in sectors) 
 			{
+				s.UpdateBBox();
+				p = new Plane(s.CeilSlope, s.CeilSlopeOffset);
+				s.CeilHeight = (int)Math.Round(p.GetZ(s.BBox.X + s.BBox.Width / 2, s.BBox.Y + s.BBox.Height / 2));
 				s.CeilSlope = new Vector3D();
-				s.CeilSlopeOffset = float.NaN;
-				s.CeilHeight = ceilingheight.GetResult(sectorprops[s].CeilHeight);
+				s.CeilSlopeOffset = double.NaN;
 				s.UpdateNeeded = true;
 				ceilingslopecontrol.SetOffset(s.CeilHeight, false);
 			}
@@ -1858,13 +1878,18 @@ namespace CodeImp.DoomBuilder.Windows
 		private void floorslopecontrol_OnResetClicked(object sender, EventArgs e) 
 		{
 			MakeUndo(); //mxd
-			floorslopecontrol.SetOffset(General.GetByIndex(sectors, 0).FloorHeight, true);
+			Sector fs = General.GetByIndex(sectors, 0);
+			Plane p = new Plane(fs.FloorSlope, fs.FloorSlopeOffset);
+			fs.UpdateBBox();
+			floorslopecontrol.SetOffset((int)Math.Round(p.GetZ(fs.BBox.X + fs.BBox.Width / 2, fs.BBox.Y + fs.BBox.Height / 2)), true);
 			
 			foreach(Sector s in sectors) 
 			{
+				s.UpdateBBox();
+				p = new Plane(s.FloorSlope, s.FloorSlopeOffset);
+				s.FloorHeight = (int)Math.Round(p.GetZ(s.BBox.X + s.BBox.Width / 2, s.BBox.Y + s.BBox.Height / 2));
 				s.FloorSlope = new Vector3D();
-				s.FloorSlopeOffset = float.NaN;
-				s.FloorHeight = floorheight.GetResult(sectorprops[s].FloorHeight);
+				s.FloorSlopeOffset = double.NaN;
 				s.UpdateNeeded = true;
 				floorslopecontrol.SetOffset(s.FloorHeight, false);
 			}

@@ -107,7 +107,6 @@ IF NOT EXIST "Build\Plugins\StairSectorBuilder.dll" GOTO FILEFAIL
 IF NOT EXIST "Build\Plugins\TagExplorer.dll" GOTO FILEFAIL
 IF NOT EXIST "Build\Plugins\TagRange.dll" GOTO FILEFAIL
 IF NOT EXIST "Build\Plugins\ThreeDFloorMode.dll" GOTO FILEFAIL
-IF NOT EXIST "Source\Plugins\VisplaneExplorer\Resources\vpo.dll" GOTO FILEFAIL
 IF NOT EXIST "Build\Plugins\VisplaneExplorer.dll" GOTO FILEFAIL
 
 ECHO.

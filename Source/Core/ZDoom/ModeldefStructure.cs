@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Globalization;
 using CodeImp.DoomBuilder.GZBuilder.Data;
 using CodeImp.DoomBuilder.Rendering;
@@ -13,12 +14,6 @@ namespace CodeImp.DoomBuilder.ZDoom
 {
 	internal sealed class ModeldefStructure
 	{
-		#region ================== Constants
-
-		private const int MAX_MODELS = 4; //maximum models per modeldef entry, zero-based
-
-		#endregion
-		
 		#region ================== Structs
 
 		internal struct FrameStructure
@@ -33,9 +28,9 @@ namespace CodeImp.DoomBuilder.ZDoom
 
 		#region ================== Variables
 
-		private string[] skinnames;
-		private Dictionary<int, string>[] surfaceskinenames;
-		private string[] modelnames;
+		private Dictionary<int, string> skinnames;
+		private Dictionary<int, Dictionary<int, string>> surfaceskinenames;
+		private Dictionary<int, string> modelnames;
 		private string path;
 		private Vector3f scale;
 		private Vector3f offset;
@@ -52,9 +47,9 @@ namespace CodeImp.DoomBuilder.ZDoom
 
 		#region ================== Properties
 
-		public string[] SkinNames { get { return skinnames; } }
-		public Dictionary<int, string>[] SurfaceSkinNames { get { return surfaceskinenames; } }
-		public string[] ModelNames { get { return modelnames; } }
+		public Dictionary<int, string> SkinNames { get { return skinnames; } }
+		public Dictionary<int, Dictionary<int, string>> SurfaceSkinNames { get { return surfaceskinenames; } }
+		public Dictionary<int, string> ModelNames { get { return modelnames; } }
 		public Vector3f Scale { get { return scale; } }
 		public Vector3f Offset { get { return offset; } }
 		public float AngleOffset { get { return angleoffset; } }
@@ -74,15 +69,11 @@ namespace CodeImp.DoomBuilder.ZDoom
 		internal ModeldefStructure()
 		{
 			path = string.Empty;
-			skinnames = new string[MAX_MODELS];
-			modelnames = new string[MAX_MODELS];
+			skinnames = new Dictionary<int, string>();
+			modelnames = new Dictionary<int, string>();
 			frames = new Dictionary<string, HashSet<FrameStructure>>(StringComparer.OrdinalIgnoreCase);
 			scale = new Vector3f(1.0f, 1.0f, 1.0f);
-			surfaceskinenames = new Dictionary<int, string>[MAX_MODELS];
-			for(int i = 0; i < MAX_MODELS; i++)
-			{
-				surfaceskinenames[i] = new Dictionary<int, string>();
-			}
+			surfaceskinenames = new Dictionary<int, Dictionary<int, string>>();
 		}
 
 		#endregion
@@ -123,10 +114,10 @@ namespace CodeImp.DoomBuilder.ZDoom
 							return false;
 						}
 
-						if(index < 0 || index > MAX_MODELS - 1)
+						if(index < 0)
 						{
 							// Out of bounds
-							parser.ReportError("Model index must be in [0.." + (MAX_MODELS - 1) + "] range");
+							parser.ReportError("Model index must not be in negative");
 							return false;
 						}
 
@@ -174,10 +165,10 @@ namespace CodeImp.DoomBuilder.ZDoom
 							return false;
 						}
 
-						if(skinindex < 0 || skinindex >= MAX_MODELS)
+						if(skinindex < 0)
 						{
 							// Out of bounds
-							parser.ReportError("Skin index must be in [0.." + (MAX_MODELS - 1) + "] range");
+							parser.ReportError("Skin index must not be negative");
 							return false;
 						}
 
@@ -212,10 +203,10 @@ namespace CodeImp.DoomBuilder.ZDoom
 							return false;
 						}
 
-						if(modelindex < 0 || modelindex >= MAX_MODELS)
+						if(modelindex < 0)
 						{
 							// Out of bounds
-							parser.ReportError("Model index must be in [0.." + (MAX_MODELS - 1) + "] range");
+							parser.ReportError("Model index must not be negative");
 							return false;
 						}
 
@@ -252,6 +243,9 @@ namespace CodeImp.DoomBuilder.ZDoom
 						if(!parser.CheckInvalidPathChars(token)) return false;
 
 						// Store
+						if (!surfaceskinenames.ContainsKey(modelindex))
+							surfaceskinenames[modelindex] = new Dictionary<int, string>();
+
 						surfaceskinenames[modelindex][surfaceindex] = Path.Combine(path, token).Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 						break;
 
@@ -420,10 +414,10 @@ namespace CodeImp.DoomBuilder.ZDoom
 							parser.ReportError("Expected model index, but got \"" + token + "\"");
 							return false;
 						}
-						if(fimodelindnex < 0 || fimodelindnex > MAX_MODELS - 1)
+						if(fimodelindnex < 0)
 						{
 							// Out of bounds
-							parser.ReportError("Model index must be in [0.." + (MAX_MODELS - 1) + "] range");
+							parser.ReportError("Model index must not be negative");
 							return false;
 						}
 
@@ -499,10 +493,10 @@ namespace CodeImp.DoomBuilder.ZDoom
 							parser.ReportError("Expected model index, but got \"" + token + "\"");
 							return false;
 						}
-						if(modelindnex < 0 || modelindnex > MAX_MODELS - 1)
+						if(modelindnex < 0)
 						{
 							// Out of bounds
-							parser.ReportError("Model index must be in [0.." + (MAX_MODELS - 1) + "] range");
+							parser.ReportError("Model index must not be negative");
 							return false;
 						}
 
@@ -551,37 +545,24 @@ namespace CodeImp.DoomBuilder.ZDoom
 			}
 
 			// Any models defined?
-			bool valid = false;
-			for(int i = 0; i < modelnames.Length; i++)
-			{
-				if(!string.IsNullOrEmpty(modelnames[i]))
-				{
-					//INFO: skin may be defined in the model itself, so we don't check it here
-					valid = true;
-					break;
-				}
-			}
-
-			if(!valid)
+			if(modelnames.Count == 0)
 			{
 				parser.ReportError("Structure doesn't define any models");
 				return false;
 			}
 
-			// Check skin-model associations
-			for(int i = 0; i < skinnames.Length; i++)
+			foreach(int i in skinnames.Keys.OrderBy(k => k))
 			{
-				if(!string.IsNullOrEmpty(skinnames[i]) && string.IsNullOrEmpty(modelnames[i]))
+				if (!string.IsNullOrEmpty(skinnames[i]) && !modelnames.ContainsKey(i))
 				{
 					parser.ReportError("No model is defined for skin " + i + ":\"" + skinnames[i] + "\"");
 					return false;
 				}
 			}
 
-			// Check surfaceskin-model associations
-			for(int i = 0; i < surfaceskinenames.Length; i++)
+			foreach(int i in surfaceskinenames.Keys.OrderBy(k => k))
 			{
-				if(surfaceskinenames[i].Count > 0 && string.IsNullOrEmpty(modelnames[i]))
+				if (surfaceskinenames[i].Count > 0 && !modelnames.ContainsKey(i))
 				{
 					parser.ReportError("No model is defined for surface skin " + i);
 					return false;

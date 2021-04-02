@@ -253,15 +253,17 @@ namespace CodeImp.DoomBuilder.Controls
 			editor.SelectionEnd = selectionEnd;
 			editor.Scintilla.FirstVisibleLine = vscroll;
 
-            // restore folding
-            for (int i = 0; i < folded.Length; i++)
-            {
-                Line l = editor.Scintilla.Lines[i];
-                l.FoldLevel = folded[i];
-                if (!expanded[i])
-                    l.FoldLine(FoldAction.Contract);
-            }
-        }
+			// Restore folding
+			// Looks like that has to be done from back to front, as the end result will otherwise have too much unfolded for
+			// whatever reason. See https://github.com/jewalky/UltimateDoomBuilder/issues/392
+			for (int i = folded.Length - 1; i >= 0; i--)
+			{
+				Line l = editor.Scintilla.Lines[i];
+				l.FoldLevel = folded[i];
+				if (!expanded[i])
+					l.FoldLine(FoldAction.Contract);
+			}
+		}
 
 		// This saves the document (used for both explicit and implicit)
 		// Return true when successfully saved

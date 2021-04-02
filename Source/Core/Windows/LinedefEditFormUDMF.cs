@@ -47,6 +47,7 @@ namespace CodeImp.DoomBuilder.Windows
 		private readonly List<int> keynumbers; //mxd 
 		private readonly List<PairedFieldsControl> frontUdmfControls; //mxd
 		private readonly List<PairedFieldsControl> backUdmfControls; //mxd
+		private bool oldmapischanged;
 
 		private struct LinedefProperties //mxd
 		{
@@ -259,6 +260,7 @@ namespace CodeImp.DoomBuilder.Windows
             }
 
             preventchanges = true;
+			oldmapischanged = General.Map.IsChanged;
             undocreated = false;
             argscontrol.Reset();
             tagsselector.Reset();
@@ -617,7 +619,8 @@ namespace CodeImp.DoomBuilder.Windows
 				bool haveactivationflag = false;
 				foreach(CheckBox c in udmfactivates.Checkboxes) 
 				{
-					if(c.CheckState != CheckState.Unchecked) 
+					LinedefActivateInfo ai = (c.Tag as LinedefActivateInfo);
+					if(ai.IsTrigger && c.CheckState != CheckState.Unchecked) 
 					{
 						haveactivationflag = true;
 						break;
@@ -625,12 +628,19 @@ namespace CodeImp.DoomBuilder.Windows
 				}
 
 				missingactivation.Visible = !haveactivationflag;
-				activationGroup.ForeColor = (!haveactivationflag ? Color.DarkRed : SystemColors.ControlText);
+
+				foreach (CheckBox c in udmfactivates.Checkboxes)
+				{
+					LinedefActivateInfo ai = (c.Tag as LinedefActivateInfo);
+					if (ai.IsTrigger)
+						c.ForeColor = (!haveactivationflag ? Color.DarkRed : SystemColors.ControlText);
+				}
 			} 
 			else 
 			{
 				missingactivation.Visible = false;
-				activationGroup.ForeColor = SystemColors.ControlText;
+				foreach (CheckBox c in udmfactivates.Checkboxes)
+					c.ForeColor = SystemColors.ControlText;
 			}
 		}
 
@@ -760,7 +770,16 @@ namespace CodeImp.DoomBuilder.Windows
 		private void cancel_Click(object sender, EventArgs e)
 		{
 			//mxd. Let's pretend nothing of this really happened...
-			if(undocreated) General.Map.UndoRedo.WithdrawUndo();
+			if (undocreated)
+			{
+				General.Map.UndoRedo.WithdrawUndo();
+
+				// Changing certain properties of the linedef, like textures will set General.Map.IsChanged to true.
+				// But if cancel is pressed and the changes are discarded, and the map was not changed before, we have to force
+				// General.Map.IsChanged back to false
+				if (General.Map.IsChanged && oldmapischanged == false)
+					General.Map.ForceMapIsChangedFalse();
+			}
 			
 			// Be gone
 			this.DialogResult = DialogResult.Cancel;

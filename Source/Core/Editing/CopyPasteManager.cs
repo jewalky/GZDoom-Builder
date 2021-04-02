@@ -238,6 +238,8 @@ namespace CodeImp.DoomBuilder.Editing
 					// that need to be copied.
 					if(General.Editing.Mode.OnCopyBegin())
 					{
+						bool oldmapischanged = General.Map.IsChanged;
+
 						General.MainWindow.DisplayStatus(StatusType.Action, desc);
 
 						// Copy the marked geometry
@@ -268,6 +270,12 @@ namespace CodeImp.DoomBuilder.Editing
 							memstream.Dispose();
 							return false;
 						}
+
+						// General.Map.Map.CloneMarked will set General.Map.IsChanged to true, since it recreated the map. But since this
+						// creation happens in another MapSet, the currently opened map is actually not changed. Force the IsChanged property
+						// to false if the map wasn't changed before doing the copying
+						if (oldmapischanged == false)
+							General.Map.ForceMapIsChangedFalse();
 
 						// Done
 						memstream.Dispose();

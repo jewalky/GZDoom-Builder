@@ -104,13 +104,13 @@ namespace CodeImp.DoomBuilder.Controls
 			else 
 			{
 				// Or update values
-				if(!double.IsNaN(this.anglexy) && this.anglexy != anglexy) this.anglexy = float.NaN;
-				if(!double.IsNaN(this.anglez) && this.anglez != anglez) this.anglez = float.NaN;
-				if(!double.IsNaN(this.offset) && this.offset != offset) this.offset = float.NaN;
+				if(!double.IsNaN(this.anglexy) && this.anglexy != anglexy) this.anglexy = double.NaN;
+				if(!double.IsNaN(this.anglez) && this.anglez != anglez) this.anglez = double.NaN;
+				if(!double.IsNaN(this.offset) && this.offset != offset) this.offset = double.NaN;
 			}
 		}
 
-		public void SetOffset(float offset, bool first) 
+		public void SetOffset(double offset, bool first) 
 		{
 			if(first) 
 			{
@@ -118,7 +118,7 @@ namespace CodeImp.DoomBuilder.Controls
 			} 
 			else if(!double.IsNaN(this.offset) && this.offset != offset)
 			{
-				this.offset = float.NaN;
+				this.offset = double.NaN;
 			}
 		}
 
@@ -217,8 +217,12 @@ namespace CodeImp.DoomBuilder.Controls
 
 		private void slopeoffset_WhenTextChanged(object sender, EventArgs e) 
 		{
-			offset = slopeoffset.GetResultFloat(float.NaN);
+			if (preventchanges) return;
+			preventchanges = true;
+
+			offset = slopeoffset.GetResultFloat(double.NaN);
 			if(OnAnglesChanged != null) OnAnglesChanged(this, EventArgs.Empty);
+			preventchanges = false;
 		}
 
 		private void reset_Click(object sender, EventArgs e) 
@@ -230,9 +234,9 @@ namespace CodeImp.DoomBuilder.Controls
 			slopeangle.Text = "0";
 			angletrackbar.Value = 0;
 			slopeoffset.Text = "0";
-			anglexy = 0f;
-			anglez = 0f;
-			offset = 0f;
+			anglexy = 0.0;
+			anglez = 0.0;
+			offset = 0.0;
 
 			if(OnResetClicked != null) OnResetClicked(this, EventArgs.Empty);
 			preventchanges = false;
