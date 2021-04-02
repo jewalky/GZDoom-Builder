@@ -418,7 +418,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				if (ld.Action > 0 && General.Map.Config.LinedefActions.ContainsKey(ld.Action))
 					action = General.Map.Config.LinedefActions[ld.Action];
 
-				actionargs = ld.Args.ToArray();
+				actionargs = ld.Args;
 			}
 			else if (element is Thing)
 			{
@@ -427,7 +427,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 				if (t.Action > 0 && General.Map.Config.LinedefActions.ContainsKey(t.Action))
 					action = General.Map.Config.LinedefActions[t.Action];
 
-				actionargs = t.Args.ToArray();
+				actionargs = t.Args;
 			}
 			else // element is a Sector
 			{
@@ -579,12 +579,12 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			if (se is Thing)
 			{
 				action = ((Thing)se).Action;
-				actionargs = ((Thing)se).Args.ToArray();
+				actionargs = ((Thing)se).Args;
 			}
 			else if(se is Linedef)
 			{
 				action = ((Linedef)se).Action;
-				actionargs = ((Linedef)se).Args.ToArray();
+				actionargs = ((Linedef)se).Args;
 			}
 
 			if (action > 0)

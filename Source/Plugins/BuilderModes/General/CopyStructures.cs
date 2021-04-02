@@ -601,7 +601,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private readonly int action;
 		private readonly int activate;
 		private readonly List<int> tags;
-		private readonly MapElementArguments args;
+		private readonly int[] args;
 
 		public LinedefProperties(Linedef l) : base(l.Fields, MapElementType.LINEDEF)
 		{
@@ -612,7 +612,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			action = l.Action;
 			activate = l.Activate;
 			tags = new List<int>(l.Tags); //mxd
-			args = l.Args.Clone();
+			args = (int[])(l.Args.Clone());
 		}
 
 		//mxd. Applies coped properties with all settings enabled
@@ -773,7 +773,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		private readonly Dictionary<string, bool> flags;
 		private readonly int tag;
 		private readonly int action;
-		private readonly MapElementArguments args;
+		private readonly int[] args;
 		
 		public ThingProperties(Thing t) : base(t.Fields, MapElementType.THING)
 		{
@@ -787,7 +787,7 @@ namespace CodeImp.DoomBuilder.BuilderModes
 			flags = t.GetFlags();
 			tag = t.Tag;
 			action = t.Action;
-			args = t.Args.Clone();
+			args = (int[])(t.Args.Clone());
 		}
 
 		//mxd. Applies coped properties with all settings enabled

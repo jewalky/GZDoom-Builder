@@ -4,7 +4,6 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
-using System.Linq;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Config;
 using CodeImp.DoomBuilder.GZBuilder.Data;
@@ -82,12 +81,12 @@ namespace CodeImp.DoomBuilder.Controls
 
 		public void SetValue(Linedef l, bool first)
 		{
-			SetValue(l.Fields, l.Args.ToArray(), first);
+			SetValue(l.Fields, l.Args, first);
 		}
 
 		public void SetValue(Thing t, bool first)
 		{
-			SetValue(t.Fields, t.Args.ToArray(), first);
+			SetValue(t.Fields, t.Args, first);
 		}
 
 		private void SetValue(UniFields fields, int[] args, bool first)
@@ -160,14 +159,10 @@ namespace CodeImp.DoomBuilder.Controls
                     //
 					if(!string.IsNullOrEmpty(arg0int.Text))
 					{
-						int outarg;
-
-						if (arg0int.SelectedItem != null)
+						if(arg0int.SelectedItem != null)
 							l.Args[0] = ((ScriptItem)((ColoredComboBoxItem)arg0int.SelectedItem).Value).Index;
-						else if (!int.TryParse(arg0int.Text.Trim(), out outarg))
+						else if(!int.TryParse(arg0int.Text.Trim(), out l.Args[0]))
 							l.Args[0] = 0;
-						else
-							l.Args[0] = outarg;
 
 						if(l.Fields.ContainsKey("arg0str")) l.Fields.Remove("arg0str");
 					}
@@ -218,14 +213,10 @@ namespace CodeImp.DoomBuilder.Controls
                     //
                     if (!string.IsNullOrEmpty(arg0int.Text))
                     {
-						int outarg;
-
-						if (arg0int.SelectedItem != null)
-							t.Args[0] = ((ScriptItem)((ColoredComboBoxItem)arg0int.SelectedItem).Value).Index;
-						else if (!int.TryParse(arg0int.Text.Trim(), out outarg))
-							t.Args[0] = 0;
-						else
-							t.Args[0] = outarg;
+                        if (arg0int.SelectedItem != null)
+                            t.Args[0] = ((ScriptItem)((ColoredComboBoxItem)arg0int.SelectedItem).Value).Index;
+                        else if (!int.TryParse(arg0int.Text.Trim(), out t.Args[0]))
+                            t.Args[0] = 0;
 
                         if (t.Fields.ContainsKey("arg0str")) t.Fields.Remove("arg0str");
                     }
@@ -380,35 +371,26 @@ namespace CodeImp.DoomBuilder.Controls
 				else if (isacs)
 				{
                     Arg0Mode = ArgZeroMode.INT;
-
-					// Special handling when there are multiple lines selected with different values for arg0 (so that it's left empty)
-					if (string.IsNullOrEmpty(arg0.Text))
+					int a0 = arg0.GetResult(0);
+					if(General.Map.NumberedScripts.ContainsKey(a0))
 					{
-						arg0int.Text = string.Empty;
+						int i = 0;
+						foreach(ScriptItem item in General.Map.NumberedScripts.Values)
+						{
+							if(item.Index == a0)
+							{
+								arg0int.SelectedIndex = i;
+								UpdateScriptArguments(item);
+								break;
+							}
+
+							i++;
+						}
 					}
 					else
 					{
-						int a0 = arg0.GetResult(0);
-						if (General.Map.NumberedScripts.ContainsKey(a0))
-						{
-							int i = 0;
-							foreach (ScriptItem item in General.Map.NumberedScripts.Values)
-							{
-								if (item.Index == a0)
-								{
-									arg0int.SelectedIndex = i;
-									UpdateScriptArguments(item);
-									break;
-								}
-
-								i++;
-							}
-						}
-						else
-						{
-							// Unknown script number...
-							arg0int.Text = a0.ToString();
-						}
+						// Unknown script number...
+						arg0int.Text = a0.ToString();
 					}
 				}
 			}

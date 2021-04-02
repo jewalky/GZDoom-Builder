@@ -70,7 +70,7 @@ namespace CodeImp.DoomBuilder.Map
 		private int action;
 		private int activate;
 		private List<int> tags; //mxd
-		private MapElementArguments args;
+		private int[] args;
 		private bool frontinterior;		// for drawing only
 		private int colorPresetIndex;//mxd
 
@@ -102,7 +102,7 @@ namespace CodeImp.DoomBuilder.Map
 		public double Angle { get { return angle; } }
 		public int AngleDeg { get { return (int)(angle * Angle2D.PIDEG); } }
 		public RectangleF Rect { get { return rect; } }
-		public MapElementArguments Args { get { return args; } }
+		public int[] Args { get { return args; } }
 		internal int SerializedIndex { get { return serializedindex; } set { serializedindex = value; } }
         internal int LastProcessed { get { return lastProcessed; } set { lastProcessed = value; } }
         internal bool FrontInterior { get { return frontinterior; } set { frontinterior = value; } }
@@ -122,7 +122,7 @@ namespace CodeImp.DoomBuilder.Map
 			this.map = map;
 			this.listindex = listindex;
 			this.updateneeded = true;
-			this.args = new MapElementArguments(NUM_ARGS);
+			this.args = new int[NUM_ARGS];
 			this.tags = new List<int> { 0 }; //mxd
 			this.flags = new Dictionary<string, bool>(StringComparer.Ordinal);
 			this.colorPresetIndex = -1;//mxd
@@ -247,12 +247,7 @@ namespace CodeImp.DoomBuilder.Map
 				}
 			}
 
-			for (int i = 0; i < NUM_ARGS; i++)
-			{
-				int arg = args[i];
-				s.rwInt(ref arg);
-				args[i] = arg;
-			}
+			for(int i = 0; i < NUM_ARGS; i++) s.rwInt(ref args[i]);
 
 			//mxd
 			if(!s.IsWriting) UpdateColorPreset();
@@ -312,7 +307,7 @@ namespace CodeImp.DoomBuilder.Map
 			
 			// Copy properties
 			l.action = action;
-			l.args = args.Clone();
+			l.args = (int[])args.Clone();
 			l.flags = new Dictionary<string, bool>(flags);
 			l.tags = new List<int>(tags); //mxd
 			l.updateneeded = true;
@@ -1382,7 +1377,8 @@ namespace CodeImp.DoomBuilder.Map
 			this.tags = new List<int>(tags); //mxd
 			this.activate = activate;
 			this.action = action;
-			this.args = new MapElementArguments(NUM_ARGS, args);
+			this.args = new int[NUM_ARGS];
+			args.CopyTo(this.args, 0);
 			this.updateneeded = true;
 		}
 

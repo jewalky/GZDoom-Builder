@@ -17,7 +17,6 @@
 #region ================== Namespaces
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using CodeImp.DoomBuilder.Config;
@@ -33,53 +32,6 @@ using CodeImp.DoomBuilder.GZBuilder;
 
 namespace CodeImp.DoomBuilder.Map
 {
-	public sealed class MapElementArguments : IEnumerable<int>
-	{
-		private int[] data;
-
-		public MapElementArguments(int numargs)
-		{
-			data = new int[numargs];
-		}
-
-		public MapElementArguments(int numargs, IEnumerable<int> newdata) : this(numargs)
-		{
-			int i = 0;
-
-			foreach(int d in newdata)
-			{
-				if (i < numargs)
-					data[i] = d;
-
-				i++;
-			}
-		}
-
-		public int this[int i]
-		{
-			get { return data[i]; }
-			set { data[i] = value; }
-		}
-
-		public int Length { get { return data.Length; } }
-
-		public IEnumerator<int> GetEnumerator()
-		{
-			foreach(int i in data)
-				yield return i;
-		}
-
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
-
-		public MapElementArguments Clone()
-		{
-			return new MapElementArguments(data.Length, data);
-		}
-	}
-
 	public sealed class Thing : SelectableElement, ITaggedMapElement
 	{
 		#region ================== Constants
@@ -112,7 +64,7 @@ namespace CodeImp.DoomBuilder.Map
 		private Dictionary<string, bool> flags;
 		private int tag;
 		private int action;
-		private MapElementArguments args;
+		private int[] args;
 		private double scaleX; //mxd
 		private double scaleY; //mxd
 		private SizeF spritescale; //mxd
@@ -156,7 +108,7 @@ namespace CodeImp.DoomBuilder.Map
 		public int AngleDoom { get { return angledoom; } }
 		internal Dictionary<string, bool> Flags { get { return flags; } }
 		public int Action { get { return action; } set { BeforePropsChange(); action = value; } }
-		public MapElementArguments Args { get { return args; } }
+		public int[] Args { get { return args; } }
 		public float Size { get { return size; } }
 		public float RenderSize { get { return rendersize; } }
 		public float Height { get { return height; } } //mxd
@@ -181,7 +133,7 @@ namespace CodeImp.DoomBuilder.Map
 			this.map = map;
 			this.listindex = listindex;
 			this.flags = new Dictionary<string, bool>(StringComparer.Ordinal);
-			this.args = new MapElementArguments(NUM_ARGS);
+			this.args = new int[NUM_ARGS];
 			this.scaleX = 1.0f;
 			this.scaleY = 1.0f;
 			this.spritescale = new SizeF(1.0f, 1.0f);
@@ -264,12 +216,7 @@ namespace CodeImp.DoomBuilder.Map
 			s.rwDouble(ref scaleY); //mxd
 			s.rwInt(ref tag);
 			s.rwInt(ref action);
-			for (int i = 0; i < NUM_ARGS; i++)
-			{
-				int arg = args[i];
-				s.rwInt(ref arg);
-				args[i] = arg;
-			}
+			for(int i = 0; i < NUM_ARGS; i++) s.rwInt(ref args[i]);
 
 			if(!s.IsWriting) 
 			{
@@ -299,7 +246,7 @@ namespace CodeImp.DoomBuilder.Map
 			t.flags = new Dictionary<string,bool>(flags);
 			t.tag = tag;
 			t.action = action;
-			t.args = args.Clone();
+			t.args = (int[])args.Clone();
 			t.size = size;
 			t.rendersize = rendersize;
 			t.height = height; //mxd
@@ -577,7 +524,8 @@ namespace CodeImp.DoomBuilder.Map
 			this.flags = new Dictionary<string, bool>(flags);
 			this.tag = tag;
 			this.action = action;
-			this.args = new MapElementArguments(NUM_ARGS, args);
+			this.args = new int[NUM_ARGS];
+			args.CopyTo(this.args, 0);
 			this.Move(x, y, zoffset);
 
 			UpdateCache(); //mxd

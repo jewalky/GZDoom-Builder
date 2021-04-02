@@ -13,7 +13,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 		private readonly Dictionary<string, bool> flags;
 		private readonly int tag;
 		private readonly int action;
-		private readonly MapElementArguments args;
+		private readonly int[] args;
 		private readonly UniFields fields;
 
 		public Vector3D Position { get { return pos; } }
@@ -26,7 +26,7 @@ namespace CodeImp.DoomBuilder.GZBuilder.Data
 			flags = new Dictionary<string, bool>(t.Flags);
 			tag = t.Tag;
 			action = t.Action;
-			args = t.Args.Clone();
+			args = (int[])t.Args.Clone();
 			fields = new UniFields(t, t.Fields);
 		}
 
