@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using CodeImp.DoomBuilder.Config;
@@ -230,21 +231,68 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 					return new Vector2D((double)vals[0], (double)vals[1]);
 				if (vals.Length == 3)
 					return new Vector3D((double)vals[0], (double)vals[1], (double)vals[2]);
+			}
+			else if(data is ExpandoObject)
+			{
+				IDictionary<string, object> eo = data as IDictionary<string, object>;
+				double x = double.NaN;
+				double y = double.NaN;
+				double z = double.NaN;
+
+				if(eo.ContainsKey("x"))
+				{
+					try
+					{
+						x = Convert.ToDouble(eo["x"]);
+					}
+					catch (Exception e)
+					{
+						throw new CantConvertToVectorException("Can not convert 'x' property of data: " + e.Message);
+					}
+				}
+
+				if (eo.ContainsKey("y"))
+				{
+					try
+					{
+						y = Convert.ToDouble(eo["y"]);
+					}
+					catch (Exception e)
+					{
+						throw new CantConvertToVectorException("Can not convert 'y' property of data: " + e.Message);
+					}
+				}
+
+				if (eo.ContainsKey("z"))
+				{
+					try
+					{
+						z = Convert.ToDouble(eo["z"]);
+					}
+					catch (Exception e)
+					{
+						throw new CantConvertToVectorException("Can not convert 'z' property of data: " + e.Message);
+					}
+				}
+
+				if (allow3d)
+				{
+					if (x != double.NaN && y != double.NaN && z == double.NaN)
+						return new Vector2D(x, y);
+					else if (x != double.NaN && y != double.NaN && z != double.NaN)
+						return new Vector3D(x, y, z);
+				}
 				else
 				{
-					if (allow3d)
-						throw new CantConvertToVectorException("Array must contain 2 or 3 values.");
-					else
-						throw new CantConvertToVectorException("Array must contain 2 values.");
+					if (x != double.NaN && y != double.NaN)
+						return new Vector2D(x, y);
 				}
 			}
+
+			if (allow3d)
+				throw new CantConvertToVectorException("Data must be a Vector2D, Vector3D, or an array of numbers.");
 			else
-			{
-				if(allow3d)
-					throw new CantConvertToVectorException("Data must be a Vector2D, Vector3D, or an array of numbers.");
-				else
-					throw new CantConvertToVectorException("Data must be a Vector2D, or an array of numbers.");
-			}
+				throw new CantConvertToVectorException("Data must be a Vector2D, or an array of numbers.");
 		}
 
 		internal object GetConvertedUniValue(UniValue uv)
