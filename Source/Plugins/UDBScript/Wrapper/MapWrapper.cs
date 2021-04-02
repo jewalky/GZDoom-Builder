@@ -134,6 +134,459 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
+		/// Stitches marked geometry with non-marked geometry.
+		/// </summary>
+		/// <param name="mergemode">Mode to merge by</param>
+		/// <returns>`true` if successful, `false` if failed</returns>
+		public bool stitchGeometry(MergeGeometryMode mergemode = MergeGeometryMode.CLASSIC)
+		{
+			return General.Map.Map.StitchGeometry(mergemode);
+		}
+
+		/// <summary>
+		/// Snaps all vertices and things to the map format accuracy. Call this to ensure the vertices and things are at valid coordinates.
+		/// </summary>
+		/// <param name="usepreciseposition"></param>
+		public void snapAllToAccuracy(bool usepreciseposition = true)
+		{
+			General.Map.Map.SnapAllToAccuracy(usepreciseposition);
+		}
+
+		/// <summary>
+		/// Gets a new tag.
+		/// </summary>
+		/// <param name="usedtags">List of additional tags to skip</param>
+		/// <returns>The new tag</returns>
+		public int getNewTag(int[] usedtags = null)
+		{
+			if (usedtags == null)
+				return General.Map.Map.GetNewTag();
+			else
+				return General.Map.Map.GetNewTag(usedtags.ToList());
+		}
+
+		/// <summary>
+		/// Gets multiple new tags.
+		/// </summary>
+		/// <param name="count">Number of tags to get</param>
+		/// <returns>`Array` of the new tags</returns>
+		public int[] getMultipleNewTags(int count)
+		{
+			return General.Map.Map.GetMultipleNewTags(count).ToArray();
+		}
+
+		/// <summary>
+		/// Gets the linedef that's nearest to the specified position.
+		/// </summary>
+		/// <param name="pos">Position to check against</param>
+		/// <param name="maxrange">Maximum range (optional)</param>
+		/// <returns>Nearest linedef</returns>
+		public LinedefWrapper nearestLinedef(object pos, double maxrange = double.NaN)
+		{
+			try
+			{
+				Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(pos, false);
+
+				if (double.IsNaN(maxrange))
+					return new LinedefWrapper(General.Map.Map.NearestLinedef(v));
+				else
+					return new LinedefWrapper(General.Map.Map.NearestLinedefRange(v, maxrange));
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		/// <summary>
+		/// Gets the thing that's nearest to the specified position.
+		/// </summary>
+		/// <param name="pos">Position to check against</param>
+		/// <param name="maxrange">Maximum range (optional)</param>
+		/// <returns>Nearest linedef</returns>
+		public ThingWrapper nearestThing(object pos, double maxrange = double.NaN)
+		{
+			try
+			{
+				Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(pos, false);
+
+				if (double.IsNaN(maxrange))
+					return new ThingWrapper(General.Map.Map.NearestThingSquareRange(v, double.MaxValue));
+				else
+					return new ThingWrapper(General.Map.Map.NearestThingSquareRange(v, maxrange));
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		/// <summary>
+		/// Gets the vertex that's nearest to the specified position.
+		/// </summary>
+		/// <param name="pos">Position to check against</param>
+		/// <param name="maxrange">Maximum range (optional)</param>
+		/// <returns>Nearest linedef</returns>
+		public VertexWrapper nearestVertex(object pos, double maxrange = double.NaN)
+		{
+			try
+			{
+				Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(pos, false);
+
+				if (double.IsNaN(maxrange))
+					return new VertexWrapper(General.Map.Map.NearestVertexSquareRange(v, double.MaxValue));
+				else
+					return new VertexWrapper(General.Map.Map.NearestVertexSquareRange(v, maxrange));
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+		/// <summary>
+		/// Gets the sidedef that's nearest to the specified position.
+		/// </summary>
+		/// <param name="pos">Position to check against</param>
+		/// <param name="maxrange">Maximum range (optional)</param>
+		/// <returns>Nearest linedef</returns>
+		public SidedefWrapper nearestSidedef(object pos)
+		{
+			try
+			{
+				Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(pos, false);
+
+				return new SidedefWrapper(MapSet.NearestSidedef(General.Map.Map.Sidedefs, v));
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
+
+
+		#region ================== Marks
+
+		/// <summary>
+		/// Sets the `marked` property of all map elements. Can be passed `true` to mark all map elements.
+		/// </summary>
+		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
+		public void clearAllMarks(bool mark=false)
+		{
+			General.Map.Map.ClearAllMarks(mark);
+		}
+
+		/// <summary>
+		/// Sets the `marked` property of all vertices. Can be passed `true` to mark all vertices.
+		/// </summary>
+		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
+		public void clearMarkedVertices(bool mark=false)
+		{
+			General.Map.Map.ClearMarkedVertices(mark);
+		}
+
+		/// <summary>
+		/// Sets the `marked` property of all things. Can be passed `true` to mark all things.
+		/// </summary>
+		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
+		public void clearMarkedThings(bool mark=false)
+		{
+			General.Map.Map.ClearMarkedThings(mark);
+		}
+
+		/// <summary>
+		/// Sets the `marked` property of all linedefs. Can be passed `true` to mark all linedefs.
+		/// </summary>
+		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
+		public void clearMarkeLinedefs(bool mark=false)
+		{
+			General.Map.Map.ClearMarkedLinedefs(mark);
+		}
+
+		/// <summary>
+		/// Sets the `marked` property of all sidedefs. Can be passed `true` to mark all sidedefs.
+		/// </summary>
+		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
+		public void clearMarkeSidedefs(bool mark = false)
+		{
+			General.Map.Map.ClearMarkedSidedefs(mark);
+		}
+
+		/// <summary>
+		/// Sets the `marked` property of all sectors. Can be passed `true` to mark all sectors.
+		/// </summary>
+		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
+		public void clearMarkeSectors(bool mark = false)
+		{
+			General.Map.Map.ClearMarkedSectors(mark);
+		}
+
+		/// <summary>
+		/// Inverts all marks of all map elements.
+		/// </summary>
+		public void invertAllMarks()
+		{
+			General.Map.Map.InvertAllMarks();
+		}
+
+		/// <summary>
+		/// Inverts the `marked` property of all vertices.
+		/// </summary>
+		public void invertMarkedVertices()
+		{
+			General.Map.Map.InvertMarkedVertices();
+		}
+
+		/// <summary>
+		/// Inverts the `marked` property of all things.
+		/// </summary>
+		public void invertMarkedThings()
+		{
+			General.Map.Map.InvertMarkedThings();
+		}
+
+		/// <summary>
+		/// Inverts the `marked` property of all linedefs.
+		/// </summary>
+		public void invertMarkedLinedefs()
+		{
+			General.Map.Map.InvertMarkedLinedefs();
+		}
+
+		/// <summary>
+		/// Inverts the `marked` property of all sidedefs.
+		/// </summary>
+		public void invertMarkedSidedefs()
+		{
+			General.Map.Map.InvertMarkedSidedefs();
+		}
+
+		/// <summary>
+		/// Inverts the `marked` property of all sectors.
+		/// </summary>
+		public void invertMarkedSectors()
+		{
+			General.Map.Map.InvertMarkedSectors();
+		}
+
+		/// <summary>
+		/// Gets all marked (default) or unmarked vertices.
+		/// </summary>
+		/// <param name="mark">`true` to get all marked vertices (default), `false` to get all unmarked vertices</param>
+		/// <returns></returns>
+		public VertexWrapper[] getMarkedVertices(bool mark=true)
+		{
+			List<VertexWrapper> vertices = new List<VertexWrapper>();
+
+			foreach (Vertex v in General.Map.Map.Vertices)
+				if(v.Marked == mark)
+					vertices.Add(new VertexWrapper(v));
+
+			return vertices.ToArray();
+		}
+
+		/// <summary>
+		/// Gets all marked (default) or unmarked things.
+		/// </summary>
+		/// <param name="mark">`true` to get all marked things (default), `false` to get all unmarked things</param>
+		/// <returns></returns>
+		public ThingWrapper[] getMarkedThings(bool mark = true)
+		{
+			List<ThingWrapper> things = new List<ThingWrapper>();
+
+			foreach (Thing t in General.Map.Map.Things)
+				if (t.Marked == mark)
+					things.Add(new ThingWrapper(t));
+
+			return things.ToArray();
+		}
+
+		/// <summary>
+		/// Gets all marked (default) or unmarked linedefs.
+		/// </summary>
+		/// <param name="mark">`true` to get all marked linedefs (default), `false` to get all unmarked linedefs</param>
+		/// <returns></returns>
+		public LinedefWrapper[] getMarkedLinedefs(bool mark = true)
+		{
+			List<LinedefWrapper> linedefs = new List<LinedefWrapper>();
+
+			foreach (Linedef ld in General.Map.Map.Linedefs)
+				if (ld.Marked == mark)
+					linedefs.Add(new LinedefWrapper(ld));
+
+			return linedefs.ToArray();
+		}
+
+		/// <summary>
+		/// Gets all marked (default) or unmarked sidedefs.
+		/// </summary>
+		/// <param name="mark">`true` to get all marked sidedefs (default), `false` to get all unmarked sidedefs</param>
+		/// <returns></returns>
+		public SidedefWrapper[] getMarkedSidedef(bool mark = true)
+		{
+			List<SidedefWrapper> sidedefs = new List<SidedefWrapper>();
+
+			foreach (Sidedef sd in General.Map.Map.Sidedefs)
+				if (sd.Marked == mark)
+					sidedefs.Add(new SidedefWrapper(sd));
+
+			return sidedefs.ToArray();
+		}
+
+		/// <summary>
+		/// Gets all marked (default) or unmarked sectors.
+		/// </summary>
+		/// <param name="mark">`true` to get all marked sectors (default), `false` to get all unmarked sectors</param>
+		/// <returns></returns>
+		public SectorWrapper[] getMarkedSectors(bool mark = true)
+		{
+			List<SectorWrapper> sectors = new List<SectorWrapper>();
+
+			foreach (Sector s in General.Map.Map.Sectors)
+				if (s.Marked == mark)
+					sectors.Add(new SectorWrapper(s));
+
+			return sectors.ToArray();
+		}
+
+		/// <summary>
+		/// Marks (default) or unmarks all selected vertices.
+		/// </summary>
+		/// <param name="mark">`true` to mark all selected vertices (default), `false` to unmark</param>
+		public void markSelectedVertices(bool mark=true)
+		{
+			General.Map.Map.MarkSelectedVertices(true, mark);
+		}
+
+		/// <summary>
+		/// Marks (default) or unmarks all selected linedefs.
+		/// </summary>
+		/// <param name="mark">`true` to mark all selected linedefs (default), `false` to unmark</param>
+		public void markSelectedLinedefs(bool mark = true)
+		{
+			General.Map.Map.MarkSelectedLinedefs(true, mark);
+		}
+
+		/// <summary>
+		/// Marks (default) or unmarks all selected sectors.
+		/// </summary>
+		/// <param name="mark">`true` to mark all selected sectors (default), `false` to unmark</param>
+		public void markSelectedSectors(bool mark = true)
+		{
+			General.Map.Map.MarkSelectedSectors(true, mark);
+		}
+
+		/// <summary>
+		/// Marks (default) or unmarks all selected things.
+		/// </summary>
+		/// <param name="mark">`true` to mark all selected things (default), `false` to unmark</param>
+		public void markSelectedThings(bool mark = true)
+		{
+			General.Map.Map.MarkSelectedThings(true, mark);
+		}
+
+		#endregion
+
+		#region ================== Selected
+
+		/// <summary>
+		/// Gets all selected (default) or unselected vertices.
+		/// </summary>
+		/// <param name="selected">`true` to get all selected vertices, `false` to get all unselected ones</param>
+		/// <returns></returns>
+		public VertexWrapper[] getSelectedVertices(bool selected=true)
+		{
+			List<VertexWrapper> vertices = new List<VertexWrapper>(General.Map.Map.SelectedVerticessCount);
+
+			foreach (Vertex v in General.Map.Map.Vertices)
+				if (v.Selected == selected)
+					vertices.Add(new VertexWrapper(v));
+
+			return vertices.ToArray();
+		}
+
+		/// <summary>
+		/// Gets all selected (default) or unselected things.
+		/// </summary>
+		/// <param name="selected">`true` to get all selected things, `false` to get all unselected ones</param>
+		/// <returns></returns>
+		public ThingWrapper[] getSelectedThings(bool selected = true)
+		{
+			List<ThingWrapper> things = new List<ThingWrapper>(General.Map.Map.SelectedThingsCount);
+
+			foreach (Thing t in General.Map.Map.Things)
+				if (t.Selected == selected)
+					things.Add(new ThingWrapper(t));
+
+			return things.ToArray();
+		}
+
+		/// <summary>
+		/// Gets all selected (default) or unselected sectors.
+		/// </summary>
+		/// <param name="selected">`true` to get all selected sectors, `false` to get all unselected ones</param>
+		/// <returns></returns>
+		public SectorWrapper[] getSelectedSectors(bool selected = true)
+		{
+			List<SectorWrapper> sectors = new List<SectorWrapper>(General.Map.Map.SelectedSectorsCount);
+
+			foreach (Sector s in General.Map.Map.Sectors)
+				if (s.Selected == selected)
+					sectors.Add(new SectorWrapper(s));
+
+			return sectors.ToArray();
+		}
+
+		/// <summary>
+		/// Gets all sidedefs from the selected linedefs
+		/// </summary>
+		/// <param name="selected">`true` to get all sidedefs of all selected linedefs, `false` to get all sidedefs of all unselected linedefs</param>
+		/// <returns></returns>
+		public SidedefWrapper[] getSidedefsFromSelectedLinedefs(bool selected = true)
+		{
+			List<SidedefWrapper> sidedefs = new List<SidedefWrapper>(General.Map.Map.SelectedLinedefsCount);
+
+			foreach (Sidedef sd in General.Map.Map.GetSidedefsFromSelectedLinedefs(selected))
+				sidedefs.Add(new SidedefWrapper(sd));
+
+			return sidedefs.ToArray();
+		}
+
+		/// <summary>
+		/// Clears all selected map elements.
+		/// </summary>
+		public void clearAllSelected()
+		{
+			General.Map.Map.ClearAllSelected();
+		}
+
+		/// <summary>
+		/// Clears all selected vertices.
+		/// </summary>
+		public void clearSelectedVertices()
+		{
+			General.Map.Map.ClearSelectedVertices();
+		}
+
+		/// <summary>
+		/// Clears all selected things.
+		/// </summary>
+		public void clearSelectedThings()
+		{
+			General.Map.Map.ClearSelectedThings();
+		}
+
+		/// <summary>
+		/// Clears all selected sectors.
+		/// </summary>
+		public void clearSelectedSectors()
+		{
+			General.Map.Map.ClearSelectedSectors();
+		}
+
+		#endregion
+
+		/// <summary>
 		/// Creates a new `Vertex` at the given position. The position can be a `Vector2D` or an `Array` of two numbers.
 		/// ```
 		/// var v1 = Map.createVertex(new Vector2D(32, 64));
@@ -205,11 +658,17 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 		}
 
+		/// <summary>
+		/// Using this before making big changes to the map can improve performance. Use `endAddRemove` when you're finished.
+		/// </summary>
 		public void beginAddRemove()
 		{
 			map.BeginAddRemove();
 		}
 
+		/// <summary>
+		/// Use after making big changes to them. Must be called after `beginAddRemove`.
+		/// </summary>
 		public void endAddRemove()
 		{
 			map.EndAddRemove();
