@@ -893,6 +893,9 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			base.OnScriptRunEnd();
 
+			// The script might have added new geometry
+			CreateBlockmap();
+
 			UpdateSelectionInfo();
 
 			General.Interface.RedrawDisplay();

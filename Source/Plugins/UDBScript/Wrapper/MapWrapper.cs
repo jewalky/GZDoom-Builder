@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
 
@@ -60,6 +61,8 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		public bool isUDMF { get { return General.Map.UDMF; } }
 
+		public Vector2D mousePosition { get { return ((ClassicMode)General.Editing.Mode).MouseMapPos; } }
+
 		#endregion
 
 		#region ================== Constructors
@@ -72,6 +75,18 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#endregion
 
 		#region ================== Methods
+
+		public Vector2D snappedToGrid(object pos)
+		{
+			try
+			{
+				return General.Map.Grid.SnappedToGrid((Vector2D)MapElementWrapper.GetVectorFromObject(pos, false));
+			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+		}
 
 		/// <summary>
 		/// Returns an array of all things in the map
@@ -310,10 +325,21 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 				}
 			}
 
-			if(vertices.Count < 3)
-				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Array must have at least 3 values");
+			if(vertices.Count < 2)
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Array must have at least 2 values");
 
-			return Tools.DrawLines(vertices);
+			bool success = Tools.DrawLines(vertices);
+
+			// Snap to map format accuracy
+			General.Map.Map.SnapAllToAccuracy();
+
+			// Update map
+			General.Map.Map.Update();
+
+			// Update textures
+			General.Map.Data.UpdateUsedTextures();
+
+			return success;
 		}
 
 		#endregion
@@ -588,6 +614,22 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 					sectors.Add(new SectorWrapper(s));
 
 			return sectors.ToArray();
+		}
+
+		/// <summary>
+		/// Gets all selected (default) or unselected linedefs.
+		/// </summary>
+		/// <param name="selected">`true` to get all selected linedefs, `false` to get all unselected ones</param>
+		/// <returns></returns>
+		public LinedefWrapper[] getSelectedLinedefs(bool selected = true)
+		{
+			List<LinedefWrapper> linedefs = new List<LinedefWrapper>(General.Map.Map.SelectedLinedefsCount);
+
+			foreach (Linedef ld in General.Map.Map.Linedefs)
+				if (ld.Selected == selected)
+					linedefs.Add(new LinedefWrapper(ld));
+
+			return linedefs.ToArray();
 		}
 
 		/// <summary>

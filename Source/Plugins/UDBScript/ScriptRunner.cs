@@ -146,6 +146,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			engine.SetValue("QueryOptions", new QueryOptions(stopwatch));
 			engine.SetValue("ScriptOptions", BuilderPlug.Me.GetScriptOptions());
 			engine.SetValue("Map", new MapWrapper());
+			engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2D)));
 			//engine.SetValue("MyClass", TypeReference.CreateTypeReference(engine, typeof(MyClass)));
 			engine.SetValue("Vector3D", TypeReference.CreateTypeReference(engine, typeof(Vector3D)));
 			engine.SetValue("Vector2D", TypeReference.CreateTypeReference(engine, typeof(Vector2D)));
