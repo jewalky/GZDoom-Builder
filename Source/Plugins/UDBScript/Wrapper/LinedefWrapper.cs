@@ -460,7 +460,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				return linedef.NearestOnLine(v);
 			}
 			catch (CantConvertToVectorException e)
@@ -482,7 +482,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				return linedef.SafeDistanceToSq(v, bounded);
 			}
 			catch (CantConvertToVectorException e)
@@ -504,7 +504,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				return linedef.SafeDistanceTo(v, bounded);
 			}
 			catch (CantConvertToVectorException e)
@@ -526,7 +526,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				return linedef.DistanceToSq(v, bounded);
 			}
 			catch (CantConvertToVectorException e)
@@ -548,7 +548,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				return linedef.DistanceTo(v, bounded);
 			}
 			catch (CantConvertToVectorException e)
@@ -569,7 +569,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				return linedef.SideOfLine(v);
 			}
 			catch (CantConvertToVectorException e)

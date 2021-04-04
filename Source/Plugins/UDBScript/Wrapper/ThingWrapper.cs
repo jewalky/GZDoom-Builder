@@ -488,7 +488,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				return thing.DistanceToSq(pos);
 			}
 			catch (CantConvertToVectorException e)
@@ -514,7 +514,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 			try
 			{
-				Vector2D v = (Vector2D)GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				return thing.DistanceTo(pos);
 			}
 			catch (CantConvertToVectorException e)

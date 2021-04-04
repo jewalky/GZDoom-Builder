@@ -80,7 +80,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				return General.Map.Grid.SnappedToGrid((Vector2D)MapElementWrapper.GetVectorFromObject(pos, false));
+				return General.Map.Grid.SnappedToGrid((Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false));
 			}
 			catch (CantConvertToVectorException e)
 			{
@@ -200,7 +200,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 
 				if (double.IsNaN(maxrange))
 					return new LinedefWrapper(General.Map.Map.NearestLinedef(v));
@@ -223,7 +223,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 
 				if (double.IsNaN(maxrange))
 					return new ThingWrapper(General.Map.Map.NearestThingSquareRange(v, double.MaxValue));
@@ -246,7 +246,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 
 				if (double.IsNaN(maxrange))
 					return new VertexWrapper(General.Map.Map.NearestVertexSquareRange(v, double.MaxValue));
@@ -269,7 +269,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 
 				return new SidedefWrapper(MapSet.NearestSidedef(General.Map.Map.Sidedefs, v));
 			}
@@ -313,7 +313,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			{
 				try
 				{
-					Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(item, false);
+					Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(item, false);
 					DrawnVertex dv = new DrawnVertex();
 					dv.pos = v;
 					dv.stitch = dv.stitchline = true;
@@ -696,7 +696,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			try
 			{
-				Vector2D v = (Vector2D)MapElementWrapper.GetVectorFromObject(pos, false);
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
 				Vertex newvertex = General.Map.Map.CreateVertex(v);
 
 				if(newvertex == null)
@@ -729,7 +729,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 				if(type < 0)
 					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Thing type can not be negative.");
 
-				object v = MapElementWrapper.GetVectorFromObject(pos, true);
+				object v = BuilderPlug.Me.GetVectorFromObject(pos, true);
 				Thing t = General.Map.Map.CreateThing();
 
 				if(t == null)
