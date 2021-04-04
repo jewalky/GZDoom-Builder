@@ -48,6 +48,20 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Properties
 
 		/// <summary>
+		/// The sidedef's index. Read-only.
+		/// </summary>
+		public int index
+		{
+			get
+			{
+				if (sidedef.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sidedef is disposed, the isFront property can not be accessed.");
+
+				return sidedef.Index;
+			}
+		}
+
+		/// <summary>
 		/// `true` if this sidedef is the front of its linedef, otherwise `false`. Read-only.
 		/// </summary>
 		public bool isFront
@@ -292,6 +306,15 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		internal override void AfterFieldsUpdate()
 		{
+		}
+
+		#endregion
+
+		#region ================== Methods
+
+		public override string ToString()
+		{
+			return sidedef.ToString();
 		}
 
 		#endregion

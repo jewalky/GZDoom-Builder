@@ -48,6 +48,20 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Properties
 
 		/// <summary>
+		/// The linedef's index. Read-only.
+		/// </summary>
+		public int index
+		{
+			get
+			{
+				if (linedef.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the index property can not be accessed.");
+
+				return linedef.Index;
+			}
+		}
+
+		/// <summary>
 		/// The linedef's start vertex.
 		/// </summary>
 		public VertexWrapper start
@@ -344,6 +358,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#endregion
 
 		#region ================== Methods
+
+		public override string ToString()
+		{
+			return linedef.ToString();
+		}
 
 		/// <summary>
 		/// Copies the properties of this linedef to another linedef.

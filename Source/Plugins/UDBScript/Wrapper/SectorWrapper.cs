@@ -48,6 +48,20 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Properties
 
 		/// <summary>
+		/// The sector's index. Read-only.
+		/// </summary>
+		public int index
+		{
+			get
+			{
+				if (sector.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the index property can not be accessed.");
+
+				return sector.Index;
+			}
+		}
+
+		/// <summary>
 		/// Floor height of the sector.
 		/// </summary>
 		public int floorHeight
@@ -315,6 +329,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#endregion
 
 		#region ================== Methods
+
+		public override string ToString()
+		{
+			return sector.ToString();
+		}
 
 		/// <summary>
 		/// Returns an array of all sidedefs of the sector

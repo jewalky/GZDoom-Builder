@@ -50,6 +50,20 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		internal Vertex Vertex { get { return vertex; } }
 
 		/// <summary>
+		/// The vertex index. Read-only.
+		/// </summary>
+		public int index
+		{
+			get
+			{
+				if (vertex.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Vertex is disposed, the index property can not be accessed.");
+
+				return vertex.Index;
+			}
+		}
+
+		/// <summary>
 		/// Position of the vertex. It's an object with `x` and `y` properties. 
 		/// The `x` and `y` accept numbers:
 		/// ```
@@ -231,6 +245,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#endregion
 
 		#region ================== Methods
+
+		public override string ToString()
+		{
+			return vertex.ToString();
+		}
 
 		/// <summary>
 		/// Gets all linedefs that are connected to this vertex.

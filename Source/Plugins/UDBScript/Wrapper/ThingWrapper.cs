@@ -421,6 +421,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		#region ================== Methods
 
+		public override string ToString()
+		{
+			return thing.ToString();
+		}
+
 		/// <summary>
 		/// Copies the properties from this thing to another.
 		/// </summary>
