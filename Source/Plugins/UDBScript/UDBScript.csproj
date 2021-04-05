@@ -110,6 +110,7 @@
     <Compile Include="Windows\UDBScriptErrorForm.Designer.cs">
       <DependentUpon>UDBScriptErrorForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Wrapper\IMoreTags.cs" />
     <Compile Include="Wrapper\LinedefWrapper.cs" />
     <Compile Include="Wrapper\MapElementArgumentsWrapper.cs" />
     <Compile Include="Wrapper\MapElementWrapper.cs" />

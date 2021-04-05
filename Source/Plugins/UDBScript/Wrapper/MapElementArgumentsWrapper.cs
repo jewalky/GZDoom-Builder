@@ -1,36 +1,45 @@
-﻿using System;
+﻿#region ================== Copyright (c) 2021 Boris Iwanski
+
+/*
+ * This program is free software: you can redistribute it and/or modify
+ *
+ * it under the terms of the GNU General Public License as published by
+ * 
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+ * 
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.If not, see<http://www.gnu.org/licenses/>.
+ */
+
+#endregion
+
+#region ================== Namespaces
+
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CodeImp.DoomBuilder.Map;
+
+#endregion
 
 namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 {
 	public sealed class MapElementArgumentsWrapper : IEnumerable<int>
 	{
+		#region ================== Variables
+
 		private MapElement element;
 
-		public MapElementArgumentsWrapper(MapElement element)
-		{
-			this.element = element;
-		}
+		#endregion
 
-		/*
-		public MapElementArgumentsWrapper(int numargs, IEnumerable<int> newdata) : this(numargs)
-		{
-			int i = 0;
-
-			foreach (int d in newdata)
-			{
-				if (i < numargs)
-					data[i] = d;
-
-				i++;
-			}
-		}
-		*/
+		#region ================== Properties
 
 		public int this[int i]
 		{
@@ -57,6 +66,19 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 		}
 
+		#endregion
+
+		#region ================== Constructors
+
+		public MapElementArgumentsWrapper(MapElement element)
+		{
+			this.element = element;
+		}
+
+		#endregion
+
+		#region ================== Methods
+
 		public IEnumerator<int> GetEnumerator()
 		{
 			if(element is Thing)
@@ -78,9 +100,6 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			return GetEnumerator();
 		}
 
-		public MapElementArgumentsWrapper Clone()
-		{
-			return new MapElementArgumentsWrapper(element);
-		}
+		#endregion
 	}
 }

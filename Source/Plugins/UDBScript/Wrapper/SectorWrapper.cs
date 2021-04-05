@@ -37,7 +37,7 @@ using CodeImp.DoomBuilder.Map;
 
 namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 {
-	class SectorWrapper : MapElementWrapper
+	class SectorWrapper : MapElementWrapper, IMoreTags
 	{
 		#region ================== Variables
 
@@ -485,6 +485,44 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			}
 
 			General.Map.Map.EndAddRemove();
+		}
+
+		#endregion
+
+		#region ================== Interface implementations
+
+		/// <summary>
+		/// Returns an `Array` of the sector's tags. UDMF only. Supported game configurations only.
+		/// </summary>
+		/// <returns>`Array` of tags</returns>
+		public int[] getTags()
+		{
+			return sector.Tags.ToArray();
+		}
+
+		/// <summary>
+		/// Adds a tag to the sector. UDMF only. Supported game configurations only.
+		/// </summary>
+		/// <param name="tag">Tag to add</param>
+		/// <returns>`true` when the tag was added, `false` when the tag already exists</returns>
+		public bool addTag(int tag)
+		{
+			if (sector.Tags.Contains(tag))
+				return false;
+
+			sector.Tags.Add(tag);
+
+			return true;
+		}
+
+		/// <summary>
+		/// Removes a tag from the sector. UDMF only. Supported game configurations only.
+		/// </summary>
+		/// <param name="tag">Tag to remove</param>
+		/// <returns>`true` when the tag was removed successfully, `false` when the tag did not exist</returns>
+		public bool removeTag(int tag)
+		{
+			return sector.Tags.Remove(tag);
 		}
 
 		#endregion
