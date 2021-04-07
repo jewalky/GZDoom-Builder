@@ -165,7 +165,7 @@ namespace CodeImp.DoomBuilder.Plugins.VisplaneExplorer
 						float uy = y * hinv * Tile.TILE_SIZE;
 
 						// Get the data and apply the color
-						byte value = t.Value.GetPointByte((int)ux, Tile.TILE_SIZE - 1 - (int)uy, viewstats);
+						byte value = t.Value.GetHeatmapByte((int)ux, Tile.TILE_SIZE - 1 - (int)uy, viewstats);
 						p[screeny * bd.Width + screenx] = (uint)pal.Colors[value];
 					}
 				}
@@ -456,7 +456,7 @@ namespace CodeImp.DoomBuilder.Plugins.VisplaneExplorer
 						int value = t.GetPointValue(x, y, viewstats);
 						Point p = new Point((int)mousepos.x + 5, (int)mousepos.y + 5);
 						string appendoverflow = (b == Tile.POINT_OVERFLOW_B) ? "+" : "";
-						BuilderPlug.InterfaceForm.ShowTooltip(value + appendoverflow + " / " + Tile.STATS_LIMITS[viewstats], p);
+						BuilderPlug.InterfaceForm.ShowTooltip(value + appendoverflow + " / " + StaticLimit(BuilderPlug.InterfaceForm.ViewStats), p);
 					}
 					else
 					{
@@ -489,6 +489,23 @@ namespace CodeImp.DoomBuilder.Plugins.VisplaneExplorer
 			General.Interface.RedrawDisplay();
 		}
 
+		// Get the configured static limit for the given stat.
+		private uint StaticLimit(ViewStats stat)
+		{
+			switch (stat)
+			{
+				case ViewStats.Visplanes:
+					return General.Map.Config.StaticLimits.Visplanes;
+				case ViewStats.Drawsegs:
+					return General.Map.Config.StaticLimits.Drawsegs;
+				case ViewStats.Solidsegs:
+					return General.Map.Config.StaticLimits.Solidsegs;
+				case ViewStats.Openings:
+					return General.Map.Config.StaticLimits.Openings;
+				default:
+					return 0;
+			}
+		}
 		#endregion
 	}
 }
