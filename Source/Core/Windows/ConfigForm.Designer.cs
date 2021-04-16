@@ -791,10 +791,7 @@ namespace CodeImp.DoomBuilder.Windows
 			// testprogramdialog
 			// 
 			this.testprogramdialog.Filter = "Executable Files (*.exe)|*.exe|Batch Files (*.bat)|*.bat";
-            		this.testprogramdialog.Title = "Browse Test Program";
-            		#if NO_WIN32 
-                		this.testprogramdialog.Filter = "";
-            		#endif
+       		this.testprogramdialog.Title = "Browse Test Program";
 			// 
 			// hintlabel
 			// 
