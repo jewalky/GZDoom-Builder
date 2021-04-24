@@ -1533,7 +1533,7 @@ namespace CodeImp.DoomBuilder.ThreeDFloorMode
 			{
 				if (tdf.Sector.BBox.Width > BuilderPlug.Me.ControlSectorArea.SectorSize || tdf.Sector.BBox.Height > BuilderPlug.Me.ControlSectorArea.SectorSize)
 				{
-					General.Interface.DisplayStatus(StatusType.Warning, string.Format("Control sector {0} exceeds horizontal or vertical dimenstion of {1}. Aborted", tdf.Sector.Index, BuilderPlug.Me.ControlSectorArea.SectorSize));
+					General.Interface.DisplayStatus(StatusType.Warning, string.Format("Control sector {0} exceeds horizontal or vertical dimension of {1}. Aborted", tdf.Sector.Index, BuilderPlug.Me.ControlSectorArea.SectorSize));
 					return;
 				}
 			}

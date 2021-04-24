@@ -48,6 +48,7 @@ namespace CodeImp.DoomBuilder.Controls
 				editor.SetText(stream.ToArray());
 				editor.Scintilla.ReadOnly = source.IsReadOnly;
 				editor.ClearUndoRedo();
+				editor.SetSavePoint();
 			}
 			else
 			{
@@ -92,7 +93,7 @@ namespace CodeImp.DoomBuilder.Controls
 		// Return true when successfully saved
 		public override bool Save()
 		{
-			if(source.IsReadOnly) return false;
+			if(source.IsReadOnly || !editor.IsChanged) return false;
 
             // [ZZ] remove trailing whitespace
             RemoveTrailingWhitespace();

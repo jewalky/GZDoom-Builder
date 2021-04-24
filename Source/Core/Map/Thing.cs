@@ -273,19 +273,46 @@ namespace CodeImp.DoomBuilder.Map
 		public void DetermineSector(BlockMap<BlockEntry> blockmap)
 		{
 			BlockEntry be = blockmap.GetBlockAt(pos);
+			List<Sector> sectors = new List<Sector>(1);
 
 			foreach (Sector s in be.Sectors)
 				if (s.Intersect(pos))
-				{
-					sector = s;
-					return;
-				}
+					sectors.Add(s);
+
+			if(sectors.Count == 0)
+			{
+				sector = null;
+			}
+			else if (sectors.Count == 1)
+			{
+				sector = sectors[0];
+			}
+			else
+			{
+				// Having multiple intersections indicates that there are self-referencing sectors in this spot.
+				// In this case we have to check which side of the nearest linedef pos is on, and then use that sector
+				HashSet<Linedef> linedefs = new HashSet<Linedef>(sectors[0].Sidedefs.Count * sectors.Count);
+
+				foreach (Sector s in sectors)
+					foreach (Sidedef sd in s.Sidedefs)
+						linedefs.Add(sd.Line);
+
+				Linedef nearest = MapSet.NearestLinedef(linedefs, pos);
+				double d = nearest.SideOfLine(pos);
+
+				if (d <= 0.0 && nearest.Front != null)
+					sector = nearest.Front.Sector;
+				else if (nearest.Back != null)
+					sector = nearest.Back.Sector;
+				else
+					sector = null;
+			}
 		}
 
 		// This determines which sector the thing is in and links it
 		public void DetermineSector(VisualBlockMap blockmap)
 		{
-            sector = blockmap.GetSectorAt(pos);
+             sector = blockmap.GetSectorAt(pos);
 		}
 
 		// This translates the flags into UDMF fields

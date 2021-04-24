@@ -159,6 +159,7 @@
     <Compile Include="Config\LinedefActivateInfo.cs" />
     <Compile Include="Config\ProgramConfiguration.cs" />
     <Compile Include="Config\SkillInfo.cs" />
+    <Compile Include="Config\StaticLimits.cs" />
     <Compile Include="Config\TagType.cs" />
     <Compile Include="Config\TextureSet.cs" />
     <Compile Include="Config\ThingCategory.cs" />

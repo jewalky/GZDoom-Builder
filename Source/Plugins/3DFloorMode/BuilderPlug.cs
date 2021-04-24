@@ -769,6 +769,10 @@ namespace CodeImp.DoomBuilder.ThreeDFloorMode
 			// Build a dictionary of tags used by 3D floor action and which control sector they belong to
 			foreach (Linedef ld in General.Map.Map.Linedefs)
 			{
+				// Make sure the front sector is managed by the 3D floor plugin
+				if (ld.Front == null || ld.Front.Sector == null || ld.Front.Sector.IsDisposed || (General.Map.UDMF && ld.Front.Sector.Fields.GetValue("user_managed_3d_floor", false) == false))
+					continue;
+
 				if (ld.Action == 160 && ld.Args[0] != 0)
 				{
 					if (!tags.ContainsKey(ld.Args[0]))

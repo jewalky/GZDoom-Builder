@@ -1854,15 +1854,34 @@ namespace CodeImp.DoomBuilder.Windows
 		{
 			MakeUndo(); //mxd
 			Sector fs = General.GetByIndex(sectors, 0);
-			Plane p = new Plane(fs.CeilSlope, fs.CeilSlopeOffset);
-			fs.UpdateBBox();
-			ceilingslopecontrol.SetOffset((int)Math.Round(p.GetZ(fs.BBox.X + fs.BBox.Width / 2, fs.BBox.Y + fs.BBox.Height / 2)), true);
-			
-			foreach(Sector s in sectors) 
+
+			// biwa. Do not reset to the z position of the plane of the center of the sector anymore, since 
+			// that will result in pretty crazy values of 3D floor control sectors
+			/*
+			if (fs.CeilSlope.IsNormalized())
 			{
-				s.UpdateBBox();
-				p = new Plane(s.CeilSlope, s.CeilSlopeOffset);
-				s.CeilHeight = (int)Math.Round(p.GetZ(s.BBox.X + s.BBox.Width / 2, s.BBox.Y + s.BBox.Height / 2));
+				fs.UpdateBBox();
+				Plane p = new Plane(fs.CeilSlope, fs.CeilSlopeOffset);
+				ceilingslopecontrol.SetOffset((int)Math.Round(p.GetZ(fs.BBox.X + fs.BBox.Width / 2, fs.BBox.Y + fs.BBox.Height / 2)), true);
+			}
+			else
+				ceilingslopecontrol.SetOffset(fs.CeilHeight, true);
+			*/
+			ceilingslopecontrol.SetOffset(fs.CeilHeight, true);
+
+			foreach (Sector s in sectors) 
+			{
+				// biwa. Do not reset to the z position of the plane of the center of the sector anymore, since 
+				// that will result in pretty crazy values of 3D floor control sectors
+				/*
+				if (s.CeilSlope.IsNormalized())
+				{
+					s.UpdateBBox();
+					Plane p = new Plane(s.CeilSlope, s.CeilSlopeOffset);
+					s.CeilHeight = (int)Math.Round(p.GetZ(s.BBox.X + s.BBox.Width / 2, s.BBox.Y + s.BBox.Height / 2));
+				}
+				*/
+
 				s.CeilSlope = new Vector3D();
 				s.CeilSlopeOffset = double.NaN;
 				s.UpdateNeeded = true;
@@ -1879,15 +1898,35 @@ namespace CodeImp.DoomBuilder.Windows
 		{
 			MakeUndo(); //mxd
 			Sector fs = General.GetByIndex(sectors, 0);
-			Plane p = new Plane(fs.FloorSlope, fs.FloorSlopeOffset);
-			fs.UpdateBBox();
-			floorslopecontrol.SetOffset((int)Math.Round(p.GetZ(fs.BBox.X + fs.BBox.Width / 2, fs.BBox.Y + fs.BBox.Height / 2)), true);
-			
-			foreach(Sector s in sectors) 
+
+			// biwa. Do not reset to the z position of the plane of the center of the sector anymore, since 
+			// that will result in pretty crazy values of 3D floor control sectors
+			/*
+			if (fs.FloorSlope.IsNormalized())
 			{
-				s.UpdateBBox();
-				p = new Plane(s.FloorSlope, s.FloorSlopeOffset);
-				s.FloorHeight = (int)Math.Round(p.GetZ(s.BBox.X + s.BBox.Width / 2, s.BBox.Y + s.BBox.Height / 2));
+				fs.UpdateBBox();
+				Plane p = new Plane(fs.FloorSlope, fs.FloorSlopeOffset);
+				floorslopecontrol.SetOffset((int)Math.Round(p.GetZ(fs.BBox.X + fs.BBox.Width / 2, fs.BBox.Y + fs.BBox.Height / 2)), true);
+			}
+			else
+				floorslopecontrol.SetOffset(fs.FloorHeight, true);
+			*/
+
+			floorslopecontrol.SetOffset(fs.FloorHeight, true);
+
+			foreach (Sector s in sectors) 
+			{
+				// biwa. Do not reset to the z position of the plane of the center of the sector anymore, since 
+				// that will result in pretty crazy values of 3D floor control sectors
+				/*
+				if (s.FloorSlope.IsNormalized())
+				{
+					s.UpdateBBox();
+					Plane p = new Plane(s.FloorSlope, s.FloorSlopeOffset);
+					s.FloorHeight = (int)Math.Round(p.GetZ(s.BBox.X + s.BBox.Width / 2, s.BBox.Y + s.BBox.Height / 2));
+				}
+				*/
+
 				s.FloorSlope = new Vector3D();
 				s.FloorSlopeOffset = double.NaN;
 				s.UpdateNeeded = true;

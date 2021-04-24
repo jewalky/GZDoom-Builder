@@ -108,7 +108,10 @@ namespace CodeImp.DoomBuilder.Config
 		private readonly bool doommapformat;
 		private readonly bool hexenmapformat;
 		private readonly bool universalmapformat;
-		
+
+		// Static limits for the base game and map format.
+		private readonly StaticLimits staticlimits;
+
 		// Texture/flat/voxel sources
 		private readonly IDictionary textureranges;
 		private readonly IDictionary hiresranges; //mxd
@@ -246,6 +249,9 @@ namespace CodeImp.DoomBuilder.Config
 		public bool UDMF { get { return universalmapformat; } }
 		public bool HEXEN { get { return hexenmapformat; } }
 		public bool DOOM { get { return doommapformat; } }
+
+		// Static limits for the base game and map format.
+		public StaticLimits StaticLimits { get { return staticlimits; } }
 
 		public bool UseLocalSidedefTextureOffsets { get { return localsidedeftextureoffsets; } } //MaxW
 		public bool Effect3DFloorSupport { get { return effect3dfloorsupport; } }
@@ -424,6 +430,9 @@ namespace CodeImp.DoomBuilder.Config
 			universalmapformat = (formatinterface == "UniversalMapSetIO");
 			hexenmapformat = (formatinterface == "HexenMapSetIO");
 			doommapformat = (formatinterface == "DoomMapSetIO");
+
+			// Read static limits for the base game and map format.
+			staticlimits = new StaticLimits(cfg);
 
 			//mxd. Texture names length
 			longtexturenames = cfg.ReadSetting("longtexturenames", false);

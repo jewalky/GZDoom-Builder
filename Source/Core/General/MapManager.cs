@@ -2029,8 +2029,9 @@ namespace CodeImp.DoomBuilder
 				// Is this a script lump?
 				if(lumpinfo.Script != null)
 				{
-					// Compile it now
-					success &= tempwadreader.CompileLump(lumpinfo.Name, lumpinfo.Script, errors);
+					// Compile it now (but only if it's required or exists)
+					if(lumpinfo.Required || tempwadreader.WadFile.FindLumpIndex(lumpinfo.Name) != -1)
+						success &= tempwadreader.CompileLump(lumpinfo.Name, lumpinfo.Script, errors);
 				}
 				//mxd. Is this ACS script?
 				else if(lumpinfo.ScriptBuild)

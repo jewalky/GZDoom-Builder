@@ -299,8 +299,9 @@ namespace CodeImp.DoomBuilder.Geometry
 
 						double px = foundv.Position.x; //mxd
 						double py = foundv.Position.y; //mxd
+						double scanlinefoundvdistance = double.MaxValue;
 
-						foreach(Linedef ld in General.Map.Map.Linedefs) 
+						foreach(Linedef ld in General.Map.Map.Linedefs)
 						{
 							// Line to the right of start point?
 							if((ld.Start.Position.x > px) || (ld.End.Position.x > px)) 
@@ -318,6 +319,7 @@ namespace CodeImp.DoomBuilder.Geometry
 										{
 											scanline = ld;
 											foundu = thisu;
+											scanlinefoundvdistance = scanline.DistanceTo(foundv.Position, true);
 										}
 										//mxd. Special cases: when foundv.y matches ld's start or end y, 
 										// prefer the line, which is clser to being parallel to the x axis
@@ -328,7 +330,13 @@ namespace CodeImp.DoomBuilder.Geometry
 												&& GetRelativeAngle(scanline, foundv.Position, out scanlineanglerel)
 												&& (ldanglerel < scanlineanglerel))
 											{
-												scanline = ld; // foundu already matches
+												// biwa. This fixes a problem with breaking geometry. It's unknown if this breaks the original fix
+												// See https://github.com/jewalky/UltimateDoomBuilder/issues/556 for an explanation
+												if (ld.DistanceTo(foundv.Position, true) < scanlinefoundvdistance)
+												{
+													scanline = ld; // foundu already matches
+													scanlinefoundvdistance = scanline.DistanceTo(foundv.Position, true);
+												}
 											}
 										}
 									}
@@ -340,7 +348,7 @@ namespace CodeImp.DoomBuilder.Geometry
 						if(scanline != null)
 						{
 							// Determine on which side we should start the next pathfind
-							scanfront = (scanline.SideOfLine(foundv.Position) < 0.0f);
+							scanfront = (scanline.SideOfLine(foundv.Position) < 0.0);
 						}
 						else
 						{

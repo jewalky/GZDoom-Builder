@@ -65,7 +65,7 @@ namespace CodeImp.DoomBuilder.Data
 			// Initialize
 			this.LumpName = lumpname;
 			this.X = x;
-			this.Y = y;
+			this.Y = y < 0 ? 0 : y;
 			this.FlipX = false;
 			this.FlipY = false;
 			this.Rotate = 0;

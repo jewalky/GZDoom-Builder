@@ -124,7 +124,14 @@ namespace CodeImp.DoomBuilder.IO
 			MemoryStream mem = new MemoryStream(lump.Stream.ReadAllBytes());
 			int num = (int)lump.Stream.Length / 10;
 			BinaryReader reader = new BinaryReader(mem);
-			
+
+			// Sanity check against the defined maximum
+			if (num > General.Map.FormatInterface.MaxThings)
+			{
+				General.ErrorLogger.Add(ErrorType.Warning, "There are " + num + " thing entries in the THINGS lump, exceeding the limit of " + General.Map.FormatInterface.MaxThings + " entries. Things after this limit will be ignored");
+				num = General.Map.FormatInterface.MaxThings;
+			}
+
 			// Read items from the lump
 			map.SetCapacity(0, 0, 0, 0, map.Things.Count + num);
 			for(int i = 0; i < num; i++)
@@ -166,6 +173,16 @@ namespace CodeImp.DoomBuilder.IO
 			int num = (int)lump.Stream.Length / 4;
 			BinaryReader reader = new BinaryReader(mem);
 
+			// There are some maps that have more than 65536 vertices, for example MAP32 of https://www.doomworld.com/forum/topic/106186-frog_and_toadwad-12-maps/
+			// Vertices after this limit should not be read, as they can't be referenced by linedefs anyway, and cause massive slowdowns while loading (likely due to
+			// CreateVertex not creating vertices past the limit and trying to play a warning sound)
+			// Also see https://github.com/jewalky/UltimateDoomBuilder/issues/552
+			if (num > General.Map.FormatInterface.MaxVertices)
+			{
+				General.ErrorLogger.Add(ErrorType.Warning, "There are " + num + " vertex entries in the VERTEXES lump, exceeding the limit of " + General.Map.FormatInterface.MaxVertices + " entries. Vertices after this limit will be ignored");
+				num = General.Map.FormatInterface.MaxVertices;
+			}
+
 			// Create lookup table
 			Dictionary<int, Vertex> link = new Dictionary<int, Vertex>(num);
 
@@ -203,6 +220,13 @@ namespace CodeImp.DoomBuilder.IO
 			MemoryStream mem = new MemoryStream(lump.Stream.ReadAllBytes());
 			int num = (int)lump.Stream.Length / 26;
 			BinaryReader reader = new BinaryReader(mem);
+
+			// Sanity check against the defined maximum
+			if (num > General.Map.FormatInterface.MaxSectors)
+			{
+				General.ErrorLogger.Add(ErrorType.Warning, "There are " + num + " sector entries in the SECTORS lump, exceeding the limit of " + General.Map.FormatInterface.MaxSectors + " entries. Sectors after this limit will be ignored");
+				num = General.Map.FormatInterface.MaxSectors;
+			}
 
 			// Create lookup table
 			Dictionary<int, Sector> link = new Dictionary<int, Sector>(num);
@@ -254,6 +278,19 @@ namespace CodeImp.DoomBuilder.IO
 			int numsides = (int)sidedefslump.Stream.Length / 30;
 			BinaryReader readline = new BinaryReader(linedefsmem);
 			BinaryReader readside = new BinaryReader(sidedefsmem);
+
+			// Sanity check against the defined maximum
+			if (num > General.Map.FormatInterface.MaxLinedefs)
+			{
+				General.ErrorLogger.Add(ErrorType.Warning, "There are " + num + " linedef entries in the LINEDEFS lump, exceeding the limit of " + General.Map.FormatInterface.MaxLinedefs + " entries. Linedefs after this limit will be ignored");
+				num = General.Map.FormatInterface.MaxLinedefs;
+			}
+
+			if (numsides > General.Map.FormatInterface.MaxSidedefs)
+			{
+				General.ErrorLogger.Add(ErrorType.Warning, "There are " + numsides + " sidedef entries in the SIDEDEFS lump, exceeding the limit of " + General.Map.FormatInterface.MaxSidedefs + " entries. Sidedefs after this limit will be ignored");
+				numsides = General.Map.FormatInterface.MaxSidedefs;
+			}
 
 			// Read items from the lump
 			map.SetCapacity(0, map.Linedefs.Count + num, map.Sidedefs.Count + numsides, 0, 0);

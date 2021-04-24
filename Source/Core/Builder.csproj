@@ -143,6 +143,7 @@
     <Compile Include="Compilers\AccCompiler.cs" />
     <Compile Include="Compilers\NodesCompiler.cs" />
     <Compile Include="Config\ArgumentInfo.cs" />
+    <Compile Include="Config\StaticLimits.cs" />
     <Compile Include="Config\MapLumpInfo.cs" />
     <Compile Include="Config\ScriptConfiguration.cs" />
     <Compile Include="Config\DefinedTextureSet.cs" />

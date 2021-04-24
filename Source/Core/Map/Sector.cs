@@ -554,8 +554,9 @@ namespace CodeImp.DoomBuilder.Map
 			
 			uint c = 0;
 			Vector2D v1, v2;
-			
-			// Go for all sidedefs
+			bool selfreferencing = true;
+
+			// Go for all linedefs
 			foreach(Sidedef sd in sidedefs)
 			{
 				// Get vertices
@@ -564,6 +565,10 @@ namespace CodeImp.DoomBuilder.Map
 
 				//mxd. On top of a vertex?
 				if(p == v1 || p == v2) return countontopastrue;
+
+				// If both sidedefs of any one line aren't referencing the same sector, then it's not a self-referencing sector
+				if (sd.Other == null || (sd.Other != null && sd.Other.Sector != this))
+					selfreferencing = false;
 
 				// Check for intersection
 				if(v1.y != v2.y //mxd. If line is not horizontal...
@@ -574,8 +579,11 @@ namespace CodeImp.DoomBuilder.Map
 					c++; //mxd. ...Count the line as crossed
 			}
 
-			// Inside this polygon when we crossed odd number of polygon lines
-			return (c % 2 != 0);
+			// Inside this polygon when we crossed odd number of polygon lines (for non-self-referencing sectors)
+			if (!selfreferencing)
+				return (c % 2 != 0);
+			else
+				return (c % 2 == 0);
 		}
 		
 		// This creates a bounding box rectangle

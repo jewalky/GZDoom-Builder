@@ -73,6 +73,7 @@ namespace CodeImp.DoomBuilder.Controls
 			{
 				editor.SetText(stream.ToArray()); //mxd
 				editor.ClearUndoRedo();
+				editor.SetSavePoint();
 			}
 
 			// Set title
@@ -108,6 +109,8 @@ namespace CodeImp.DoomBuilder.Controls
 		// Implicit save
 		public override bool Save()
 		{
+			if (!editor.IsChanged) return false;
+
             // [ZZ] remove trailing whitespace
             RemoveTrailingWhitespace();
 

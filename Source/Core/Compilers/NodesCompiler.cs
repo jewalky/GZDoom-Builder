@@ -96,12 +96,23 @@ namespace CodeImp.DoomBuilder.Compilers
 			General.WriteLogLine("Program:    " + processinfo.FileName);
 			General.WriteLogLine("Arguments:  " + processinfo.Arguments);
 
-			Process process;
+			string outErr = "";
+			string outMsg = "";
+
+			Process process = new Process();
+			process.StartInfo = processinfo;
+
+			// Redirect stdout and strerr, so that they can be analyzed. This has to be done asynchronously since the output can be
+			// very long, which would cause StandardOutput.ReadToEnd() and StandardError.ReadToEnd() to hang
+			process.OutputDataReceived += (object sender, DataReceivedEventArgs e) => outMsg += e.Data;
+			process.ErrorDataReceived += (object sender, DataReceivedEventArgs e) => outErr += e.Data;
 
 			try
 			{
 				// Start the compiler
-				process = Process.Start(processinfo);
+				process.Start();
+				process.BeginOutputReadLine();
+				process.BeginErrorReadLine();
 			}
 			catch(Exception e)
 			{
@@ -110,12 +121,12 @@ namespace CodeImp.DoomBuilder.Compilers
 				return false;
 			}
 
-			//mxd
-			string outErr = process.StandardError.ReadToEnd().Trim().Replace("\b", "");
-			string outMsg = process.StandardOutput.ReadToEnd().Trim().Replace("\b", "");
-			
 			// Wait for compiler to complete
 			process.WaitForExit();
+
+			outErr = outErr.Trim().Replace("\b", "");
+			outMsg = outMsg.Trim().Replace("\b", "");
+
 
 			//mxd
 			bool errorsInNormalOurput = (outMsg.Length > 0 && outMsg.ToLowerInvariant().IndexOf("error") != -1);

@@ -13,7 +13,6 @@ namespace CodeImp.DoomBuilder.Plugins.VisplaneExplorer
 		// Constants
 		public const int TILE_SIZE = 64;
 		public static readonly int[] STATS_COMPRESSOR = new[] { 1, 2, 1, 160 };
-		public static readonly int[] STATS_LIMITS = new[] { 128, 256, 32, 320 * 64 };
 		public const uint POINT_MAXRANGE = 254;
 		public const uint POINT_OVERFLOW = 0xFEFEFEFE;
 		public const uint POINT_VOID = 0xFFFFFFFF;
@@ -91,6 +90,15 @@ namespace CodeImp.DoomBuilder.Plugins.VisplaneExplorer
 			{
 				return vp + (ds << 8) + (ss << 16) + (op << 24);
 			}
+		}
+
+		// This returns a point value for the heatmap
+		public byte GetHeatmapByte(int x, int y, int stat)
+		{
+			byte b = GetPointByte(x, y, stat);
+			if (stat == (int)ViewStats.Visplanes && b != 0 && b != POINT_VOID_B)
+				b = General.Map.Config.StaticLimits.InterpolateVisplanes(b);
+			return b;
 		}
 
 		// This returns a point value
