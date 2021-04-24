@@ -42,6 +42,7 @@
 			this.tbStackTrace.Multiline = true;
 			this.tbStackTrace.Name = "tbStackTrace";
 			this.tbStackTrace.ReadOnly = true;
+			this.tbStackTrace.ScrollBars = System.Windows.Forms.ScrollBars.Both;
 			this.tbStackTrace.Size = new System.Drawing.Size(516, 183);
 			this.tbStackTrace.TabIndex = 0;
 			// 
@@ -65,7 +66,7 @@
 			this.label1.TabIndex = 2;
 			this.label1.Text = "There was an error while executing the script:";
 			// 
-			// ScriptErrorForm
+			// UDBScriptErrorForm
 			// 
 			this.AcceptButton = this.btnOK;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -78,7 +79,7 @@
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
 			this.MinimumSize = new System.Drawing.Size(550, 300);
-			this.Name = "ScriptErrorForm";
+			this.Name = "UDBScriptErrorForm";
 			this.ShowIcon = false;
 			this.Text = "Scripr Error";
 			this.ResumeLayout(false);

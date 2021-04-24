@@ -80,7 +80,6 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <returns>true if there were no errors, false if there were errors</returns>
 		private bool ImportLibraryCode(Engine engine, out string errortext)
 		{
-			bool success = true;
 			string path = Path.Combine(General.AppPath, "UDBScript", "Libraries");
 			string[] files = Directory.GetFiles(path, "*.js", SearchOption.AllDirectories);
 
@@ -95,25 +94,26 @@ namespace CodeImp.DoomBuilder.UDBScript
 				}
 				catch (Esprima.ParserException e)
 				{
-					if (!string.IsNullOrEmpty(errortext))
-						errortext += "\n----------\n";
+					MessageBox.Show("There was an error while loading the library " + file + ":\n\n" + e.Message, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
-					errortext += file + ": " + e.Message;
-
-					success = false;
+					return false;
 				}
 				catch (Jint.Runtime.JavaScriptException e)
 				{
-					if (!string.IsNullOrEmpty(errortext))
-						errortext += "\n----------\n";
+					if (e.Error.Type != Jint.Runtime.Types.String)
+					{
+						//MessageBox.Show("There is an error in the script in line " + e.LineNumber + ":\n\n" + e.Message + "\n\n" + e.StackTrace, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
+						sef.ShowDialog();
+					}
+					else
+						General.Interface.DisplayStatus(Windows.StatusType.Warning, e.Message); // We get here if "throw" is used in a script
 
-					errortext +=  file + " in line " + e.LineNumber + ": " + e.Message;
-
-					success = false;
+					return false;
 				}
 			}
 
-			return success;
+			return true;
 		}
 
 		/// <summary>
@@ -133,12 +133,12 @@ namespace CodeImp.DoomBuilder.UDBScript
 			General.Interface.Focus();
 
 			// Get the script assemblies (and the one from Builder) to make them available to the script
-			List<Assembly> assemblies = General.GetPluginAssemblies();
-			assemblies.Add(General.ThisAssembly);
+			//List<Assembly> assemblies = General.GetPluginAssemblies();
+			//assemblies.Add(General.ThisAssembly);
 
 			// Create the script engine
 			engine = new Engine(cfg => {
-				cfg.AllowClr(assemblies.ToArray());
+				//cfg.AllowClr(assemblies.ToArray());
 				cfg.Constraint(new RuntimeConstraint(stopwatch));
 			});
 			engine.SetValue("log", new Action<object>(Console.WriteLine));
@@ -147,20 +147,16 @@ namespace CodeImp.DoomBuilder.UDBScript
 			engine.SetValue("ScriptOptions", BuilderPlug.Me.GetScriptOptions());
 			engine.SetValue("Map", new MapWrapper());
 			engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2D)));
-			//engine.SetValue("MyClass", TypeReference.CreateTypeReference(engine, typeof(MyClass)));
 			engine.SetValue("Vector3D", TypeReference.CreateTypeReference(engine, typeof(Vector3D)));
 			engine.SetValue("Vector2D", TypeReference.CreateTypeReference(engine, typeof(Vector2D)));
 			engine.SetValue("UniValue", TypeReference.CreateTypeReference(engine, typeof(UniValue)));
 
 			// We'll always need to import the UDB namespace anyway, so do it here instead in every single script
-			engine.Execute("var UDB = importNamespace('CodeImp.DoomBuilder');");
+			//engine.Execute("var UDB = importNamespace('CodeImp.DoomBuilder');");
 
 			// Import all library files into the current engine
 			if(ImportLibraryCode(engine, out importlibraryerrors) == false)
-			{
-				MessageBox.Show("There were one or more errors while loading the library files. Aborting.\n\n" + importlibraryerrors, "Script error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
-			}
 
 			// Tell the mode that a script is about to be run
 			General.Editing.Mode.OnScriptRunBegin();
