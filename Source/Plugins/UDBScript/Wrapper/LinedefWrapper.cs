@@ -42,6 +42,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Variables
 
 		private Linedef linedef;
+		private MapElementArgumentsWrapper elementargs;
 
 		#endregion
 
@@ -126,14 +127,14 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// The `Line2D` from the `start` to the `end` `Vertex`.
 		/// </summary>
-		public Line2D line
+		public Line2DWrapper line
 		{
 			get
 			{
 				if (linedef.IsDisposed)
 					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the line property can not be accessed.");
 
-				return linedef.Line;
+				return new Line2DWrapper(linedef.Line);
 			}
 		}
 
@@ -223,6 +224,20 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 				});
 
 				return eo;
+			}
+		}
+
+		/// <summary>
+		/// Array of arguments of the linedef. Number of arguments depends on game config (usually 5). Hexen format and UDMF only.
+		/// </summary>
+		public MapElementArgumentsWrapper args
+		{
+			get
+			{
+				if (linedef.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the args property can not be accessed.");
+
+				return elementargs;
 			}
 		}
 
@@ -345,6 +360,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		internal LinedefWrapper(Linedef linedef) : base(linedef)
 		{
 			this.linedef = linedef;
+			elementargs = new MapElementArgumentsWrapper(linedef);
 		}
 
 		#endregion
@@ -414,24 +430,24 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="front">`true` for front, `false` for back</param>
 		/// <returns>`Vector2D` that's either on the front of back of the Linedef</returns>
-		public Vector2D getSidePoint(bool front)
+		public Vector2DWrapper getSidePoint(bool front)
 		{
 			if (linedef.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the getSidePoint method can not be accessed.");
 
-			return linedef.GetSidePoint(front);
+			return new Vector2DWrapper(linedef.GetSidePoint(front));
 		}
 
 		/// <summary>
 		/// Gets a `Vector2D` that's in the center of the linedef.
 		/// </summary>
 		/// <returns>`Vector2D` in the center of the linedef</returns>
-		public Vector2D getCenterPoint()
+		public Vector2DWrapper getCenterPoint()
 		{
 			if (linedef.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the getCenterPoint method can not be accessed.");
 
-			return linedef.GetCenterPoint();
+			return new Vector2DWrapper(linedef.GetCenterPoint());
 		}
 
 		/// <summary>
@@ -453,7 +469,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="pos">Point to check against</param>
 		/// <returns>`Vector2D` that's on the linedef</returns>
-		public Vector2D nearestOnLine(object pos)
+		public Vector2DWrapper nearestOnLine(object pos)
 		{
 			if (linedef.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Linedef is disposed, the nearestOnLine method can not be accessed.");
@@ -461,7 +477,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			try
 			{
 				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
-				return linedef.NearestOnLine(v);
+				return new Vector2DWrapper(linedef.NearestOnLine(v));
 			}
 			catch (CantConvertToVectorException e)
 			{

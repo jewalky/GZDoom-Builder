@@ -898,6 +898,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 
 			UpdateSelectionInfo();
 
+			SetupSectorLabels();
+
 			General.Interface.RedrawDisplay();
 		}
 

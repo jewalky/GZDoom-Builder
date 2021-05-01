@@ -120,24 +120,16 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 				if (vertex.IsDisposed)
 					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Vertex is disposed, the position property can not be accessed.");
 
-				if (value is Vector2D)
-					vertex.Move((Vector2D)value);
-				else if (value.GetType().IsArray)
+				try
 				{
-					object[] vals = (object[])value;
+					Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(value, false);
 
-					// Make sure all values in the array are doubles
-					foreach (object v in vals)
-						if (!(v is double))
-							throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Values in position array must be numbers.");
-
-					if (vals.Length == 2)
-						vertex.Move(new Vector2D((double)vals[0], (double)vals[1]));
-					else
-						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position array must contain 2 values.");
+					vertex.Move(v);
 				}
-				else
-					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position values must be a Vector2D, or an array of numbers.");
+				catch (CantConvertToVectorException e)
+				{
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+				}
 			}
 		}
 

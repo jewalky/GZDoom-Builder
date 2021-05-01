@@ -40,6 +40,7 @@ using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.Plugins;
 using CodeImp.DoomBuilder.Types;
 using Jint;
+using CodeImp.DoomBuilder.UDBScript.Wrapper;
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
@@ -141,6 +142,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 		{
 			if (data is Vector2D)
 				return (Vector2D)data;
+			else if (data is Vector2DWrapper)
+				return new Vector2D(((Vector2DWrapper)data).x, ((Vector2DWrapper)data).y);
 			else if (data.GetType().IsArray)
 			{
 				object[] vals = (object[])data;

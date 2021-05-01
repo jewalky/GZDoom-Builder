@@ -76,11 +76,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		#region ================== Methods
 
-		public Vector2D snappedToGrid(object pos)
+		public Vector2DWrapper snappedToGrid(object pos)
 		{
 			try
 			{
-				return General.Map.Grid.SnappedToGrid((Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false));
+				return new Vector2DWrapper(General.Map.Grid.SnappedToGrid((Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false)));
 			}
 			catch (CantConvertToVectorException e)
 			{

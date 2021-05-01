@@ -336,22 +336,24 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 					thing.Move((Vector2D)value);
 				else if (value is Vector3D)
 					thing.Move((Vector3D)value);
-				else if(value.GetType().IsArray)
+				else if (value is Vector2DWrapper)
+					thing.Move(((Vector2DWrapper)value).AsVector2D());
+				else if (value.GetType().IsArray)
 				{
 					object[] vals = (object[])value;
 
 					// Make sure all values in the array are doubles
-					foreach(object v in vals)
-						if(!(v is double))
+					foreach (object v in vals)
+						if (!(v is double))
 							throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Values in position array must be numbers.");
 
 					if (vals.Length == 2)
 						thing.Move((double)vals[0], (double)vals[1], thing.Position.z);
-					else if(vals.Length == 3)
+					else if (vals.Length == 3)
 						thing.Move((double)vals[0], (double)vals[1], (double)vals[2]);
 					else
 						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position array must contain 2 or 3 values.");
-				}					
+				}
 				else
 					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position values must be a Vector2D, Vector3D, or an array of numbers.");
 			}
@@ -481,7 +483,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="pos">Point to calculate the squared distance to.</param>
 		/// <returns>Distance to `pos`</returns>
-		public double distanceToSq(Vector2D pos)
+		public double distanceToSq(object pos)
 		{
 			if (thing.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Thing is disposed, the distanceToSq method can not be accessed.");
@@ -489,7 +491,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			try
 			{
 				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
-				return thing.DistanceToSq(pos);
+				return thing.DistanceToSq(v);
 			}
 			catch (CantConvertToVectorException e)
 			{
@@ -507,7 +509,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="pos">Point to calculate the distance to.</param>
 		/// <returns>Distance to `pos`</returns>
-		public double distanceTo(Vector2D pos)
+		public double distanceTo(object pos)
 		{
 			if (thing.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Thing is disposed, the distanceTo method can not be accessed.");
@@ -515,7 +517,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			try
 			{
 				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(pos, false);
-				return thing.DistanceTo(pos);
+				return thing.DistanceTo(v);
 			}
 			catch (CantConvertToVectorException e)
 			{

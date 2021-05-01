@@ -148,7 +148,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			engine.SetValue("Map", new MapWrapper());
 			engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2D)));
 			engine.SetValue("Vector3D", TypeReference.CreateTypeReference(engine, typeof(Vector3D)));
-			engine.SetValue("Vector2D", TypeReference.CreateTypeReference(engine, typeof(Vector2D)));
+			engine.SetValue("Vector2D", TypeReference.CreateTypeReference(engine, typeof(Vector2DWrapper)));
 			engine.SetValue("UniValue", TypeReference.CreateTypeReference(engine, typeof(UniValue)));
 
 			// We'll always need to import the UDB namespace anyway, so do it here instead in every single script
@@ -204,7 +204,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			// Do some updates
 			General.Map.Map.Update();
 			General.Map.ThingsFilter.Update();
-			General.Interface.RedrawDisplay();
+			//General.Interface.RedrawDisplay();
 
 			// Tell the mode that running the script ended
 			General.Editing.Mode.OnScriptRunEnd();

@@ -393,22 +393,17 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			if (sector.IsDisposed)
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sector is disposed, the intersect method can not be accessed.");
 
-			if (p is Vector2D)
-				return sector.Intersect((Vector2D)p);
-			if(p.GetType().IsArray)
+			try
 			{
-				object[] vals = (object[])p;
+				Vector2D v = (Vector2D)BuilderPlug.Me.GetVectorFromObject(p, false);
 
-				// Make sure all values in the array are doubles
-				foreach (object v in vals)
-					if (!(v is double))
-						throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Values in position array must be numbers.");
-
-				if (vals.Length == 2)
-					return sector.Intersect(new Vector2D((double)vals[0], (double)vals[1]));
-
-				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position array must contain 2 values.");
+				return sector.Intersect(v);
 			}
+			catch (CantConvertToVectorException e)
+			{
+				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
+			}
+
 
 			throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Position values must be a Vector2D, or an array of numbers.");
 		}

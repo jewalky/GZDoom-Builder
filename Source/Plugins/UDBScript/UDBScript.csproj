@@ -111,6 +111,7 @@
       <DependentUpon>UDBScriptErrorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Wrapper\IMoreTags.cs" />
+    <Compile Include="Wrapper\Line2DWrapper.cs" />
     <Compile Include="Wrapper\LinedefWrapper.cs" />
     <Compile Include="Wrapper\MapElementArgumentsWrapper.cs" />
     <Compile Include="Wrapper\MapElementWrapper.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="Wrapper\SectorWrapper.cs" />
     <Compile Include="Wrapper\SidedefWrapper.cs" />
     <Compile Include="Wrapper\ThingWrapper.cs" />
+    <Compile Include="Wrapper\Vector2DWrapper.cs" />
     <Compile Include="Wrapper\VertexWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
