@@ -24,12 +24,27 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			y = v.y;
 		}
 
+		/// <summary>
+		/// Creates a new `Vector2D` from x and y coordinates
+		/// ```
+		/// let v = new Vector2D(32, 64);
+		/// ```
+		/// </summary>
+		/// <param name="x">The x coordinate</param>
+		/// <param name="y">The y coordinate</param>
 		public Vector2DWrapper(double x, double y)
 		{
 			this.x = x;
 			this.y = y;
 		}
 
+		/// <summary>
+		/// Creates a new `Vector2D` from a vector
+		/// ```
+		/// let v = new Vector2DWrapper([ 32, 64 ]);
+		/// ```
+		/// </summary>
+		/// <param name="v">The vector to create the `Vector2D` from</param>
 		public Vector2DWrapper(object v)
 		{
 			try
@@ -354,7 +369,6 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		{
 			return new Vector2D(x, y).ToString();
 		}
-
 
 		#endregion
 	}
