@@ -501,7 +501,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="mark">`true` to get all marked sidedefs (default), `false` to get all unmarked sidedefs</param>
 		/// <returns></returns>
-		public SidedefWrapper[] getMarkedSidedef(bool mark = true)
+		public SidedefWrapper[] getMarkedSidedefs(bool mark = true)
 		{
 			List<SidedefWrapper> sidedefs = new List<SidedefWrapper>();
 

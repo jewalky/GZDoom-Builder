@@ -1915,6 +1915,8 @@ namespace CodeImp.DoomBuilder.BuilderModes
 		{
 			base.OnScriptRunEnd();
 
+			FillBlockMap();
+
 			// Effects may've become invalid
 			if (sectordata != null && sectordata.Count > 0) RebuildElementData();
 

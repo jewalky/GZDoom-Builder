@@ -37,11 +37,30 @@ using CodeImp.DoomBuilder.Map;
 
 namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 {
-	class SectorWrapper : MapElementWrapper, IMoreTags
+	class SectorWrapper : MapElementWrapper, IMoreTags, IEquatable<SectorWrapper>
 	{
 		#region ================== Variables
 
 		private Sector sector;
+
+		#endregion
+
+		#region IEquatable<SectorWrapper> members
+
+		public bool Equals(SectorWrapper other)
+		{
+			return sector == other.sector;
+		}
+		
+		public override bool Equals(object obj)
+		{
+			return Equals((SectorWrapper)obj);
+		}
+		
+		public override int GetHashCode()
+		{
+			return sector.GetHashCode();
+		}
 
 		#endregion
 
