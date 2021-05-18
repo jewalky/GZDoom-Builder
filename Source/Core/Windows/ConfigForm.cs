@@ -54,7 +54,12 @@ namespace CodeImp.DoomBuilder.Windows
 			// Initialize
 			InitializeComponent();
 			CodeImp.DoomBuilder.General.ApplyMonoListViewFix(listtextures);
-			
+
+			// Remove filter for non-Windows systems (so they can select files that do not end with .exe or .bat)
+			#if NO_WIN32
+				this.testprogramdialog.Filter = "";
+			#endif
+
 			// Make list column header full width
 			columnname.Width = listconfigs.ClientRectangle.Width - SystemInformation.VerticalScrollBarWidth - 2;
 			
