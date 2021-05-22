@@ -24,7 +24,11 @@ function drawPortalSector(line, depth)
     }
 
     // Draw the lines
-    Map.drawLines(points);
+    if(!Map.drawLines(points))
+        throw 'Failed drawing space behind line ' + line;
+    
+    // Set the front middle texture for the new 1-sided linedefs
+    Map.getMarkedLinedefs().filter(ld => ld.back == null).forEach(ld => ld.front.middleTexture = ScriptOptions.texture)
 }
 
 // The line action for portals only works in UDMF (GZDoom and Eternity Engine)
