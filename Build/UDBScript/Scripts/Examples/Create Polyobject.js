@@ -1,3 +1,7 @@
+`#scriptconfiguration
+name = "Create PolyObject";
+`
+
 // Get the mouse position in the map, snapped to the grid
 var cursorpos = Map.snappedToGrid(Map.mousePosition);
 

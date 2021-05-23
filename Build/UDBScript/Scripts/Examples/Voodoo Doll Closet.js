@@ -1,3 +1,44 @@
+`#scriptconfiguration
+name = "Draw Voodoo Doll Closet";
+
+options
+{
+	length
+	{
+		description = "Length of closet";
+		default = 256;
+		type = 0; // Integer
+	}
+	
+	direction
+	{
+		description = "Direction of closet";
+		default = "North";
+		type = 11; // Enum
+		enumvalues {
+			0 = "North";
+			1 = "East";
+			2 = "South";
+			3 = "West";
+		}
+	}
+	
+	inactive
+	{
+		description = "Start inactive";
+		default = "True";
+		type = 3; // Boolean
+	}
+	
+	looping
+	{
+		description = "Looping";
+		default = "False";
+		type = 3; // Boolean
+	}
+}
+`
+
 // Make sure the has a correct minimum length
 if(ScriptOptions.length < 96)
 	throw 'Voodoo doll closet has to be at least 96 map units long!';

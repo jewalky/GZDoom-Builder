@@ -1,3 +1,24 @@
+`#scriptconfiguration
+name = "Create Line Portal XXX";
+
+options
+{
+	depth
+	{
+		description = "Depth of space behind portal";
+		default = 64;
+		type = 0; // Integer
+	}
+	
+	texture
+	{
+		description = "Filler texture";
+		default = "FIREBLU1";
+		type = 6; // Texture
+	}
+}
+`
+
 // Function to draw the space behind the portal line
 function drawPortalSector(line, depth)
 {

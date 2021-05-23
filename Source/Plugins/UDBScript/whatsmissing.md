@@ -6,7 +6,6 @@
 
 ## Map elements
 - is the current implementation for thing and linedef action arguments OK?
-- handle multiple tags for linedefs and sectors
 
 ## UI
 - add favorite script functionality (in the UI and with hotkeys)
@@ -16,5 +15,4 @@
 ## Other
 - remove the `Wrapper` part from the wrapper class names?
 - some way to get information about the current editing mode (name, ...)
-- add a way to store configuration data (what's currently in the scripts's .cfg file) inside the script?
 - add a way to communicate with the user, like message boxes with "OK", "yes/no" etc.

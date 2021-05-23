@@ -35,6 +35,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.IO;
+using Esprima;
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
@@ -77,6 +78,48 @@ namespace CodeImp.DoomBuilder.UDBScript
 		}
 
 		/// <summary>
+		/// Gets the name option from the script configuration template literal from the script file.
+		/// </summary>
+		/// <param name="filename">File to read the configuration from</param>
+		/// <returns>Name of the script</returns>
+		private string GetScriptNameFromFile(string filename)
+		{
+			Scanner scanner = new Scanner(File.ReadAllText(filename));
+			Token token;
+			string configstring = string.Empty;
+
+			// Try to get the configuration from the script file
+			do
+			{
+				scanner.ScanComments();
+				token = scanner.Lex();
+
+				if (token.Type == TokenType.Template)
+				{
+					string tokenstring = token.Value.ToString();
+					if (tokenstring.ToLowerInvariant().StartsWith("#scriptconfiguration"))
+					{
+						configstring = tokenstring.Remove(0, "#scriptconfiguration".Length);
+						break;
+					}
+				}
+			} while (token.Type != TokenType.EOF);
+
+			if (!string.IsNullOrWhiteSpace(configstring))
+			{
+				Configuration cfg = new Configuration();
+				cfg.InputConfiguration(configstring, true);
+
+				if (cfg.ErrorResult)
+					return Path.GetFileNameWithoutExtension(filename);
+
+				return cfg.ReadSetting("name", Path.GetFileNameWithoutExtension(filename));
+			}
+
+			return Path.GetFileNameWithoutExtension(filename);
+		}
+
+		/// <summary>
 		/// Starts adding files to the file tree, starting from the "scripts" subfolders
 		/// </summary>
 		/// <param name="foldername">folder name inside the application directory to use as a base</param>
@@ -113,7 +156,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 				// The file name is stored in the Tag
 				if (Path.GetExtension(filename).ToLowerInvariant() == ".js")
 				{
-					TreeNode tn = new TreeNode(BuilderPlug.GetScriptName(filename));
+					//TreeNode tn = new TreeNode(BuilderPlug.GetScriptName(filename));
+					TreeNode tn = new TreeNode(GetScriptNameFromFile(filename));
 					tn.Tag = filename;
 					tn.SelectedImageKey = tn.ImageKey = "Script";
 
@@ -152,15 +196,35 @@ namespace CodeImp.DoomBuilder.UDBScript
 			{
 				BuilderPlug.Me.CurrentScriptFile = (string)e.Node.Tag;
 
-				string configfile = Path.Combine(Path.GetDirectoryName(BuilderPlug.Me.CurrentScriptFile), Path.GetFileNameWithoutExtension(BuilderPlug.Me.CurrentScriptFile)) + ".cfg";
+				Scanner scanner = new Scanner(File.ReadAllText(BuilderPlug.Me.CurrentScriptFile));
+				Token token;
+				string configstring = string.Empty;
 
-				if (File.Exists(configfile))
+				// Try to get the configuration from the script file
+				do
 				{
-					Configuration cfg = new Configuration(configfile, true);
+					scanner.ScanComments();
+					token = scanner.Lex();
+					
+					if(token.Type == TokenType.Template)
+					{
+						string tokenstring = token.Value.ToString();
+						if (tokenstring.ToLowerInvariant().StartsWith("#scriptconfiguration"))
+						{
+							configstring = tokenstring.Remove(0, "#scriptconfiguration".Length);
+							break;
+						}
+					}
+				} while (token.Type != TokenType.EOF);
+				
+				if(!string.IsNullOrWhiteSpace(configstring))
+				{
+					Configuration cfg = new Configuration();
+					cfg.InputConfiguration(configstring, true);
 
 					if(cfg.ErrorResult)
 					{
-						string errordesc = "Error in script configuration file " + configfile + " on line " + cfg.ErrorLine + ": " + cfg.ErrorDescription;
+						string errordesc = "Error in script configuration of file " + BuilderPlug.Me.CurrentScriptFile + " on line " + cfg.ErrorLine + ": " + cfg.ErrorDescription;
 						General.ErrorLogger.Add(ErrorType.Error, errordesc);
 						General.WriteLogLine(errordesc);
 
@@ -183,7 +247,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 						if(Array.FindIndex(ScriptOption.ValidTypes, t => (int)t == type) == -1)
 						{
-							string errordesc = "Error in script configuration file " + configfile + ": option " + de.Key + " has invalid type " + type;
+							string errordesc = "Error in script configuration of file " + BuilderPlug.Me.CurrentScriptFile + ": option " + de.Key + " has invalid type " + type;
 							General.ErrorLogger.Add(ErrorType.Error, errordesc);
 							General.WriteLogLine(errordesc);
 							continue;
