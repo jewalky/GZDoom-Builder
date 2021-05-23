@@ -63,7 +63,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The linedef's start vertex.
+		/// The linedef's start `Vertex`.
 		/// </summary>
 		public VertexWrapper start
 		{
@@ -77,7 +77,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The linedef's end vertex.
+		/// The linedef's end `Vertex`.
 		/// </summary>
 		public VertexWrapper end
 		{
@@ -91,7 +91,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The linedefs front sidedef. Is null when there is no front (should not happen).
+		/// The `Linedef`'s front `Sidedef`. Is `null` when there is no front (should not happen).
 		/// </summary>
 		public SidedefWrapper front
 		{
@@ -108,7 +108,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The linedefs back sidedef. Is null when there is no back.
+		/// The `Linedef`'s back `Sidedef`. Is `null` when there is no back.
 		/// </summary>
 		public SidedefWrapper back
 		{
@@ -139,7 +139,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// If the linedef is selected or not
+		/// If the `Linedef` is selected or not.
 		/// </summary>
 		public bool selected
 		{
@@ -160,7 +160,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// If the linedef is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
+		/// If the `Linedef` is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
 		/// </summary>
 		public bool marked
 		{
@@ -181,7 +181,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Linedef flags. It's an object with the flags as properties. In Doom format and Hexen format they are identified by numbers, in UDMF by their name.
+		/// `Linedef` flags. It's an object with the flags as properties. In Doom format and Hexen format they are identified by numbers, in UDMF by their name.
 		/// Doom and Hexen:
 		/// ```
 		/// ld.flags['64'] = true; // Set the block sound flag
@@ -228,7 +228,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Array of arguments of the linedef. Number of arguments depends on game config (usually 5). Hexen format and UDMF only.
+		/// `Array` of arguments of the `Linedef`. Number of arguments depends on game config (usually 5). Hexen format and UDMF only.
 		/// </summary>
 		public MapElementArgumentsWrapper args
 		{
@@ -242,7 +242,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Linedef action.
+		/// `Linedef` action.
 		/// </summary>
 		public int action
 		{
@@ -263,7 +263,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Linedef tag. UDMF only
+		/// `Linedef` tag. UDMF only.
 		/// </summary>
 		public int tag
 		{
@@ -284,7 +284,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The linedef's squared length. Read-only.
+		/// The `Linedef`'s squared length. Read-only.
 		/// </summary>
 		public double lengthSq
 		{
@@ -298,7 +298,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The linedef's length. Read-only.
+		/// The `Linedef`'s length. Read-only.
 		/// </summary>
 		public double length
 		{
@@ -326,7 +326,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The linedef's angle in degree. Read-only.
+		/// The `Linedef`'s angle in degree. Read-only.
 		/// </summary>
 		public int angle
 		{
@@ -340,7 +340,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The linedef's angle in degree. Read-only.
+		/// The `Linedef`'s angle in radians. Read-only.
 		/// </summary>
 		public double angleRad
 		{
@@ -381,9 +381,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Copies the properties of this linedef to another linedef.
+		/// Copies the properties of this `Linedef` to another `Linedef`.
 		/// </summary>
-		/// <param name="other">The linedef to copy the properties to</param>
+		/// <param name="other">The `Linedef` to copy the properties to</param>
 		public void copyPropertiesTo(LinedefWrapper other)
 		{
 			if (linedef.IsDisposed)
@@ -404,7 +404,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Flips the linedef's vertex attachments.
+		/// Flips the `Linedef`'s vertex attachments.
 		/// </summary>
 		public void flipVertices()
 		{
@@ -415,7 +415,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Flips the linedef's sidedefs.
+		/// Flips the `Linedef`'s `Sidedefs`.
 		/// </summary>
 		public void flipSidedefs()
 		{
@@ -439,9 +439,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets a `Vector2D` that's in the center of the linedef.
+		/// Gets a `Vector2D` that's in the center of the `Linedef`.
 		/// </summary>
-		/// <returns>`Vector2D` in the center of the linedef</returns>
+		/// <returns>`Vector2D` in the center of the `Linedef`</returns>
 		public Vector2DWrapper getCenterPoint()
 		{
 			if (linedef.IsDisposed)
@@ -451,7 +451,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Automatically sets the blocking and two-sided flags based on the existing sidedefs.
+		/// Automatically sets the blocking and two-sided flags based on the existing `Sidedef`s.
 		/// </summary>
 		public void applySidedFlags()
 		{
@@ -466,6 +466,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// ```
 		/// var v1 = ld.nearestOnLine(new Vector2D(32, 64));
 		/// var v2 = ld.nearestOnLine([ 32, 64 ]);
+		/// ```
 		/// </summary>
 		/// <param name="pos">Point to check against</param>
 		/// <returns>`Vector2D` that's on the linedef</returns>
@@ -574,7 +575,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Tests which side of the linedef `pos` is on. Returns &lt; 0 for front (right) side, &gt; for back (left) side, and 0 if `pos` is on the line.
+		/// Tests which side of the `Linedef` `pos` is on. Returns &lt; 0 for front (right) side, &gt; for back (left) side, and 0 if `pos` is on the line.
 		/// </summary>
 		/// <param name="pos">Point to check against</param>
 		/// <returns>&lt; 0 for front (right) side, &gt; for back (left) side, and 0 if `pos` is on the line</returns>
@@ -595,10 +596,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Splits the linedef at the given `Vertex`. The result will be two lines, from the start vertex of the linedef to `v`, and from `v` to the end vertex of the linedef.
+		/// Splits the `Linedef` at the given `Vertex`. The result will be two lines, from the start `Vertex` of the `Linedef` to `v`, and from `v` to the end `Vertex` of the `Linedef`.
 		/// </summary>
 		/// <param name="v">`Vertex` to split by</param>
-		/// <returns>The newly created linedef</returns>
+		/// <returns>The newly created `Linedef`</returns>
 		public LinedefWrapper split(VertexWrapper v)
 		{
 			if (linedef.IsDisposed)
@@ -608,7 +609,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Deletes the linedef. Note that this will result in unclosed sectors unless it has the same sectors on both sides.
+		/// Deletes the `Linedef`. Note that this will result in unclosed `Sector`s unless it has the same `Sector`s on both sides.
 		/// </summary>
 		public void delete()
 		{
@@ -623,7 +624,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Interface implementations
 
 		/// <summary>
-		/// Returns an `Array` of the linedef's tags. UDMF only. Supported game configurations only.
+		/// Returns an `Array` of the `Linedef`'s tags. UDMF only. Supported game configurations only.
 		/// </summary>
 		/// <returns>`Array` of tags</returns>
 		public int[] getTags()
@@ -632,7 +633,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Adds a tag to the linedef. UDMF only. Supported game configurations only.
+		/// Adds a tag to the `Linedef`. UDMF only. Supported game configurations only.
 		/// </summary>
 		/// <param name="tag">Tag to add</param>
 		/// <returns>`true` when the tag was added, `false` when the tag already exists</returns>
@@ -647,7 +648,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Removes a tag from the linedef. UDMF only. Supported game configurations only.
+		/// Removes a tag from the `Linedef`. UDMF only. Supported game configurations only.
 		/// </summary>
 		/// <param name="tag">Tag to remove</param>
 		/// <returns>`true` when the tag was removed successfully, `false` when the tag did not exist</returns>

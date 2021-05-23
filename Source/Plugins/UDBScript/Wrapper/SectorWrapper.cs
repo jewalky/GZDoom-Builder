@@ -67,7 +67,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Properties
 
 		/// <summary>
-		/// The sector's index. Read-only.
+		/// The `Sector`'s index. Read-only.
 		/// </summary>
 		public int index
 		{
@@ -81,7 +81,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Floor height of the sector.
+		/// Floor height of the `Sector`.
 		/// </summary>
 		public int floorHeight
 		{
@@ -102,7 +102,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Ceiling height of the sector.
+		/// Ceiling height of the `Sector`.
 		/// </summary>
 		public int ceilingHeight
 		{
@@ -123,7 +123,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Floor texture of the sector.
+		/// Floor texture of the `Sector`.
 		/// </summary>
 		public string floorTexture
 		{
@@ -147,7 +147,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Ceiling texture of the sector.
+		/// Ceiling texture of the `Sector`.
 		/// </summary>
 		public string ceilingTexture
 		{
@@ -171,7 +171,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// If the sector is selected or not
+		/// If the `Sector` is selected or not.
 		/// </summary>
 		public bool selected
 		{
@@ -201,7 +201,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// If the sector is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
+		/// If the `Sector` is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
 		/// </summary>
 		public bool marked
 		{
@@ -222,7 +222,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Sector flags. It's an object with the flags as properties. Only available in UDMF
+		/// `Sector` flags. It's an object with the flags as properties. Only available in UDMF.
 		///
 		/// ```
 		/// s.flags['noattack'] = true; // Monsters in this sector don't attack
@@ -265,7 +265,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sector's special type. 
+		/// The `Sector`'s special type. 
 		/// </summary>
 		public int special
 		{
@@ -286,7 +286,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sector's tag.
+		/// The `Sector`'s tag.
 		/// </summary>
 		public int tag
 		{
@@ -307,7 +307,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sector's brightness.
+		/// The `Sector`'s brightness.
 		/// </summary>
 		public int brightness
 		{
@@ -355,9 +355,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns an array of all sidedefs of the sector
+		/// Returns an `Array` of all `Sidedef`s of the `Sector`.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>`Array` of the `Sector`'s `Sidedef`s</returns>
 		public SidedefWrapper[] getSidedefs()
 		{
 			if (sector.IsDisposed)
@@ -384,9 +384,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Copies the properties from this sector to another.
+		/// Copies the properties from this `Sector` to another.
 		/// </summary>
-		/// <param name="s">the sector to copy the properties to</param>
+		/// <param name="s">the `Sector` to copy the properties to</param>
 		public void copyPropertiesTo(SectorWrapper s)
 		{
 			if (sector.IsDisposed)
@@ -396,7 +396,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Checks if the given point is in this sector or not. The given point can be a `Vector2D` or an `Array` of two numbers.
+		/// Checks if the given point is in this `Sector` or not. The given point can be a `Vector2D` or an `Array` of two numbers.
 		/// ```
 		/// if(s.intersect(new Vector2D(32, 64)))
 		///		log('Point is in the sector!');
@@ -405,7 +405,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		///		log('Point is in the sector!');
 		///	```
 		/// </summary>
-		/// <param name="p"></param>
+		/// <param name="p">Point to test</param>
 		/// <returns></returns>
 		public bool intersect(object p)
 		{
@@ -428,7 +428,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Joins this sector with another sector. Lines shared between the sectors will not be removed.
+		/// Joins this `Sector` with another `Sector`. Lines shared between the sectors will not be removed.
 		/// </summary>
 		/// <param name="other">Sector to join with</param>
 		public void join(Sector other)
@@ -443,7 +443,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Deletes the sector and its sidedefs
+		/// Deletes the `Sector` and its `Sidedef`s.
 		/// </summary>
 		public void delete()
 		{
@@ -506,7 +506,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Interface implementations
 
 		/// <summary>
-		/// Returns an `Array` of the sector's tags. UDMF only. Supported game configurations only.
+		/// Returns an `Array` of the `Sector`'s tags. UDMF only. Supported game configurations only.
 		/// </summary>
 		/// <returns>`Array` of tags</returns>
 		public int[] getTags()
@@ -515,7 +515,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Adds a tag to the sector. UDMF only. Supported game configurations only.
+		/// Adds a tag to the `Sector`. UDMF only. Supported game configurations only.
 		/// </summary>
 		/// <param name="tag">Tag to add</param>
 		/// <returns>`true` when the tag was added, `false` when the tag already exists</returns>
@@ -530,7 +530,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Removes a tag from the sector. UDMF only. Supported game configurations only.
+		/// Removes a tag from the `Sector`. UDMF only. Supported game configurations only.
 		/// </summary>
 		/// <param name="tag">Tag to remove</param>
 		/// <returns>`true` when the tag was removed successfully, `false` when the tag did not exist</returns>

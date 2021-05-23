@@ -49,25 +49,52 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// `true` if the map is in Doom format, `false` if it isn't. Read-only.
 		/// </summary>
-		public bool isDoom { get { return General.Map.DOOM; } }
+		public bool isDoom
+		{
+			get
+			{
+				return General.Map.DOOM;
+			}
+		}
 
 		/// <summary>
 		/// `true` if the map is in Hexen format, `false` if it isn't. Read-only.
 		/// </summary>
-		public bool isHexen { get { return General.Map.HEXEN; } }
+		public bool isHexen
+		{
+			get
+			{
+				return General.Map.HEXEN;
+			}
+		}
 
 		/// <summary>
 		/// `true` if the map is in UDMF, `false` if it isn't. Read-only.
 		/// </summary>
-		public bool isUDMF { get { return General.Map.UDMF; } }
+		public bool isUDMF
+		{
+			get
+			{
+				return General.Map.UDMF;
+			}
+		}
 
-		public Vector2D mousePosition { get { return ((ClassicMode)General.Editing.Mode).MouseMapPos; } }
+		/// <summary>
+		/// The map coordinates of the mouse position as a `Vector2D`. Read-only.
+		/// </summary>
+		public Vector2D mousePosition
+		{
+			get
+			{
+				return ((ClassicMode)General.Editing.Mode).MouseMapPos;
+			}
+		}
 
 		#endregion
 
 		#region ================== Constructors
 
-		public MapWrapper()
+		internal MapWrapper()
 		{
 			map = General.Map.Map;
 		}
@@ -76,6 +103,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 
 		#region ================== Methods
 
+		/// <summary>
+		/// Returns the given point snapped to the current grid.
+		/// </summary>
+		/// <param name="pos">Point that should be snapped to the grid</param>
+		/// <returns>Snapped position as `Vector2D`</returns>
 		public Vector2DWrapper snappedToGrid(object pos)
 		{
 			try
@@ -89,9 +121,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns an array of all things in the map
+		/// Returns an `Array` of all `Thing`s in the map.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>`Array` of `Thing`s</returns>
 		public ThingWrapper[] getThings()
 		{
 			List<ThingWrapper> things = new List<ThingWrapper>(General.Map.Map.Things.Count);
@@ -104,7 +136,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns an array of all sectors in the map
+		/// Returns an `Array` of all `Sector`s in the map.
 		/// </summary>
 		/// <returns>`Array` of `Sector`s</returns>
 		public SectorWrapper[] getSectors()
@@ -119,9 +151,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns an array of all sidedefs in the map
+		/// Returns an `Array` of all `Sidedef`s in the map.
 		/// </summary>
-		/// <returns>`Array` of `Linedef`s</returns>
+		/// <returns>`Array` of `Sidedef`s</returns>
 		public SidedefWrapper[] getSidedefs()
 		{
 			List<SidedefWrapper> sidedefs = new List<SidedefWrapper>(General.Map.Map.Sidedefs.Count);
@@ -134,9 +166,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns an array of all linedefs in the map
+		/// Returns an `Array` of all `Linedef`s in the map.
 		/// </summary>
-		/// <returns>`Array` of `Sidedef`s</returns>
+		/// <returns>`Array` of `Linedef`s</returns>
 		public LinedefWrapper[] getLinedefs()
 		{
 			List<LinedefWrapper> linedefs = new List<LinedefWrapper>(General.Map.Map.Linedefs.Count);
@@ -161,7 +193,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// Snaps all vertices and things to the map format accuracy. Call this to ensure the vertices and things are at valid coordinates.
 		/// </summary>
-		/// <param name="usepreciseposition"></param>
+		/// <param name="usepreciseposition">`true` if decimal places defined by the map format should be used, `false` if no decimal places should be used</param>
 		public void snapAllToAccuracy(bool usepreciseposition = true)
 		{
 			General.Map.Map.SnapAllToAccuracy(usepreciseposition);
@@ -170,7 +202,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <summary>
 		/// Gets a new tag.
 		/// </summary>
-		/// <param name="usedtags">List of additional tags to skip</param>
+		/// <param name="usedtags">`Array` of tags to skip</param>
 		/// <returns>The new tag</returns>
 		public int getNewTag(int[] usedtags = null)
 		{
@@ -191,11 +223,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets the linedef that's nearest to the specified position.
+		/// Gets the `Linedef` that's nearest to the specified position.
 		/// </summary>
 		/// <param name="pos">Position to check against</param>
 		/// <param name="maxrange">Maximum range (optional)</param>
-		/// <returns>Nearest linedef</returns>
+		/// <returns>Nearest `Linedef`</returns>
 		public LinedefWrapper nearestLinedef(object pos, double maxrange = double.NaN)
 		{
 			try
@@ -214,11 +246,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets the thing that's nearest to the specified position.
+		/// Gets the `Thing` that's nearest to the specified position.
 		/// </summary>
 		/// <param name="pos">Position to check against</param>
 		/// <param name="maxrange">Maximum range (optional)</param>
-		/// <returns>Nearest linedef</returns>
+		/// <returns>Nearest `Linedef`</returns>
 		public ThingWrapper nearestThing(object pos, double maxrange = double.NaN)
 		{
 			try
@@ -237,11 +269,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets the vertex that's nearest to the specified position.
+		/// Gets the `Vertex` that's nearest to the specified position.
 		/// </summary>
 		/// <param name="pos">Position to check against</param>
 		/// <param name="maxrange">Maximum range (optional)</param>
-		/// <returns>Nearest linedef</returns>
+		/// <returns>Nearest `Vertex`</returns>
 		public VertexWrapper nearestVertex(object pos, double maxrange = double.NaN)
 		{
 			try
@@ -260,11 +292,11 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets the sidedef that's nearest to the specified position.
+		/// Gets the `Sidedef` that's nearest to the specified position.
 		/// </summary>
 		/// <param name="pos">Position to check against</param>
 		/// <param name="maxrange">Maximum range (optional)</param>
-		/// <returns>Nearest linedef</returns>
+		/// <returns>Nearest `Sidedef`</returns>
 		public SidedefWrapper nearestSidedef(object pos)
 		{
 			try
@@ -280,10 +312,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Draws lines. Data has to be an `Array` of `Array` of numbers, `Vector2D`s, `Vector3D`s, or objects with x and y properties.
-		/// Note that the first and last element have to be at the same positions to make a complete drawing.
+		/// Draws lines. Data has to be an `Array` of `Array` of numbers, `Vector2D`s, `Vector3D`s, or objects with x and y properties. Note that the first and last element have to be at the same positions to make a complete drawing.
 		/// ```
-		/// Map.DrawLines([
+		/// Map.drawLines([
 		///		new Vector2D(64, 0),
 		///		new Vector2D(128, 0),
 		///		new Vector2D(128, 64),
@@ -291,7 +322,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		///		new Vector2D(64, 0)
 		///	]);
 		///	
-		/// Map.DrawLines([
+		/// Map.drawLines([
 		///		[ 0, 0 ],
 		///		[ 64, 0 ],
 		///		[ 64, 64 ],
@@ -301,7 +332,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// ```
 		/// </summary>
 		/// <param name="data">`Array` of positions</param>
-		/// <returns>`true` is drawing was successful, `false` if it wasn't</returns>
+		/// <returns>`true` if drawing was successful, `false` if it wasn't</returns>
 		public bool drawLines(object data)
 		{
 			if (!data.GetType().IsArray)
@@ -365,7 +396,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Sets the `marked` property of all things. Can be passed `true` to mark all things.
+		/// Sets the `marked` property of all `Thing`s. Can be passed `true` to mark all `Thing`s.
 		/// </summary>
 		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
 		public void clearMarkedThings(bool mark=false)
@@ -374,7 +405,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Sets the `marked` property of all linedefs. Can be passed `true` to mark all linedefs.
+		/// Sets the `marked` property of all `Linedef`s. Can be passed `true` to mark all `Linedef`s.
 		/// </summary>
 		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
 		public void clearMarkeLinedefs(bool mark=false)
@@ -383,7 +414,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Sets the `marked` property of all sidedefs. Can be passed `true` to mark all sidedefs.
+		/// Sets the `marked` property of all `Sidedef`s. Can be passed `true` to mark all `Sidedef`s.
 		/// </summary>
 		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
 		public void clearMarkeSidedefs(bool mark = false)
@@ -392,7 +423,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Sets the `marked` property of all sectors. Can be passed `true` to mark all sectors.
+		/// Sets the `marked` property of all `Sector`s. Can be passed `true` to mark all `Sector`s.
 		/// </summary>
 		/// <param name="mark">`false` to set the `marked` property to `false` (default), `true` to set the `marked` property to `true`</param>
 		public void clearMarkeSectors(bool mark = false)
@@ -417,7 +448,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Inverts the `marked` property of all things.
+		/// Inverts the `marked` property of all `Thing`s.
 		/// </summary>
 		public void invertMarkedThings()
 		{
@@ -425,7 +456,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Inverts the `marked` property of all linedefs.
+		/// Inverts the `marked` property of all `Linedef`s.
 		/// </summary>
 		public void invertMarkedLinedefs()
 		{
@@ -433,7 +464,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Inverts the `marked` property of all sidedefs.
+		/// Inverts the `marked` property of all `Sidedef`s.
 		/// </summary>
 		public void invertMarkedSidedefs()
 		{
@@ -441,7 +472,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Inverts the `marked` property of all sectors.
+		/// Inverts the `marked` property of all `Sector`s.
 		/// </summary>
 		public void invertMarkedSectors()
 		{
@@ -465,9 +496,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets all marked (default) or unmarked things.
+		/// Gets all marked (default) or unmarked `Thing`s.
 		/// </summary>
-		/// <param name="mark">`true` to get all marked things (default), `false` to get all unmarked things</param>
+		/// <param name="mark">`true` to get all marked `Thing`s (default), `false` to get all unmarked `Thing`s</param>
 		/// <returns></returns>
 		public ThingWrapper[] getMarkedThings(bool mark = true)
 		{
@@ -481,9 +512,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets all marked (default) or unmarked linedefs.
+		/// Gets all marked (default) or unmarked `Linedef`s.
 		/// </summary>
-		/// <param name="mark">`true` to get all marked linedefs (default), `false` to get all unmarked linedefs</param>
+		/// <param name="mark">`true` to get all marked `Linedef`s (default), `false` to get all unmarked `Linedef`s</param>
 		/// <returns></returns>
 		public LinedefWrapper[] getMarkedLinedefs(bool mark = true)
 		{
@@ -497,9 +528,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets all marked (default) or unmarked sidedefs.
+		/// Gets all marked (default) or unmarked `Sidedef`s.
 		/// </summary>
-		/// <param name="mark">`true` to get all marked sidedefs (default), `false` to get all unmarked sidedefs</param>
+		/// <param name="mark">`true` to get all marked `Sidedef`s (default), `false` to get all unmarked `Sidedef`s</param>
 		/// <returns></returns>
 		public SidedefWrapper[] getMarkedSidedefs(bool mark = true)
 		{
@@ -513,9 +544,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets all marked (default) or unmarked sectors.
+		/// Gets all marked (default) or unmarked `Sector`s.
 		/// </summary>
-		/// <param name="mark">`true` to get all marked sectors (default), `false` to get all unmarked sectors</param>
+		/// <param name="mark">`true` to get all marked `Sector`s (default), `false` to get all unmarked `Sector`s</param>
 		/// <returns></returns>
 		public SectorWrapper[] getMarkedSectors(bool mark = true)
 		{
@@ -538,27 +569,27 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Marks (default) or unmarks all selected linedefs.
+		/// Marks (default) or unmarks all selected `Linedef`s.
 		/// </summary>
-		/// <param name="mark">`true` to mark all selected linedefs (default), `false` to unmark</param>
+		/// <param name="mark">`true` to mark all selected `Linedef`s (default), `false` to unmark</param>
 		public void markSelectedLinedefs(bool mark = true)
 		{
 			General.Map.Map.MarkSelectedLinedefs(true, mark);
 		}
 
 		/// <summary>
-		/// Marks (default) or unmarks all selected sectors.
+		/// Marks (default) or unmarks all selected `Sector`s.
 		/// </summary>
-		/// <param name="mark">`true` to mark all selected sectors (default), `false` to unmark</param>
+		/// <param name="mark">`true` to mark all selected `Sector`s (default), `false` to unmark</param>
 		public void markSelectedSectors(bool mark = true)
 		{
 			General.Map.Map.MarkSelectedSectors(true, mark);
 		}
 
 		/// <summary>
-		/// Marks (default) or unmarks all selected things.
+		/// Marks (default) or unmarks all selected `Thing`s.
 		/// </summary>
-		/// <param name="mark">`true` to mark all selected things (default), `false` to unmark</param>
+		/// <param name="mark">`true` to mark all selected `Thing`s (default), `false` to unmark</param>
 		public void markSelectedThings(bool mark = true)
 		{
 			General.Map.Map.MarkSelectedThings(true, mark);
@@ -585,9 +616,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets all selected (default) or unselected things.
+		/// Gets all selected (default) or unselected `Thing`s.
 		/// </summary>
-		/// <param name="selected">`true` to get all selected things, `false` to get all unselected ones</param>
+		/// <param name="selected">`true` to get all selected `Thing`s, `false` to get all unselected ones</param>
 		/// <returns></returns>
 		public ThingWrapper[] getSelectedThings(bool selected = true)
 		{
@@ -601,9 +632,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets all selected (default) or unselected sectors.
+		/// Gets all selected (default) or unselected `Sector`s.
 		/// </summary>
-		/// <param name="selected">`true` to get all selected sectors, `false` to get all unselected ones</param>
+		/// <param name="selected">`true` to get all selected `Sector`s, `false` to get all unselected ones</param>
 		/// <returns></returns>
 		public SectorWrapper[] getSelectedSectors(bool selected = true)
 		{
@@ -617,9 +648,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets all selected (default) or unselected linedefs.
+		/// Gets all selected (default) or unselected `Linedef`s.
 		/// </summary>
-		/// <param name="selected">`true` to get all selected linedefs, `false` to get all unselected ones</param>
+		/// <param name="selected">`true` to get all selected `Linedef`s, `false` to get all unselected ones</param>
 		/// <returns></returns>
 		public LinedefWrapper[] getSelectedLinedefs(bool selected = true)
 		{
@@ -633,9 +664,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets all sidedefs from the selected linedefs
+		/// Gets all `Sidedef`s from the selected `Linedef`s.
 		/// </summary>
-		/// <param name="selected">`true` to get all sidedefs of all selected linedefs, `false` to get all sidedefs of all unselected linedefs</param>
+		/// <param name="selected">`true` to get all `Sidedef`s of all selected `Linedef`s, `false` to get all `Sidedef`s of all unselected `Linedef`s</param>
 		/// <returns></returns>
 		public SidedefWrapper[] getSidedefsFromSelectedLinedefs(bool selected = true)
 		{
@@ -664,7 +695,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Clears all selected things.
+		/// Clears all selected `Thing`s.
 		/// </summary>
 		public void clearSelectedThings()
 		{
@@ -672,7 +703,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Clears all selected sectors.
+		/// Clears all selected `Sector`s.
 		/// </summary>
 		public void clearSelectedSectors()
 		{
@@ -721,7 +752,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// </summary>
 		/// <param name="pos">Position where the `Thing` should be created at</param>
 		/// <param name="type">Thing type (optional)</param>
-		/// <returns></returns>
+		/// <returns>The new `Thing`</returns>
 		public ThingWrapper createThing(object pos, int type=0)
 		{
 			try
@@ -753,22 +784,6 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 			{
 				throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException(e.Message);
 			}
-		}
-
-		/// <summary>
-		/// Using this before making big changes to the map can improve performance. Use `endAddRemove` when you're finished.
-		/// </summary>
-		public void beginAddRemove()
-		{
-			map.BeginAddRemove();
-		}
-
-		/// <summary>
-		/// Use after making big changes to them. Must be called after `beginAddRemove`.
-		/// </summary>
-		public void endAddRemove()
-		{
-			map.EndAddRemove();
 		}
 
 		#endregion

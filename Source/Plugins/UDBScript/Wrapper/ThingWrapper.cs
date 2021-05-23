@@ -50,7 +50,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Properties
 
 		/// <summary>
-		/// Index of the thing. Read-only
+		/// Index of the `Thing`. Read-only.
 		/// </summary>
 		public int index
 		{
@@ -64,7 +64,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Type of the thing
+		/// Type of the `Thing`.
 		/// </summary>
 		public int type
 		{
@@ -86,7 +86,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Angle of the thing in degrees, see https://doomwiki.org/wiki/Angle
+		/// Angle of the `Thing` in degrees, see https://doomwiki.org/wiki/Angle.
 		/// </summary>
 		public int angle
 		{
@@ -107,7 +107,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Angle of the thing in radians
+		/// Angle of the `Thing` in radians.
 		/// </summary>
 		public double angleRad
 		{
@@ -128,7 +128,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Array of arguments of the thing. Number of arguments depends on game config (usually 5). Hexen format and UDMF only.
+		/// `Array` of arguments of the `Thing`. Number of arguments depends on game config (usually 5). Hexen format and UDMF only.
 		/// </summary>
 		public MapElementArgumentsWrapper args
 		{
@@ -142,7 +142,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Thing action. Hexen and UDMF only.
+		/// `Thing` action. Hexen and UDMF only.
 		/// </summary>
 		public int action
 		{
@@ -163,7 +163,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Thing tag. UDMF only.
+		/// `Thing` tag. UDMF only.
 		/// </summary>
 		public int tag
 		{
@@ -184,7 +184,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// If the thing is selected or not
+		/// If the `Thing` is selected or not.
 		/// </summary>
 		public bool selected
 		{
@@ -205,7 +205,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// If the thing is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
+		/// If the `Thing` is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
 		/// </summary>
 		public bool marked
 		{
@@ -226,7 +226,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Thing flags. It's an object with the flags as properties. In Doom format and Hexen format they are identified by numbers, in UDMF by their name.
+		/// `Thing` flags. It's an object with the flags as properties. In Doom format and Hexen format they are identified by numbers, in UDMF by their name.
 		/// Doom and Hexen:
 		/// ```
 		/// t.flags["8"] = true; // Set the ambush flag
@@ -273,7 +273,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Position of the thing. It's an object with `x`, `y`, and `z` properties. The latter is only relevant in Hexen format and UDMF.
+		/// Position of the `Thing`. It's an object with `x`, `y`, and `z` properties. The latter is only relevant in Hexen format and UDMF.
 		/// The `x`, `y`, and `z` accept numbers:
 		/// ```
 		/// t.position.x = 32;
@@ -360,7 +360,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Pitch of the thing in degrees. Only valid for supporting game configurations.
+		/// Pitch of the `Thing` in degrees. Only valid for supporting game configurations.
 		/// </summary>
 		public int pitch
 		{
@@ -381,7 +381,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Roll of the thing in degrees. Only valid for supporting game configurations.
+		/// Roll of the `Thing` in degrees. Only valid for supporting game configurations.
 		/// </summary>
 		public int roll
 		{
@@ -429,9 +429,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Copies the properties from this thing to another.
+		/// Copies the properties from this `Thing` to another.
 		/// </summary>
-		/// <param name="t">the thing to copy the properties to</param>
+		/// <param name="t">The `Thing` to copy the properties to</param>
 		public void copyPropertiesTo(ThingWrapper t)
 		{
 			if (thing.IsDisposed)
@@ -452,7 +452,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Snaps the thing's position to the grid.
+		/// Snaps the `Thing`'s position to the grid.
 		/// </summary>
 		public void snapToGrid()
 		{
@@ -463,7 +463,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Snaps the thing's position to the map format's accuracy
+		/// Snaps the `Thing`'s position to the map format's accuracy.
 		/// </summary>
 		public void snapToAccuracy()
 		{
@@ -474,7 +474,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets the squared distance between this thing and the given point.
+		/// Gets the squared distance between this `Thing` and the given point.
 		/// The point can be either a `Vector2D` or an array of numbers.
 		/// ```
 		/// t.distanceToSq(new Vector2D(32, 64));
@@ -500,8 +500,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets the distance between this thing and the given point.
-		/// The point can be either a `Vector2D` or an array of numbers.
+		/// Gets the distance between this `Thing` and the given point. The point can be either a `Vector2D` or an array of numbers.
 		/// ```
 		/// t.distanceToSq(new Vector2D(32, 64));
 		/// t.distanceToSq([ 32, 64 ]);
@@ -526,13 +525,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Deletes the thing
+		/// Deletes the `Thing`.
 		/// </summary>
 		public void delete()
 		{
-			//if (thing.IsDisposed)
-			//	throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Thing is disposed, the dispose method can not be accessed.");
-
 			if (!thing.IsDisposed)
 			{
 				thing.Dispose();

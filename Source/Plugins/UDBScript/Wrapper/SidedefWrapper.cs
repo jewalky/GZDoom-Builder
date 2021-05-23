@@ -48,7 +48,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Properties
 
 		/// <summary>
-		/// The sidedef's index. Read-only.
+		/// The `Sidedef`'s index. Read-only.
 		/// </summary>
 		public int index
 		{
@@ -62,7 +62,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// `true` if this sidedef is the front of its linedef, otherwise `false`. Read-only.
+		/// `true` if this `Sidedef` is the front of its `Linedef`, otherwise `false`. Read-only.
 		/// </summary>
 		public bool isFront
 		{
@@ -76,7 +76,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sector the sidedef belongs to. Read-only.
+		/// The `Sector` the `Sidedef` belongs to. Read-only.
 		/// </summary>
 		public SectorWrapper sector
 		{
@@ -90,7 +90,21 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sidedef on the other side of this sidedef's linedef. Returns `null` if there is no other. Read-only.
+		/// The `Linedef` the `Sidedef` belongs to. Read-only.
+		/// </summary>
+		public LinedefWrapper line
+		{
+			get
+			{
+				if (sidedef.IsDisposed)
+					throw BuilderPlug.Me.ScriptRunner.CreateRuntimeException("Sidedef is disposed, the line property can not be accessed.");
+
+				return new LinedefWrapper(sidedef.Line);
+			}
+		}
+
+		/// <summary>
+		/// The `Sidedef` on the other side of this `Sidedef`'s `Linedef`. Returns `null` if there is no other. Read-only.
 		/// </summary>
 		public SidedefWrapper other
 		{
@@ -107,7 +121,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sidedef's angle in degrees. Read-only.
+		/// The `Sidedef`'s angle in degrees. Read-only.
 		/// </summary>
 		public double angle
 		{
@@ -121,7 +135,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sidedef's angle in radians. Read-only.
+		/// The `Sidedef`'s angle in radians. Read-only.
 		/// </summary>
 		public double angleRad
 		{
@@ -135,7 +149,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The x offset of the sidedef's textures.
+		/// The x offset of the `Sidedef`'s textures.
 		/// </summary>
 		public int offsetX
 		{
@@ -156,7 +170,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The y offset of the sidedef's textures.
+		/// The y offset of the `Sidedef`'s textures.
 		/// </summary>
 		public int offsetY
 		{
@@ -177,7 +191,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Sidedef flags. It's an object with the flags as properties. Only available in UDMF
+		/// `Sidedef` flags. It's an object with the flags as properties. Only available in UDMF.
 		///
 		/// ```
 		/// s.flags['noattack'] = true; // Monsters in this sector don't attack
@@ -220,7 +234,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sidedef's upper texture
+		/// The `Sidedef`'s upper texture.
 		/// </summary>
 		public string upperTexture
 		{
@@ -244,7 +258,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sidedef's middle texture
+		/// The `Sidedef`'s middle texture.
 		/// </summary>
 		public string middleTexture
 		{
@@ -268,7 +282,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The sidedef's middle texture
+		/// The `Sidedef`'s lower texture.
 		/// </summary>
 		public string lowerTexture
 		{

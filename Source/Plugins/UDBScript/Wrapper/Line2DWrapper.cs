@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,14 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 	{
 		#region ================== Variables
 
+		/// <summary>
+		/// `Vector2D` position of start of the line.
+		/// </summary>
 		public Vector2DWrapper v1;
+
+		/// <summary>
+		/// `Vector2D` position of end of the line.
+		/// </summary>
 		public Vector2DWrapper v2;
 
 		#endregion
@@ -25,14 +33,14 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Creates a new `Line2D` from two points
+		/// Creates a new `Line2D` from two points.
 		/// ```
 		/// let line1 = new Line2D(new Vector2D(32, 64), new Vector2D(96, 128));
 		/// let line2 = new Line2D([ 32, 64 ], [ 96, 128 ]);
 		/// ```
 		/// </summary>
-		/// <param name="v1">Vector of first point</param>
-		/// <param name="v2">Vector of second point</param>
+		/// <param name="v1">First point</param>
+		/// <param name="v2">Second point</param>
 		public Line2DWrapper(object v1, object v2)
 		{
 			try
@@ -60,11 +68,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Statics
 
 		/// <summary>
-		/// Checks if two lines intersect. If `bounded` is set to `true` (default) the finite length of the lines
-		/// is used, otherwise the infinite length of the lines is used
+		/// Checks if two lines intersect. If `bounded` is set to `true` (default) the finite length of the lines is used, otherwise the infinite length of the lines is used.
 		/// </summary>
-		/// <param name="line1">First line</param>
-		/// <param name="line2">Second line</param>
+		/// <param name="line1">First `Line2D`</param>
+		/// <param name="line2">Second `Line2D`</param>
 		/// <param name="bounded">`true` to use finite length of lines, `false` to use infinite length of lines</param>
 		/// <returns>`true` if the lines intersect, `false` if they do not</returns>
 		public static bool areIntersecting(Line2DWrapper line1, Line2DWrapper line2, bool bounded=true)
@@ -74,8 +81,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Checks if two lines defined by their start and end points intersect. If `bounded` is set to `true` (default) the finite length of the lines
-		/// is used, otherwise the infinite length of the lines is used
+		/// Checks if two lines defined by their start and end points intersect. If `bounded` is set to `true` (default) the finite length of the lines is used, otherwise the infinite length of the lines is used.
 		/// </summary>
 		/// <param name="a1">First point of first line</param>
 		/// <param name="a2">Second point of first line</param>
@@ -102,9 +108,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the intersection point of two lines as `Vector2D`. If the lines do not intersect the `x`
-		/// and `y` properties of the `Vector2D` are `NaN`. If `bounded` is set to `true` (default) the finite length of the lines
-		/// is used, otherwise the infinite length of the lines is used
+		/// Returns the intersection point of two lines as `Vector2D`. If the lines do not intersect the `x` and `y` properties of the `Vector2D` are `NaN`. If `bounded` is set to `true` (default) the finite length of the lines is used, otherwise the infinite length of the lines is used.
 		/// </summary>
 		/// <param name="a1">First point of first line</param>
 		/// <param name="a2">Second point of first line</param>
@@ -130,7 +134,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns which the of the line defined by its start and end point a given point is on
+		/// Returns which the of the line defined by its start and end point a given point is on.
 		/// </summary>
 		/// <param name="v1">First point of the line</param>
 		/// <param name="v2">Second point of the line</param>
@@ -153,8 +157,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the shortest distance from point `p` to the line defined by its start and end points. If `bounded` is set to `true` (default) the finite length of the lines
-		/// is used, otherwise the infinite length of the lines is used
+		/// Returns the shortest distance from point `p` to the line defined by its start and end points. If `bounded` is set to `true` (default) the finite length of the lines is used, otherwise the infinite length of the lines is used.
 		/// </summary>
 		/// <param name="v1">First point of the line</param>
 		/// <param name="v2">Second point of the line</param>
@@ -178,8 +181,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the shortest square distance from point `p` to the line defined by its start and end points. If `bounded` is set to `true` (default) the finite length of the lines
-		/// is used, otherwise the infinite length of the lines is used
+		/// Returns the shortest square distance from point `p` to the line defined by its start and end points. If `bounded` is set to `true` (default) the finite length of the lines is used, otherwise the infinite length of the lines is used.
 		/// </summary>
 		/// <param name="v1">First point of the line</param>
 		/// <param name="v2">Second point of the line</param>
@@ -203,8 +205,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the offset coordinate on the line nearest to the given point. `0.0` being on the first point, `1.0` being on the second point, and `u = 0.5` being in
-		/// the middle between the points
+		/// Returns the offset coordinate on the line nearest to the given point. `0.0` being on the first point, `1.0` being on the second point, and `u = 0.5` being in the middle between the points.
 		/// </summary>
 		/// <param name="v1">First point of the line</param>
 		/// <param name="v2">Second point of the line</param>
@@ -227,7 +228,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the coordinate on a line defined by its start and end points as `Vector2D`
+		/// Returns the coordinate on a line defined by its start and end points as `Vector2D`.
 		/// </summary>
 		/// <param name="v1">First point of the line</param>
 		/// <param name="v2">Second point of the line</param>
@@ -253,9 +254,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Methods
 
 		/// <summary>
-		/// Returns the coordinates on the line, where `u` is the position between the first and second point,
-		/// `u = 0.0` being on the first point, `u = 1.0` being on the second point, and `u = 0.5` being in
-		/// the middle between the points
+		/// Returns the coordinates on the line, where `u` is the position between the first and second point, `u = 0.0` being on the first point, `u = 1.0` being on the second point, and `u = 0.5` being in the middle between the points.
 		/// </summary>
 		/// <param name="u">Position on the line, between 0.0 and 1.0</param>
 		/// <returns>Position on the line as `Vector2D`</returns>
@@ -265,44 +264,43 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the length of the vector
+		/// Returns the length of the `Line2D`.
 		/// </summary>
-		/// <returns>Length of the vector</returns>
+		/// <returns>Length of the `Line2D`</returns>
 		public double getLength()
 		{
 			return Line2D.GetLength(v2.x - v1.x, v2.y - v1.y);
 		}
 
 		/// <summary>
-		/// Returns the angle of the vector in radians
+		/// Returns the angle of the `Line2D` in radians.
 		/// </summary>
-		/// <returns>Angle of vector in radians</returns>
+		/// <returns>Angle of `Line2D` in radians</returns>
 		public double getAngleRad()
 		{
 			return new Line2D(v1.AsVector2D(), v2.AsVector2D()).GetAngle();
 		}
 		
 		/// <summary>
-		/// Return the angle of the vector in degrees
+		/// Return the angle of the `Line2D` in degrees.
 		/// </summary>
-		/// <returns>Angle of the vector in degrees</returns>
+		/// <returns>Angle of the `Line2D` in degrees</returns>
 		public double getAngle()
 		{
 			return Angle2D.RadToDeg(new Line2D(v1.AsVector2D(), v2.AsVector2D()).GetAngle());
 		}
 
 		/// <summary>
-		/// Returns the perpendicular line of this line as `Vector2D`
+		/// Returns the perpendicular of this line as `Vector2D`.
 		/// </summary>
-		/// <returns>Perpendicular line of this line as `Vector2D`</returns>
-		public Vector2DWrapper getPerpendiculat()
+		/// <returns>Perpendicular of this line as `Vector2D`</returns>
+		public Vector2DWrapper getPerpendicular()
 		{
 			return new Vector2DWrapper(new Line2D(v1.x, v1.y, v2.x, v2.y).GetPerpendicular());
 		}
 
 		/// <summary>
-		/// Checks if the given line intersects this line. If `bounded` is set to `true` (default) the finite length of the lines
-		/// is used, otherwise the infinite length of the lines is used
+		/// Checks if the given `Line2D` intersects this line. If `bounded` is set to `true` (default) the finite length of the lines is used, otherwise the infinite length of the lines is used.
 		/// </summary>
 		/// <param name="ray">`Line2D` to check against</param>
 		/// <param name="bounded">`true` (default) to use finite length of lines, `false` to use infinite length of lines</param>
@@ -314,8 +312,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Checks if the given line intersects this line. If `bounded` is set to `true` (default) the finite length of the lines
-		/// is used, otherwise the infinite length of the lines is used
+		/// Checks if the given line intersects this line. If `bounded` is set to `true` (default) the finite length of the lines is used, otherwise the infinite length of the lines is used.
 		/// </summary>
 		/// <param name="a1">First point of the line to check against</param>
 		/// <param name="a2">Second point of the line to check against</param>
@@ -338,9 +335,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the intersection point of of the given line defined by its start and end points with this line as `Vector2D`. If the lines do not intersect the `x`
-		/// and `y` properties of the `Vector2D` are `NaN`. If `bounded` is set to `true` (default) the finite length of the lines
-		/// is used, otherwise the infinite length of the lines is used
+		/// Returns the intersection point of of the given line defined by its start and end points with this line as `Vector2D`. If the lines do not intersect the `x` and `y` properties of the `Vector2D` are `NaN`. If `bounded` is set to `true` (default) the finite length of the lines is used, otherwise the infinite length of the lines is used.
 		/// </summary>
 		/// <param name="a1">First point of first line</param>
 		/// <param name="a2">Second point of first line</param>
@@ -365,11 +360,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the intersection point of of the given line with this line as `Vector2D`. If the lines do not intersect the `x`
-		/// and `y` properties of the `Vector2D` are `NaN`. If `bounded` is set to `true` (default) the finite length of the lines
-		/// is used, otherwise the infinite length of the lines is used
+		/// Returns the intersection point of of the given line with this line as `Vector2D`. If the lines do not intersect the `x` and `y` properties of the `Vector2D` are `NaN`. If `bounded` is set to `true` (default) the finite length of the lines is used, otherwise the infinite length of the lines is used.
 		/// </summary>
-		/// <param name="ray">Other line to get the intersection point from</param>
+		/// <param name="ray">Other `Line2D` to get the intersection point from</param>
 		/// <param name="bounded">`true` (default) to use finite length of lines, `false` to use infinite length of lines</param>
 		/// <returns>The intersection point as `Vector2D`</returns>
 		public Vector2DWrapper getIntersectionPoint(Line2DWrapper ray, bool bounded=true)
@@ -383,7 +376,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns which the of the line defined by its start and end point a given point is on
+		/// Returns which the of the line defined by its start and end point a given point is on.
 		/// </summary>
 		/// <param name="p">Point to check</param>
 		/// <returns>`&lt; 0` if `p` is on the front (right) side, `&gt; 0` if `p` is on the back (left) side, `== 0` if `p` in on the line</returns>

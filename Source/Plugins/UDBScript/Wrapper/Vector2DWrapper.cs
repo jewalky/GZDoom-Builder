@@ -39,9 +39,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Creates a new `Vector2D` from a vector
+		/// Creates a new `Vector2D` from a point.
 		/// ```
-		/// let v = new Vector2DWrapper([ 32, 64 ]);
+		/// let v = new Vector2D([ 32, 64 ]);
 		/// ```
 		/// </summary>
 		/// <param name="v">The vector to create the `Vector2D` from</param>
@@ -74,10 +74,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Statics
 
 		/// <summary>
-		/// Returns the dot product of two vectors.
+		/// Returns the dot product of two `Vector2D`s.
 		/// </summary>
-		/// <param name="a">First vectors</param>
-		/// <param name="b">Second vectors</param>
+		/// <param name="a">First `Vector2D`</param>
+		/// <param name="b">Second `Vector2D`</param>
 		/// <returns>The dot product of the two vectors</returns>
 		public static double dotProduct(Vector2DWrapper a, Vector2DWrapper b)
 		{
@@ -86,10 +86,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the cross product of two vectors.
+		/// Returns the cross product of two `Vector2D`s.
 		/// </summary>
-		/// <param name="a">First vector</param>
-		/// <param name="b">Second vector</param>
+		/// <param name="a">First `Vector2D`</param>
+		/// <param name="b">Second `Vector2D`</param>
 		/// <returns>Cross product of the two vectors as `Vector2D`</returns>
 		public static Vector2DWrapper crossProduct(object a, object b)
 		{
@@ -107,10 +107,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Reflects a vector over a mirror vector
+		/// Reflects a `Vector2D` over a mirror `Vector2D`.
 		/// </summary>
-		/// <param name="v">Vector to reflect</param>
-		/// <param name="m">Mirror vector</param>
+		/// <param name="v">`Vector2D` to reflect</param>
+		/// <param name="m">Mirror `Vector2D`</param>
 		/// <returns>The reflected vector as `Vector2D`</returns>
 		public static Vector2DWrapper reflect(object v, object m)
 		{
@@ -130,9 +130,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns a reversed vector
+		/// Returns a reversed `Vector2D`.
 		/// </summary>
-		/// <param name="v">Vector to reverse</param>
+		/// <param name="v">`Vector2D` to reverse</param>
 		/// <returns>The reversed vector as `Vector2D`</returns>
 		public static Vector2DWrapper reversed(object v)
 		{
@@ -149,7 +149,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Creates a `Vector2D` from an angle in radians
+		/// Creates a `Vector2D` from an angle in radians,
 		/// </summary>
 		/// <param name="angle">Angle in radians</param>
 		/// <returns>Vector as `Vector2D`</returns>
@@ -159,7 +159,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Creates a `Vector2D` from an angle in degrees
+		/// Creates a `Vector2D` from an angle in degrees,
 		/// </summary>
 		/// <param name="angle">Angle in degrees</param>
 		/// <returns>Vector as `Vector2D`</returns>
@@ -169,10 +169,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the angle between two vectors in radians
+		/// Returns the angle between two `Vector2D`s in radians
 		/// </summary>
-		/// <param name="a">First vector</param>
-		/// <param name="b">Second vector</param>
+		/// <param name="a">First `Vector2D`</param>
+		/// <param name="b">Second `Vector2D`</param>
 		/// <returns>Angle in radians</returns>
 		public static double getAngleRad(object a, object b)
 		{
@@ -190,10 +190,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the angle between two vectors in radians
+		/// Returns the angle between two `Vector2D`s in radians.
 		/// </summary>
-		/// <param name="a">First vector</param>
-		/// <param name="b">Second vector</param>
+		/// <param name="a">First `Vector2D`</param>
+		/// <param name="b">Second `Vector2D`</param>
 		/// <returns>Angle in radians</returns>
 		public static double getAngle(object a, object b)
 		{
@@ -211,10 +211,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the square distance between two vectors
+		/// Returns the square distance between two `Vector2D`s.
 		/// </summary>
-		/// <param name="a">First vector</param>
-		/// <param name="b">Second vector</param>
+		/// <param name="a">First `Vector2D`</param>
+		/// <param name="b">Second `Vector2D`</param>
 		/// <returns>The squared distance</returns>
 		public static double getDistanceSq(object a, object b)
 		{
@@ -232,10 +232,10 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the distance between two vectors
+		/// Returns the distance between two `Vector2D`s.
 		/// </summary>
-		/// <param name="a">First vector</param>
-		/// <param name="b">Second vector</param>
+		/// <param name="a">First `Vector2D`</param>
+		/// <param name="b">Second `Vector2D`</param>
 		/// <returns>The distance</returns>
 		public static double getDistance(object a, object b)
 		{
@@ -257,70 +257,70 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		#region ================== Methods
 
 		/// <summary>
-		/// Returns the perpendicular vector to the vector
+		/// Returns the perpendicular to the `Vector2D`.
 		/// </summary>
-		/// <returns>The perpendicular vector as `Vector2D`</returns>
+		/// <returns>The perpendicular as `Vector2D`</returns>
 		public Vector2DWrapper getPerpendicular()
 		{
 			return new Vector2DWrapper(-y, x);
 		}
 
 		/// <summary>
-		/// Returns a vector with the sign of all components
+		/// Returns a `Vector2D` with the sign of all components.
 		/// </summary>
-		/// <returns></returns>
+		/// <returns>A `Vector2D` with the sign of all components</returns>
 		public Vector2DWrapper getSign()
 		{
 			return new Vector2DWrapper(new Vector2D(x, y).GetSign());
 		}
 
 		/// <summary>
-		/// Returns the angle of the vector in radians
+		/// Returns the angle of the `Vector2D` in radians.
 		/// </summary>
-		/// <returns>The angle of the vector in radians</returns>
+		/// <returns>The angle of the `Vector2D` in radians</returns>
 		public double getAngleRad()
 		{
 			return new Vector2D(x, y).GetAngle();
 		}
 
 		/// <summary>
-		/// Returns the angle of the vector in degree
+		/// Returns the angle of the `Vector2D` in degree.
 		/// </summary>
-		/// <returns>The angle of the vector in degree</returns>
+		/// <returns>The angle of the `Vector2D` in degree</returns>
 		public double getAngle()
 		{
 			return Angle2D.RadToDeg(new Vector2D(x, y).GetAngle());
 		}
 
 		/// <summary>
-		/// Returns the length of the vector
+		/// Returns the length of the `Vector2D`.
 		/// </summary>
-		/// <returns>The length of the vector</returns>
+		/// <returns>The length of the `Vector2D`</returns>
 		public double getLength()
 		{
 			return new Vector2D(x, y).GetLength();
 		}
 
 		/// <summary>
-		/// Returns the square length of the vector
+		/// Returns the square length of the `Vector2D`.
 		/// </summary>
-		/// <returns>The square length of the vector</returns>
+		/// <returns>The square length of the `Vector2D`</returns>
 		public double getLengthSq()
 		{
 			return new Vector2D(x, y).GetLengthSq();
 		}
 
 		/// <summary>
-		/// Returns the normal of the vector as `Vector2D`
+		/// Returns the normal of the `Vector2D`.
 		/// </summary>
-		/// <returns>The normal of the vector as `Vector2D`</returns>
+		/// <returns>The normal as `Vector2D`</returns>
 		public Vector2DWrapper getNormal()
 		{
 			return new Vector2DWrapper(new Vector2D(x, y).GetNormal());
 		}
 
 		/// <summary>
-		/// Returns the transformed vector as `Vector2D`
+		/// Returns the transformed vector as `Vector2D`.
 		/// </summary>
 		/// <param name="offsetx">X offset</param>
 		/// <param name="offsety">Y offset</param>
@@ -333,7 +333,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the inverse transformed vector as `Vector2D`
+		/// Returns the inverse transformed vector as `Vector2D`.
 		/// </summary>
 		/// <param name="invoffsetx">X offset</param>
 		/// <param name="invoffsety">Y offset</param>
@@ -346,20 +346,20 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the rotated vector as `Vector2D`
+		/// Returns the rotated vector as `Vector2D`.
 		/// </summary>
 		/// <param name="theta">Angle in degree to rotate by</param>
-		/// <returns></returns>
+		/// <returns>The rotated `Vector2D`</returns>
 		public Vector2DWrapper getRotated(double theta)
 		{
 			return new Vector2DWrapper(new Vector2D(x, y).GetRotated(Angle2D.DegToRad(theta)));
 		}
 
 		/// <summary>
-		/// Returns the rotated vector as `Vector2D`
+		/// Returns the rotated vector as `Vector2D`.
 		/// </summary>
 		/// <param name="theta">Angle in radians to rotate by</param>
-		/// <returns></returns>
+		/// <returns>The rotated `Vector2D`</returns>
 		public Vector2DWrapper getRotatedRad(double theta)
 		{
 			return new Vector2DWrapper(new Vector2D(x, y).GetRotated(theta));

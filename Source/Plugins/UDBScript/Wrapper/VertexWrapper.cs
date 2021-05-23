@@ -64,7 +64,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Position of the vertex. It's an object with `x` and `y` properties. 
+		/// Position of the `Vertex`. It's an object with `x` and `y` properties. 
 		/// The `x` and `y` accept numbers:
 		/// ```
 		/// v.position.x = 32;
@@ -134,7 +134,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// If the vertex is selected or not
+		/// If the `Vertex` is selected or not.
 		/// </summary>
 		public bool selected
 		{
@@ -155,7 +155,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// If the vertex is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
+		/// If the `Vertex` is marked or not. It is used to mark map elements that were created or changed (for example after drawing new geometry).
 		/// </summary>
 		public bool marked
 		{
@@ -176,7 +176,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The ceiling z position of the vertex. Only available in UDMF. Only available for supported game configurations.
+		/// The ceiling z position of the `Vertex`. Only available in UDMF. Only available for supported game configurations.
 		/// </summary>
 		public double ceilingZ
 		{
@@ -197,7 +197,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// The floor z position of the vertex. Only available in UDMF. Only available for supported game configurations.
+		/// The floor z position of the `Vertex`. Only available in UDMF. Only available for supported game configurations.
 		/// </summary>
 		public double floorZ
 		{
@@ -244,7 +244,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets all linedefs that are connected to this vertex.
+		/// Gets all `Linedefs` that are connected to this `Vertex`.
 		/// </summary>
 		/// <returns>Array of linedefs</returns>
 		public LinedefWrapper[] getLinedefs()
@@ -262,7 +262,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Copies the properties from this vertex to another.
+		/// Copies the properties from this `Vertex` to another.
 		/// </summary>
 		/// <param name="v">the vertex to copy the properties to</param>
 		public void copyPropertiesTo(VertexWrapper v)
@@ -274,7 +274,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets the squared distance between this vertex and the given point.
+		/// Gets the squared distance between this `Vertex` and the given point.
 		/// The point can be either a `Vector2D` or an array of numbers.
 		/// ```
 		/// v.distanceToSq(new Vector2D(32, 64));
@@ -300,7 +300,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Gets the distance between this vertex and the given point.
+		/// Gets the distance between this `Vertex` and the given point.
 		/// The point can be either a `Vector2D` or an array of numbers.
 		/// ```
 		/// v.distanceTo(new Vector2D(32, 64));
@@ -326,9 +326,9 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Returns the linedef that is connected to this vertex that is closest to the given point.
+		/// Returns the `Linedef` that is connected to this `Vertex` that is closest to the given point.
 		/// </summary>
-		/// <param name="pos"></param>
+		/// <param name="pos">Point to get the nearest `Linedef` connected to this `Vertex` from</param>
 		/// <returns></returns>
 		public LinedefWrapper nearestLinedef(object pos)
 		{
@@ -347,7 +347,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Snaps the vertex's position to the map format's accuracy
+		/// Snaps the `Vertex`'s position to the map format's accuracy.
 		/// </summary>
 		public void snapToAccuracy()
 		{
@@ -358,7 +358,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Snaps the vertex's position to the grid.
+		/// Snaps the `Vertex`'s position to the grid.
 		/// </summary>
 		public void snapToGrid()
 		{
@@ -369,7 +369,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Joins this vertex with another vertex, deleting this vertex and keeping the other.
+		/// Joins this `Vertex` with another `Vertex`, deleting this `Vertex` and keeping the other.
 		/// </summary>
 		/// <param name="other">`Vertex` to join with</param>
 		public void join(VertexWrapper other)
@@ -381,7 +381,7 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
-		/// Deletes the vertex. Note that this can result in unclosed sectors.
+		/// Deletes the `Vertex`. Note that this can result in unclosed sectors.
 		/// </summary>
 		public void delete()
 		{
