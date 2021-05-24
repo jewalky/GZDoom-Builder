@@ -37,11 +37,30 @@ using CodeImp.DoomBuilder.Map;
 
 namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 {
-	class SidedefWrapper : MapElementWrapper
+	class SidedefWrapper : MapElementWrapper, IEquatable<SidedefWrapper>
 	{
 		#region ================== Variables
 
 		private Sidedef sidedef;
+
+		#endregion
+
+		#region IEquatable<SidedefWrapper> members
+
+		public bool Equals(SidedefWrapper other)
+		{
+			return sidedef == other.sidedef;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return Equals((SidedefWrapper)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			return sidedef.GetHashCode();
+		}
 
 		#endregion
 

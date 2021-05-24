@@ -37,11 +37,30 @@ using CodeImp.DoomBuilder.Map;
 
 namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 {
-	class VertexWrapper : MapElementWrapper
+	class VertexWrapper : MapElementWrapper, IEquatable<VertexWrapper>
 	{
 		#region ================== Variables
 
 		Vertex vertex;
+
+		#endregion
+
+		#region IEquatable<SectorWrapper> members
+
+		public bool Equals(VertexWrapper other)
+		{
+			return vertex == other.vertex;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return Equals((VertexWrapper)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			return vertex.GetHashCode();
+		}
 
 		#endregion
 

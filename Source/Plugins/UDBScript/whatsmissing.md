@@ -4,6 +4,9 @@
 - `Angle2D` wrapper
 - `Vector3D` wrapper
 
+## Interop
+- Make (parts of) game configuration (for example ThingTypeInfo) available?
+
 ## Map elements
 - is the current implementation for thing and linedef action arguments OK?
 

@@ -38,12 +38,31 @@ using CodeImp.DoomBuilder.Map;
 
 namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 {
-	internal class ThingWrapper : MapElementWrapper
+	internal class ThingWrapper : MapElementWrapper, IEquatable<ThingWrapper>
 	{
 		#region ================== Variables
 
 		private Thing thing;
 		private MapElementArgumentsWrapper elementargs;
+
+		#endregion
+
+		#region IEquatable<ThingWrapper> members
+
+		public bool Equals(ThingWrapper other)
+		{
+			return thing == other.thing;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return Equals((ThingWrapper)obj);
+		}
+
+		public override int GetHashCode()
+		{
+			return thing.GetHashCode();
+		}
 
 		#endregion
 
