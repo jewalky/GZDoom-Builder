@@ -65,104 +65,39 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			filetree.ImageList = images;
 
-			FillTree(foldername);
+			// FillTree(foldername);
 		}
 
 		#endregion
 
 		#region ================== Methods
 
-		public ExpandoObject GetScriptOptions()
+		public void FillTree()
 		{
-			return scriptoptions.GetScriptOptions();
-		}
-
-		/// <summary>
-		/// Gets the name option from the script configuration template literal from the script file.
-		/// </summary>
-		/// <param name="filename">File to read the configuration from</param>
-		/// <returns>Name of the script</returns>
-		private string GetScriptNameFromFile(string filename)
-		{
-			Scanner scanner = new Scanner(File.ReadAllText(filename));
-			Token token;
-			string configstring = string.Empty;
-
-			// Try to get the configuration from the script file
-			do
-			{
-				scanner.ScanComments();
-				token = scanner.Lex();
-
-				if (token.Type == TokenType.Template)
-				{
-					string tokenstring = token.Value.ToString();
-					if (tokenstring.ToLowerInvariant().StartsWith("#scriptconfiguration"))
-					{
-						configstring = tokenstring.Remove(0, "#scriptconfiguration".Length);
-						break;
-					}
-				}
-			} while (token.Type != TokenType.EOF);
-
-			if (!string.IsNullOrWhiteSpace(configstring))
-			{
-				Configuration cfg = new Configuration();
-				cfg.InputConfiguration(configstring, true);
-
-				if (cfg.ErrorResult)
-					return Path.GetFileNameWithoutExtension(filename);
-
-				return cfg.ReadSetting("name", Path.GetFileNameWithoutExtension(filename));
-			}
-
-			return Path.GetFileNameWithoutExtension(filename);
-		}
-
-		/// <summary>
-		/// Starts adding files to the file tree, starting from the "scripts" subfolders
-		/// </summary>
-		/// <param name="foldername">folder name inside the application directory to use as a base</param>
-		private void FillTree(string foldername)
-		{
-			string path = Path.Combine(General.AppPath, foldername, "scripts");
-
-			filetree.Nodes.AddRange(AddFiles(path));
+			filetree.Nodes.Clear();
+			filetree.Nodes.AddRange(AddToTree(BuilderPlug.Me.ScriptDirectoryStructure));
 			filetree.ExpandAll();
 		}
 
-		/// <summary>
-		/// Adds elements (script files) to the file tree, based on the given path. Subfolders are processed recursively
-		/// </summary>
-		/// <param name="path">path to start at</param>
-		/// <returns>Array of TreeNode</returns>
-		private TreeNode[] AddFiles(string path)
+		private TreeNode[] AddToTree(ScriptDirectoryStructure sds)
 		{
 			List<TreeNode> newnodes = new List<TreeNode>();
 
-			// Add files (and subfolders) in folders recursively
-			foreach (string directory in Directory.GetDirectories(path))
+			foreach (ScriptDirectoryStructure subsds in sds.Directories)
 			{
-				TreeNode tn = new TreeNode(Path.GetFileName(directory), AddFiles(directory));
+				TreeNode tn = new TreeNode(subsds.Name, AddToTree(subsds));
 				tn.SelectedImageKey = tn.ImageKey = "Folder";
 
 				newnodes.Add(tn);
 			}
 
-			// Add files
-			foreach (string filename in Directory.GetFiles(path))
+			foreach(ScriptInfo si in sds.Scripts)
 			{
-				// Only add files with the .js extension. Us the file name as the node name. TODO: use a setting in the .cfg file (if there is one) as a name
-				// The file name is stored in the Tag
-				if (Path.GetExtension(filename).ToLowerInvariant() == ".js")
-				{
-					//TreeNode tn = new TreeNode(BuilderPlug.GetScriptName(filename));
-					TreeNode tn = new TreeNode(GetScriptNameFromFile(filename));
-					tn.Tag = filename;
-					tn.SelectedImageKey = tn.ImageKey = "Script";
+				TreeNode tn = new TreeNode(si.Name);
+				tn.Tag = si;
+				tn.SelectedImageKey = tn.ImageKey = "Script";
 
-					newnodes.Add(tn);
-				}
+				newnodes.Add(tn);
 			}
 
 			return newnodes.ToArray();
@@ -191,94 +126,25 @@ namespace CodeImp.DoomBuilder.UDBScript
 			if (e.Node.Tag == null)
 				return;
 
-			// The Tag contains the file name of the script, so only continue if its set (and not if a folder is selected)
-			if (e.Node.Tag is string)
+			if(e.Node.Tag is ScriptInfo)
 			{
-				BuilderPlug.Me.CurrentScriptFile = (string)e.Node.Tag;
+				BuilderPlug.Me.CurrentScript = (ScriptInfo)e.Node.Tag;
+				scriptoptions.ParametersView.Rows.Clear();
 
-				Scanner scanner = new Scanner(File.ReadAllText(BuilderPlug.Me.CurrentScriptFile));
-				Token token;
-				string configstring = string.Empty;
-
-				// Try to get the configuration from the script file
-				do
+				foreach (ScriptOption so in ((ScriptInfo)e.Node.Tag).Options)
 				{
-					scanner.ScanComments();
-					token = scanner.Lex();
-					
-					if(token.Type == TokenType.Template)
-					{
-						string tokenstring = token.Value.ToString();
-						if (tokenstring.ToLowerInvariant().StartsWith("#scriptconfiguration"))
-						{
-							configstring = tokenstring.Remove(0, "#scriptconfiguration".Length);
-							break;
-						}
-					}
-				} while (token.Type != TokenType.EOF);
-				
-				if(!string.IsNullOrWhiteSpace(configstring))
-				{
-					Configuration cfg = new Configuration();
-					cfg.InputConfiguration(configstring, true);
-
-					if(cfg.ErrorResult)
-					{
-						string errordesc = "Error in script configuration of file " + BuilderPlug.Me.CurrentScriptFile + " on line " + cfg.ErrorLine + ": " + cfg.ErrorDescription;
-						General.ErrorLogger.Add(ErrorType.Error, errordesc);
-						General.WriteLogLine(errordesc);
-
-						scriptoptions.ParametersView.Rows.Clear();
-						scriptoptions.ParametersView.Refresh();
-
-						return;
-					}
-
-					IDictionary options = cfg.ReadSetting("options", new Hashtable());
-
-					scriptoptions.ParametersView.Rows.Clear();
-
-					foreach (DictionaryEntry de in options)
-					{
-						string description = cfg.ReadSetting(string.Format("options.{0}.description", de.Key), "no description");
-						int type = cfg.ReadSetting(string.Format("options.{0}.type", de.Key), 0);
-						string defaultvaluestr = cfg.ReadSetting(string.Format("options.{0}.default", de.Key), string.Empty);
-						IDictionary enumvalues = cfg.ReadSetting(string.Format("options.{0}.enumvalues", de.Key), new Hashtable());
-
-						if(Array.FindIndex(ScriptOption.ValidTypes, t => (int)t == type) == -1)
-						{
-							string errordesc = "Error in script configuration of file " + BuilderPlug.Me.CurrentScriptFile + ": option " + de.Key + " has invalid type " + type;
-							General.ErrorLogger.Add(ErrorType.Error, errordesc);
-							General.WriteLogLine(errordesc);
-							continue;
-						}
-
-						ScriptOption so = new ScriptOption((string)de.Key, description, type, enumvalues, defaultvaluestr);
-
-						// Try to read a saved script option value from the config
-						string savedvalue = General.Settings.ReadPluginSetting(BuilderPlug.Me.GetScriptPathHash() + "." + so.name, so.defaultvalue.ToString());
-
-						if (string.IsNullOrWhiteSpace(savedvalue))
-							so.value = so.defaultvalue;
-						else
-							so.value = savedvalue;
-
-						so.typehandler.SetValue(so.value);
-
-						int index = scriptoptions.ParametersView.Rows.Add(); 
-						scriptoptions.ParametersView.Rows[index].Tag = so;
-						scriptoptions.ParametersView.Rows[index].Cells["Value"].Value = so.value;
-						scriptoptions.ParametersView.Rows[index].Cells["Description"].Value = description;
-					}
-
-					// Make sure the browse button is shown if the first option has it
-					scriptoptions.EndAddingOptions();
+					int index = scriptoptions.ParametersView.Rows.Add();
+					scriptoptions.ParametersView.Rows[index].Tag = so;
+					scriptoptions.ParametersView.Rows[index].Cells["Value"].Value = so.value;
+					scriptoptions.ParametersView.Rows[index].Cells["Description"].Value = so.description;
 				}
-				else
-				{
-					scriptoptions.ParametersView.Rows.Clear();
-					scriptoptions.ParametersView.Refresh();
-				}
+
+				scriptoptions.EndAddingOptions();
+			}
+			else
+			{
+				scriptoptions.ParametersView.Rows.Clear();
+				scriptoptions.ParametersView.Refresh();
 			}
 		}
 
@@ -308,9 +174,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 					row.Cells["Value"].Value = so.defaultvalue.ToString();
 					so.typehandler.SetValue(so.defaultvalue);
 
-					General.Settings.DeletePluginSetting(BuilderPlug.Me.GetScriptPathHash() + "." + so.name);
-
-					row.Tag = so;
+					General.Settings.DeletePluginSetting(BuilderPlug.Me.CurrentScript.GetScriptPathHash() + "." + so.name);
 				}
 			}
 		}

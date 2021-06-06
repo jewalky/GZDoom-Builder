@@ -95,6 +95,7 @@
     </Compile>
     <Compile Include="QueryOptions.cs" />
     <Compile Include="RuntimeConstraint.cs" />
+    <Compile Include="ScriptInfo.cs" />
     <Compile Include="ScriptOption.cs" />
     <Compile Include="ScriptRunner.cs" />
     <Compile Include="Exceptions.cs" />

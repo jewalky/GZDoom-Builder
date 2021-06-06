@@ -204,8 +204,6 @@ namespace CodeImp.DoomBuilder.UDBScript
 					so.typehandler.SetValue(enumscombo.Text);
 				}
 
-				row.Tag = so;
-
 				// Take the selected value and apply it
 				//ApplyValue(frow, enumscombo.Text);
 
@@ -270,8 +268,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			ScriptOption so = (ScriptOption)parametersview.Rows[e.RowIndex].Tag;
 
 			so.typehandler.SetValue(parametersview.Rows[e.RowIndex].Cells["Value"].Value);
-
-			parametersview.Rows[e.RowIndex].Tag = so;
+			so.value = parametersview.Rows[e.RowIndex].Cells["Value"].Value;
 		}
 
 		private void parametersview_Resize(object sender, EventArgs e)
@@ -290,9 +287,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 			if (e.RowIndex < 0 || e.ColumnIndex == 0 || parametersview.Rows[e.RowIndex].Tag == null)
 				return;
 
-			object newvalue = parametersview.Rows[e.RowIndex].Cells["Value"].Value;
-
 			ScriptOption so = (ScriptOption)parametersview.Rows[e.RowIndex].Tag;
+
+			object newvalue = parametersview.Rows[e.RowIndex].Cells["Value"].Value;
 
 			// If the new value is empty reset it to the default value. Don't fire this event again, though
 			if (newvalue == null || string.IsNullOrWhiteSpace(newvalue.ToString()))
@@ -306,19 +303,15 @@ namespace CodeImp.DoomBuilder.UDBScript
 			so.typehandler.SetValue(newvalue);
 
 			so.value = newvalue;
-			parametersview.Rows[e.RowIndex].Tag = so;
 
 			// Make the text lighter if it's the default value, and store the setting in the config file if it's not the default
 			if (so.value.ToString() == so.defaultvalue.ToString())
 			{
 				parametersview.Rows[e.RowIndex].Cells["Value"].Style.ForeColor = SystemColors.GrayText;
-				General.Settings.DeletePluginSetting(BuilderPlug.Me.GetScriptPathHash() + "." + so.name);
 			}
 			else
 			{
 				parametersview.Rows[e.RowIndex].Cells["Value"].Style.ForeColor = SystemColors.WindowText;
-				General.Settings.WritePluginSetting(BuilderPlug.Me.GetScriptPathHash() + "." + so.name, so.value);
-
 			}
 		}
 	}

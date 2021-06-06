@@ -46,16 +46,16 @@ namespace CodeImp.DoomBuilder.UDBScript
 	{
 		#region ================== Variables
 
-		private string scriptfile;
+		private ScriptInfo scriptinfo;
 		Engine engine;
 
 		#endregion
 
 		#region ================== Constructor
 
-		public ScriptRunner(string scriptfile)
+		public ScriptRunner(ScriptInfo scriptoption)
 		{
-			this.scriptfile = scriptfile;
+			this.scriptinfo = scriptoption;
 		}
 
 		#endregion
@@ -126,7 +126,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			bool abort = false;
 
 			// Read the current script file
-			string script = File.ReadAllText(scriptfile);
+			string script = File.ReadAllText(scriptinfo.ScriptFile);
 
 			// Make sure the option value gets saved if an option is currently being edited
 			BuilderPlug.Me.EndOptionEdit();
@@ -144,7 +144,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			engine.SetValue("log", new Action<object>(Console.WriteLine));
 			engine.SetValue("ShowMessage", new Action<string>(ShowMessage));
 			engine.SetValue("QueryOptions", new QueryOptions(stopwatch));
-			engine.SetValue("ScriptOptions", BuilderPlug.Me.GetScriptOptions());
+			engine.SetValue("ScriptOptions", scriptinfo.GetScriptOptionsObject());
 			engine.SetValue("Map", new MapWrapper());
 			engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2D)));
 			engine.SetValue("Vector3D", TypeReference.CreateTypeReference(engine, typeof(Vector3D)));
@@ -164,9 +164,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 			// Run the script file
 			try
 			{
-				General.Map.UndoRedo.CreateUndo("Run script " + BuilderPlug.GetScriptName(scriptfile));
+				General.Map.UndoRedo.CreateUndo("Run script " + scriptinfo.Name);
 
-				ParserOptions po = new ParserOptions(scriptfile.Remove(0, General.AppPath.Length));
+				ParserOptions po = new ParserOptions(scriptinfo.ScriptFile.Remove(0, General.AppPath.Length));
 
 				stopwatch.Start();
 				engine.Execute(script, po);

@@ -32,7 +32,7 @@ using CodeImp.DoomBuilder.Types;
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
-	struct ScriptOption
+	public class ScriptOption
 	{
 		public string name;
 		public string description;

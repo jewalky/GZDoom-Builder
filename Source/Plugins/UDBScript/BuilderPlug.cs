@@ -22,6 +22,7 @@
 #endregion
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Dynamic;
@@ -44,6 +45,20 @@ using CodeImp.DoomBuilder.UDBScript.Wrapper;
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
+	internal struct ScriptDirectoryStructure
+	{
+		public string Name;
+		public List<ScriptDirectoryStructure> Directories;
+		public List<ScriptInfo> Scripts;
+
+		public ScriptDirectoryStructure(string name)
+		{
+			this.Name = name;
+			Directories = new List<ScriptDirectoryStructure>();
+			Scripts = new List<ScriptInfo>();
+		}
+	}
+
 	public class BuilderPlug : Plug
 	{
 		#region ================== Constants
@@ -58,7 +73,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 		private ScriptDockerControl panel;
 		private Docker docker;
 		private string currentscriptfile;
+		private ScriptInfo currentscript;
 		private ScriptRunner scriptrunner;
+		private List<ScriptInfo> scriptinfo;
+		private ScriptDirectoryStructure scriptdirectorystructure;
 
 		#endregion
 
@@ -66,7 +84,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		public static BuilderPlug Me { get { return me; } }
 		public string CurrentScriptFile { get { return currentscriptfile; } set { currentscriptfile = value; } }
+		internal ScriptInfo CurrentScript { get { return currentscript; } set { currentscript = value; } }
 		internal ScriptRunner ScriptRunner { get { return scriptrunner; } }
+		internal ScriptDirectoryStructure ScriptDirectoryStructure { get { return scriptdirectorystructure; } }
 
 		#endregion
 
@@ -81,6 +101,33 @@ namespace CodeImp.DoomBuilder.UDBScript
 			General.Interface.AddDocker(docker);
 
 			General.Actions.BindMethods(this);
+
+			scriptinfo = new List<ScriptInfo>();
+		}
+
+		public override void OnMapNewBegin()
+		{
+			scriptinfo = new List<ScriptInfo>();
+			scriptdirectorystructure = LoadScriptDirectoryStructure(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
+			panel.FillTree();
+		}
+
+		public override void OnMapOpenBegin()
+		{
+			scriptinfo = new List<ScriptInfo>();
+			scriptdirectorystructure = LoadScriptDirectoryStructure(Path.Combine(General.AppPath, SCRIPT_FOLDER, "scripts"));
+			panel.FillTree();
+		}
+
+		public override void OnMapCloseBegin()
+		{
+			List<string> hashes = new List<string>();
+
+			foreach (ScriptInfo si in scriptinfo)
+			{
+				si.SaveOptionValues();
+				hashes.Add(si.GetScriptPathHash());
+			}
 		}
 
 		// This is called when the plugin is terminated
@@ -92,24 +139,35 @@ namespace CodeImp.DoomBuilder.UDBScript
 			General.Actions.UnbindMethods(this);
 		}
 
-		public string GetScriptPathHash()
+		/// <summary>
+		/// Recursively load information about the script files in a directory and its subdirectories.
+		/// </summary>
+		/// <param name="path">Path to process</param>
+		/// <returns>ScriptDirectoryStructure for the given path</returns>
+		private ScriptDirectoryStructure LoadScriptDirectoryStructure(string path)
 		{
-			SHA256 hash = SHA256.Create();
-			byte[] data = hash.ComputeHash(Encoding.UTF8.GetBytes(currentscriptfile));
+			string name = path.TrimEnd(Path.DirectorySeparatorChar).Split(Path.DirectorySeparatorChar).Last();
+			ScriptDirectoryStructure sds = new ScriptDirectoryStructure(name);
 
-			StringBuilder sb = new StringBuilder();
+			foreach (string directory in Directory.GetDirectories(path))
+				sds.Directories.Add(LoadScriptDirectoryStructure(directory));
 
-			for (int i = 0; i < data.Length; i++)
+			foreach (string filename in Directory.GetFiles(path, "*.js"))
 			{
-				sb.Append(data[i].ToString("x2"));
+				try
+				{
+					ScriptInfo si = new ScriptInfo(filename);
+					sds.Scripts.Add(si);
+					scriptinfo.Add(si);
+				}
+				catch(Exception e)
+				{
+					General.ErrorLogger.Add(ErrorType.Warning, "Failed to process " + filename + ": " + e.Message);
+					General.WriteLogLine("Failed to process " + filename + ": " + e.Message);
+				}
 			}
 
-			return sb.ToString();
-		}
-
-		public ExpandoObject GetScriptOptions()
-		{
-			return panel.GetScriptOptions();
+			return sds;
 		}
 
 		/// <summary>
@@ -294,10 +352,10 @@ namespace CodeImp.DoomBuilder.UDBScript
 		[BeginAction("udbscriptexecute")]
 		public void ScriptExecute()
 		{
-			if (string.IsNullOrEmpty(currentscriptfile))
+			if (currentscript == null)
 				return;
 
-			scriptrunner = new ScriptRunner(currentscriptfile);
+			scriptrunner = new ScriptRunner(currentscript);
 			scriptrunner.Run();
 		}
 
