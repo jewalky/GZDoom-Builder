@@ -74,6 +74,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\Angle2DWrapper.cs" />
+    <Compile Include="API\DataWrapper.cs" />
+    <Compile Include="API\ImageInfo.cs" />
     <Compile Include="BuilderPlug.cs" />
     <Compile Include="Controls\ScriptDockerControl.cs">
       <SubType>UserControl</SubType>
@@ -111,17 +114,17 @@
     <Compile Include="Windows\UDBScriptErrorForm.Designer.cs">
       <DependentUpon>UDBScriptErrorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Wrapper\IMoreTags.cs" />
-    <Compile Include="Wrapper\Line2DWrapper.cs" />
-    <Compile Include="Wrapper\LinedefWrapper.cs" />
-    <Compile Include="Wrapper\MapElementArgumentsWrapper.cs" />
-    <Compile Include="Wrapper\MapElementWrapper.cs" />
-    <Compile Include="Wrapper\MapWrapper.cs" />
-    <Compile Include="Wrapper\SectorWrapper.cs" />
-    <Compile Include="Wrapper\SidedefWrapper.cs" />
-    <Compile Include="Wrapper\ThingWrapper.cs" />
-    <Compile Include="Wrapper\Vector2DWrapper.cs" />
-    <Compile Include="Wrapper\VertexWrapper.cs" />
+    <Compile Include="API\IMoreTags.cs" />
+    <Compile Include="API\Line2DWrapper.cs" />
+    <Compile Include="API\LinedefWrapper.cs" />
+    <Compile Include="API\MapElementArgumentsWrapper.cs" />
+    <Compile Include="API\MapElementWrapper.cs" />
+    <Compile Include="API\MapWrapper.cs" />
+    <Compile Include="API\SectorWrapper.cs" />
+    <Compile Include="API\SidedefWrapper.cs" />
+    <Compile Include="API\ThingWrapper.cs" />
+    <Compile Include="API\Vector2DWrapper.cs" />
+    <Compile Include="API\VertexWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Controls\ScriptDockerControl.resx">

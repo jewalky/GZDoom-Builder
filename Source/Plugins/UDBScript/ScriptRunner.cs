@@ -33,6 +33,7 @@ using System.Windows.Forms;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
 using CodeImp.DoomBuilder.UDBScript.Wrapper;
+using CodeImp.DoomBuilder.UDBScript.API;
 using Jint;
 using Jint.Runtime;
 using Jint.Runtime.Interop;
@@ -146,10 +147,12 @@ namespace CodeImp.DoomBuilder.UDBScript
 			engine.SetValue("QueryOptions", new QueryOptions(stopwatch));
 			engine.SetValue("ScriptOptions", scriptinfo.GetScriptOptionsObject());
 			engine.SetValue("Map", new MapWrapper());
-			engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2D)));
+			//engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2D)));
+			engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2DWrapper)));
 			engine.SetValue("Vector3D", TypeReference.CreateTypeReference(engine, typeof(Vector3D)));
 			engine.SetValue("Vector2D", TypeReference.CreateTypeReference(engine, typeof(Vector2DWrapper)));
 			engine.SetValue("UniValue", TypeReference.CreateTypeReference(engine, typeof(UniValue)));
+			engine.SetValue("Data", TypeReference.CreateTypeReference(engine, typeof(DataWrapper)));
 
 			// We'll always need to import the UDB namespace anyway, so do it here instead in every single script
 			//engine.Execute("var UDB = importNamespace('CodeImp.DoomBuilder');");

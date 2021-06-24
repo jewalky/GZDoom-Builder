@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CodeImp.DoomBuilder.BuilderModes;
 using CodeImp.DoomBuilder.Editing;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
@@ -606,11 +607,22 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns></returns>
 		public VertexWrapper[] getSelectedVertices(bool selected=true)
 		{
-			List<VertexWrapper> vertices = new List<VertexWrapper>(General.Map.Map.SelectedVerticessCount);
+			List<VertexWrapper> vertices = new List<VertexWrapper>();
 
-			foreach (Vertex v in General.Map.Map.Vertices)
-				if (v.Selected == selected)
-					vertices.Add(new VertexWrapper(v));
+			if (General.Editing.Mode is BaseVisualMode)
+			{
+				List<Vertex> selectedvertices = ((BaseVisualMode)General.Editing.Mode).GetSelectedVertices();
+
+				foreach (Vertex v in General.Map.Map.Vertices)
+					if (selectedvertices.Contains(v) == selected)
+						vertices.Add(new VertexWrapper(v));
+			}
+			else
+			{
+				foreach (Vertex v in General.Map.Map.Vertices)
+					if (v.Selected == selected)
+						vertices.Add(new VertexWrapper(v));
+			}
 
 			return vertices.ToArray();
 		}
@@ -622,11 +634,22 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns></returns>
 		public ThingWrapper[] getSelectedThings(bool selected = true)
 		{
-			List<ThingWrapper> things = new List<ThingWrapper>(General.Map.Map.SelectedThingsCount);
+			List<ThingWrapper> things = new List<ThingWrapper>();
 
-			foreach (Thing t in General.Map.Map.Things)
-				if (t.Selected == selected)
-					things.Add(new ThingWrapper(t));
+			if (General.Editing.Mode is BaseVisualMode)
+			{
+				List<Thing> selectedthings = ((BaseVisualMode)General.Editing.Mode).GetSelectedThings();
+
+				foreach (Thing t in General.Map.Map.Things)
+					if (selectedthings.Contains(t) == selected)
+						things.Add(new ThingWrapper(t));
+			}
+			else
+			{
+				foreach (Thing t in General.Map.Map.Things)
+					if (t.Selected == selected)
+						things.Add(new ThingWrapper(t));
+			}
 
 			return things.ToArray();
 		}
@@ -638,11 +661,22 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns></returns>
 		public SectorWrapper[] getSelectedSectors(bool selected = true)
 		{
-			List<SectorWrapper> sectors = new List<SectorWrapper>(General.Map.Map.SelectedSectorsCount);
+			List<SectorWrapper> sectors = new List<SectorWrapper>();
 
-			foreach (Sector s in General.Map.Map.Sectors)
-				if (s.Selected == selected)
-					sectors.Add(new SectorWrapper(s));
+			if (General.Editing.Mode is BaseVisualMode)
+			{
+				List<Sector> selectedsectors = ((BaseVisualMode)General.Editing.Mode).GetSelectedSectors();
+
+				foreach (Sector s in General.Map.Map.Sectors)
+					if (selectedsectors.Contains(s) == selected)
+						sectors.Add(new SectorWrapper(s));
+			}
+			else
+			{
+				foreach (Sector s in General.Map.Map.Sectors)
+					if (s.Selected == selected)
+						sectors.Add(new SectorWrapper(s));
+			}
 
 			return sectors.ToArray();
 		}
@@ -654,11 +688,22 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns></returns>
 		public LinedefWrapper[] getSelectedLinedefs(bool selected = true)
 		{
-			List<LinedefWrapper> linedefs = new List<LinedefWrapper>(General.Map.Map.SelectedLinedefsCount);
+			List<LinedefWrapper> linedefs = new List<LinedefWrapper>();
 
-			foreach (Linedef ld in General.Map.Map.Linedefs)
-				if (ld.Selected == selected)
-					linedefs.Add(new LinedefWrapper(ld));
+			if (General.Editing.Mode is BaseVisualMode)
+			{
+				List<Linedef> selectedlinedefs = ((BaseVisualMode)General.Editing.Mode).GetSelectedLinedefs();
+
+				foreach (Linedef ld in General.Map.Map.Linedefs)
+					if(selectedlinedefs.Contains(ld) == selected)
+						linedefs.Add(new LinedefWrapper(ld));
+			}
+			else
+			{
+				foreach (Linedef ld in General.Map.Map.Linedefs)
+					if (ld.Selected == selected)
+						linedefs.Add(new LinedefWrapper(ld));
+			}
 
 			return linedefs.ToArray();
 		}
@@ -670,10 +715,21 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		/// <returns></returns>
 		public SidedefWrapper[] getSidedefsFromSelectedLinedefs(bool selected = true)
 		{
-			List<SidedefWrapper> sidedefs = new List<SidedefWrapper>(General.Map.Map.SelectedLinedefsCount);
+			List<SidedefWrapper> sidedefs = new List<SidedefWrapper>();
 
-			foreach (Sidedef sd in General.Map.Map.GetSidedefsFromSelectedLinedefs(selected))
-				sidedefs.Add(new SidedefWrapper(sd));
+			if (General.Editing.Mode is BaseVisualMode)
+			{
+				List<Sidedef> selectedsidedefs = ((BaseVisualMode)General.Editing.Mode).GetSelectedSidedefs();
+
+				foreach (Sidedef sd in General.Map.Map.Sidedefs)
+					if (selectedsidedefs.Contains(sd) == selected)
+						sidedefs.Add(new SidedefWrapper(sd));
+			}
+			else
+			{
+				foreach (Sidedef sd in General.Map.Map.GetSidedefsFromSelectedLinedefs(selected))
+					sidedefs.Add(new SidedefWrapper(sd));
+			}
 
 			return sidedefs.ToArray();
 		}
