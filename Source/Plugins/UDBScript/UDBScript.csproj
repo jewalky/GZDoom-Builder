@@ -77,6 +77,7 @@
     <Compile Include="API\Angle2DWrapper.cs" />
     <Compile Include="API\DataWrapper.cs" />
     <Compile Include="API\ImageInfo.cs" />
+    <Compile Include="API\Vector3DWrapper.cs" />
     <Compile Include="BuilderPlug.cs" />
     <Compile Include="Controls\ScriptDockerControl.cs">
       <SubType>UserControl</SubType>

@@ -1,8 +1,6 @@
 # What's still missing
 ## Wrappers
 - `Line3D` wrapper
-- `Angle2D` wrapper
-- `Vector3D` wrapper
 
 ## Interop
 - Make (parts of) game configuration (for example ThingTypeInfo) available?
