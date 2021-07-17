@@ -59,20 +59,20 @@
 			// btnAbortScript
 			// 
 			this.btnAbortScript.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.btnAbortScript.DialogResult = System.Windows.Forms.DialogResult.Abort;
 			this.btnAbortScript.Location = new System.Drawing.Point(12, 210);
 			this.btnAbortScript.Name = "btnAbortScript";
 			this.btnAbortScript.Size = new System.Drawing.Size(75, 23);
 			this.btnAbortScript.TabIndex = 2;
 			this.btnAbortScript.Text = "Abort script";
 			this.btnAbortScript.UseVisualStyleBackColor = true;
-			this.btnAbortScript.Click += new System.EventHandler(this.button_Click);
+			this.btnAbortScript.Click += new System.EventHandler(this.btnAbortScript_Click);
 			// 
 			// tbMessage
 			// 
 			this.tbMessage.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			this.tbMessage.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.tbMessage.Location = new System.Drawing.Point(12, 12);
 			this.tbMessage.Multiline = true;
 			this.tbMessage.Name = "tbMessage";

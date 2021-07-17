@@ -66,6 +66,26 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		#region ================== Methods
 
+		/// <summary>
+		/// Stops the timer, pausing the script's runtime constraint
+		/// </summary>
+		public void StopTimer()
+		{
+			stopwatch.Stop();
+		}
+
+		/// <summary>
+		/// Resumes the timer, resuming the script's runtime constraint
+		/// </summary>
+		public void ResumeTimer()
+		{
+			stopwatch.Start();
+		}
+
+		/// <summary>
+		/// Shows a message box with an "OK" button
+		/// </summary>
+		/// <param name="s">Message to show</param>
 		public void ShowMessage(string s)
 		{
 			stopwatch.Stop();
@@ -77,6 +97,11 @@ namespace CodeImp.DoomBuilder.UDBScript
 				throw new UserScriptAbortException();
 		}
 
+		/// <summary>
+		/// Shows a message box with an "Yes" and "No" button
+		/// </summary>
+		/// <param name="s">Message to show</param>
+		/// <returns>true if "Yes" was clicked, false if "No" was clicked</returns>
 		public bool ShowMessageYesNo(string s)
 		{
 			stopwatch.Stop();
@@ -166,7 +191,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			engine.SetValue("log", new Action<object>(Console.WriteLine));
 			engine.SetValue("showMessage", new Action<string>(ShowMessage));
 			engine.SetValue("showMessageYesNo", new Func<string, bool>(ShowMessageYesNo));
-			engine.SetValue("QueryOptions", new QueryOptions(stopwatch));
+			engine.SetValue("QueryOptions", TypeReference.CreateTypeReference(engine, typeof(QueryOptions)));
 			engine.SetValue("ScriptOptions", scriptinfo.GetScriptOptionsObject());
 			engine.SetValue("Map", new MapWrapper());
 			engine.SetValue("GameConfiguration", new GameConfigurationWrapper());

@@ -32,18 +32,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using CodeImp.DoomBuilder.Windows;
 
 namespace CodeImp.DoomBuilder.UDBScript
 {
-	public partial class QueryOptionsForm : Form
+	public partial class QueryOptionsForm : DelayedForm
 	{
-		private Stopwatch stopwatch;
-
-		public QueryOptionsForm(Stopwatch stopwatch)
+		public QueryOptionsForm()
 		{
 			InitializeComponent();
-
-			this.stopwatch = stopwatch;
 		}
 
 		public void AddOption(string name, string description, int type, object defaultvalue)	

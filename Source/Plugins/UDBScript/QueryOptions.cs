@@ -34,23 +34,21 @@ namespace CodeImp.DoomBuilder.UDBScript
 	{
 		#region ================== Variables
 
-		private Stopwatch stopwatch;
 		private QueryOptionsForm form;
 
 		#endregion
 
 		#region ================== Properties
 
-		public ExpandoObject Options { get { return form.GetScriptOptions(); } }
+		public ExpandoObject options { get { return form.GetScriptOptions(); } }
 
 		#endregion
 
 		#region ================== Constructor
 
-		public QueryOptions(Stopwatch stopwatch)
+		public QueryOptions()
 		{
-			this.stopwatch = stopwatch;
-			form = new QueryOptionsForm(stopwatch);
+			form = new QueryOptionsForm();
 		}
 
 		#endregion
@@ -64,7 +62,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <param name="description">Textual description of the parameter</param>
 		/// <param name="type">UniversalType value of the parameter</param>
 		/// <param name="defaultvalue">Default value of the parameter</param>
-		public void AddOption(string name, string description, int type, object defaultvalue)
+		public void addOption(string name, string description, int type, object defaultvalue)
 		{
 			if (Array.FindIndex(ScriptOption.ValidTypes, t => (int)t == type) == -1)
 			{
@@ -84,7 +82,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <param name="description">Textual description of the parameter</param>
 		/// <param name="type">UniversalType value of the parameter</param>
 		/// <param name="defaultvalue">Default value of the parameter</param>
-		public void AddOption(string name, string description, int type, object defaultvalue, object enumvalues)
+		public void addOption(string name, string description, int type, object defaultvalue, object enumvalues)
 		{
 			if (Array.FindIndex(ScriptOption.ValidTypes, t => (int)t == type) == -1)
 			{
@@ -112,7 +110,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// <summary>
 		/// Removes all parameters
 		/// </summary>
-		public void Clear()
+		public void clear()
 		{
 			form.Clear();
 		}
@@ -121,15 +119,15 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// Queries all parameters
 		/// </summary>
 		/// <returns>True if OK was pressed, otherwise false</returns>
-		public bool Query()
+		public bool query()
 		{
 			// Stop the timer so that the time spent in the dialog is not added to the script runtime constraint
-			stopwatch.Stop();
+			BuilderPlug.Me.ScriptRunner.StopTimer();
 
 			DialogResult dr = form.ShowDialog();
 
 			// Start the timer again
-			stopwatch.Start();
+			BuilderPlug.Me.ScriptRunner.ResumeTimer();
 
 			return dr == DialogResult.OK;
 		}
