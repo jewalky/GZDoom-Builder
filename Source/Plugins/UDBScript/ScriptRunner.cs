@@ -32,6 +32,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using CodeImp.DoomBuilder.Geometry;
 using CodeImp.DoomBuilder.Map;
+using CodeImp.DoomBuilder.Windows;
 using CodeImp.DoomBuilder.UDBScript.Wrapper;
 using CodeImp.DoomBuilder.UDBScript.API;
 using Jint;
@@ -49,6 +50,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		private ScriptInfo scriptinfo;
 		Engine engine;
+		Stopwatch stopwatch;
 
 		#endregion
 
@@ -57,6 +59,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		public ScriptRunner(ScriptInfo scriptoption)
 		{
 			this.scriptinfo = scriptoption;
+			stopwatch = new Stopwatch();
 		}
 
 		#endregion
@@ -65,7 +68,26 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		public void ShowMessage(string s)
 		{
-			MessageBox.Show(s);
+			stopwatch.Stop();
+			MessageForm mf = new MessageForm("OK", null, s);
+			DialogResult result = mf.ShowDialog();
+			stopwatch.Start();
+
+			if (result == DialogResult.Abort)
+				throw new UserScriptAbortException();
+		}
+
+		public bool ShowMessageYesNo(string s)
+		{
+			stopwatch.Stop();
+			MessageForm mf = new MessageForm("Yes", "No", s);
+			DialogResult result = mf.ShowDialog();
+			stopwatch.Start();
+
+			if (result == DialogResult.Abort)
+				throw new UserScriptAbortException();
+
+			return result == DialogResult.OK ? true : false;
 		}
 
 		public JavaScriptException CreateRuntimeException(string message)
@@ -108,7 +130,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 						sef.ShowDialog();
 					}
 					else
-						General.Interface.DisplayStatus(Windows.StatusType.Warning, e.Message); // We get here if "throw" is used in a script
+						General.Interface.DisplayStatus(StatusType.Warning, e.Message); // We get here if "throw" is used in a script
 
 					return false;
 				}
@@ -122,7 +144,6 @@ namespace CodeImp.DoomBuilder.UDBScript
 		/// </summary>
 		public void Run()
 		{
-			Stopwatch stopwatch = new Stopwatch();
 			string importlibraryerrors;
 			bool abort = false;
 
@@ -143,11 +164,12 @@ namespace CodeImp.DoomBuilder.UDBScript
 				cfg.Constraint(new RuntimeConstraint(stopwatch));
 			});
 			engine.SetValue("log", new Action<object>(Console.WriteLine));
-			engine.SetValue("ShowMessage", new Action<string>(ShowMessage));
+			engine.SetValue("showMessage", new Action<string>(ShowMessage));
+			engine.SetValue("showMessageYesNo", new Func<string, bool>(ShowMessageYesNo));
 			engine.SetValue("QueryOptions", new QueryOptions(stopwatch));
 			engine.SetValue("ScriptOptions", scriptinfo.GetScriptOptionsObject());
 			engine.SetValue("Map", new MapWrapper());
-			//engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2D)));
+			engine.SetValue("GameConfiguration", new GameConfigurationWrapper());
 			engine.SetValue("Angle2D", TypeReference.CreateTypeReference(engine, typeof(Angle2DWrapper)));
 			engine.SetValue("Vector3D", TypeReference.CreateTypeReference(engine, typeof(Vector3DWrapper)));
 			engine.SetValue("Vector2D", TypeReference.CreateTypeReference(engine, typeof(Vector2DWrapper)));
@@ -177,7 +199,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 			}
 			catch (UserScriptAbortException)
 			{
-				General.Interface.DisplayStatus(Windows.StatusType.Warning, "Script aborted");
+				General.Interface.DisplayStatus(StatusType.Warning, "Script aborted");
 				abort = true;
 			}
 			catch (ParserException e)
@@ -194,7 +216,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 					sef.ShowDialog();
 				}
 				else
-					General.Interface.DisplayStatus(Windows.StatusType.Warning, e.Message); // We get here if "throw" is used in a script
+					General.Interface.DisplayStatus(StatusType.Warning, e.Message); // We get here if "throw" is used in a script
 
 				abort = true;
 			}

@@ -20,6 +20,8 @@ def determine_text_type(text):
     
 
 topics = {
+    'GameConfiguration': [ '../Wrapper/GameConfigurationWrapper.cs' ],
+    'Angle2D': [ '../Wrapper/Angle2DWrapper.cs' ],
     'Line2D': [ '../Wrapper/Line2DWrapper.cs' ],
     'Linedef': [ '../Wrapper/LinedefWrapper.cs', '../Wrapper/MapElementWrapper.cs' ],
     'Map': [ '../Wrapper/MapWrapper.cs' ],
@@ -32,7 +34,7 @@ topics = {
 
 for topic in topics:
     outfile = open(f'htmldoc/docs/{topic}.md', 'w')
-    outfile.write(f'# {topic}\n\n')    
+    outfile.write(f'# {topic}\n\n')
     texts = {
         'properties': '',
         'constructors': '',

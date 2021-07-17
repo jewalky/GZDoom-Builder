@@ -76,6 +76,7 @@
   <ItemGroup>
     <Compile Include="API\Angle2DWrapper.cs" />
     <Compile Include="API\DataWrapper.cs" />
+    <Compile Include="API\GameConfigurationWrapper.cs" />
     <Compile Include="API\ImageInfo.cs" />
     <Compile Include="API\Vector3DWrapper.cs" />
     <Compile Include="BuilderPlug.cs" />
@@ -103,6 +104,12 @@
     <Compile Include="ScriptOption.cs" />
     <Compile Include="ScriptRunner.cs" />
     <Compile Include="Exceptions.cs" />
+    <Compile Include="Windows\MessageForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Windows\MessageForm.Designer.cs">
+      <DependentUpon>MessageForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Windows\QueryOptionsForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -139,6 +146,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Actions.cfg" />
+    <EmbeddedResource Include="Windows\MessageForm.resx">
+      <DependentUpon>MessageForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Windows\QueryOptionsForm.resx">
       <DependentUpon>QueryOptionsForm.cs</DependentUpon>
     </EmbeddedResource>
