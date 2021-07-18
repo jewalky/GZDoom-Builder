@@ -32,9 +32,12 @@
 			this.btnRunScript = new System.Windows.Forms.Button();
 			this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
 			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
-			this.label1 = new System.Windows.Forms.Label();
 			this.filetree = new CodeImp.DoomBuilder.Controls.MultiSelectTreeview();
+			this.label1 = new System.Windows.Forms.Label();
 			this.label2 = new System.Windows.Forms.Label();
+			this.label3 = new System.Windows.Forms.Label();
+			this.label4 = new System.Windows.Forms.Label();
+			this.tbDescription = new System.Windows.Forms.TextBox();
 			this.scriptoptions = new CodeImp.DoomBuilder.UDBScript.ScriptOptionsControl();
 			this.tableLayoutPanel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -97,6 +100,9 @@
 			// 
 			// splitContainer1.Panel2
 			// 
+			this.splitContainer1.Panel2.Controls.Add(this.tbDescription);
+			this.splitContainer1.Panel2.Controls.Add(this.label3);
+			this.splitContainer1.Panel2.Controls.Add(this.label4);
 			this.splitContainer1.Panel2.Controls.Add(this.label1);
 			this.splitContainer1.Panel2.Controls.Add(this.label2);
 			this.splitContainer1.Panel2.Controls.Add(this.scriptoptions);
@@ -104,16 +110,6 @@
 			this.splitContainer1.Size = new System.Drawing.Size(312, 496);
 			this.splitContainer1.SplitterDistance = 239;
 			this.splitContainer1.TabIndex = 25;
-			// 
-			// label1
-			// 
-			this.label1.AutoSize = true;
-			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label1.Location = new System.Drawing.Point(3, 4);
-			this.label1.Name = "label1";
-			this.label1.Size = new System.Drawing.Size(71, 13);
-			this.label1.TabIndex = 27;
-			this.label1.Text = "Script options";
 			// 
 			// filetree
 			// 
@@ -129,24 +125,68 @@
 			this.filetree.TabIndex = 24;
 			this.filetree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.filetree_AfterSelect);
 			// 
+			// label1
+			// 
+			this.label1.AutoSize = true;
+			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label1.Location = new System.Drawing.Point(3, 123);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(71, 13);
+			this.label1.TabIndex = 27;
+			this.label1.Text = "Script options";
+			// 
 			// label2
 			// 
 			this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.label2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.label2.Location = new System.Drawing.Point(0, 11);
+			this.label2.Location = new System.Drawing.Point(0, 130);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(313, 2);
 			this.label2.TabIndex = 2;
+			// 
+			// label3
+			// 
+			this.label3.AutoSize = true;
+			this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label3.Location = new System.Drawing.Point(3, 3);
+			this.label3.Name = "label3";
+			this.label3.Size = new System.Drawing.Size(88, 13);
+			this.label3.TabIndex = 29;
+			this.label3.Text = "Script description";
+			// 
+			// label4
+			// 
+			this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.label4.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+			this.label4.Location = new System.Drawing.Point(0, 10);
+			this.label4.Name = "label4";
+			this.label4.Size = new System.Drawing.Size(313, 2);
+			this.label4.TabIndex = 28;
+			// 
+			// tbDescription
+			// 
+			this.tbDescription.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.tbDescription.BorderStyle = System.Windows.Forms.BorderStyle.None;
+			this.tbDescription.Location = new System.Drawing.Point(3, 19);
+			this.tbDescription.Margin = new System.Windows.Forms.Padding(0, 0, 3, 3);
+			this.tbDescription.Multiline = true;
+			this.tbDescription.Name = "tbDescription";
+			this.tbDescription.ReadOnly = true;
+			this.tbDescription.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+			this.tbDescription.Size = new System.Drawing.Size(306, 101);
+			this.tbDescription.TabIndex = 30;
 			// 
 			// scriptoptions
 			// 
 			this.scriptoptions.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.scriptoptions.Location = new System.Drawing.Point(0, 20);
+			this.scriptoptions.Location = new System.Drawing.Point(0, 140);
 			this.scriptoptions.Name = "scriptoptions";
-			this.scriptoptions.Size = new System.Drawing.Size(312, 230);
+			this.scriptoptions.Size = new System.Drawing.Size(312, 110);
 			this.scriptoptions.TabIndex = 26;
 			// 
 			// ScriptDockerControl
@@ -177,5 +217,8 @@
 		private ScriptOptionsControl scriptoptions;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.TextBox tbDescription;
+		private System.Windows.Forms.Label label3;
+		private System.Windows.Forms.Label label4;
 	}
 }

@@ -140,6 +140,8 @@ namespace CodeImp.DoomBuilder.UDBScript
 				}
 
 				scriptoptions.EndAddingOptions();
+
+				tbDescription.Text = ((ScriptInfo)e.Node.Tag).Description;
 			}
 			else
 			{

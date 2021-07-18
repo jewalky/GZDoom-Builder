@@ -182,6 +182,21 @@ namespace CodeImp.DoomBuilder.UDBScript.Wrapper
 		}
 
 		/// <summary>
+		/// Returns an `Array` of all `Vertex` in the map.
+		/// </summary>
+		/// <returns>`Array` of `Vertex`</returns>
+		public VertexWrapper[] getVertices()
+		{
+			List<VertexWrapper> vertices = new List<VertexWrapper>(General.Map.Map.Vertices.Count);
+
+			foreach (Vertex v in General.Map.Map.Vertices)
+				if (!v.IsDisposed)
+					vertices.Add(new VertexWrapper(v));
+
+			return vertices.ToArray();
+		}
+
+		/// <summary>
 		/// Stitches marked geometry with non-marked geometry.
 		/// </summary>
 		/// <param name="mergemode">Mode to merge by</param>

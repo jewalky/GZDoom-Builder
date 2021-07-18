@@ -1,5 +1,7 @@
 `#name Draw Voodoo Doll Closet`;
 
+`#description Draws a voodoo doll closet from the mouse cursor's position. Requires Boom actions. If linedefs are selected when the script is run, those linedefs will have actions assigned that unblock the voodoo doll (if applicable).`;
+
 `#scriptconfiguration
 
 length
@@ -69,7 +71,7 @@ let tags = Map.getMultipleNewTags(numnewtags);
 var p = new Pen();
 
 // Draw the closet
-p.setAngleDegrees(90 * ScriptOptions.direction);
+p.setAngle(90 * ScriptOptions.direction);
 p.moveTo(basepos); p.drawVertex();
 p.moveForward(ScriptOptions.length); p.drawVertex(); p.turnRight();
 p.moveForward(closetwidth); p.drawVertex(); p.turnRight();
@@ -85,7 +87,7 @@ sector.floorHeight = 0;
 sector.ceilingHeight = 56;
 
 // Draw the carrying line
-p.setAngleDegrees(90 * ScriptOptions.direction);
+p.setAngle(90 * ScriptOptions.direction);
 p.moveTo(basepos); p.drawVertex();
 p.moveForward(32); p.drawVertex();
 
@@ -104,7 +106,7 @@ newtagindex++;
 if(ScriptOptions.inactive)
 {
 	// Draw the blocking sector
-	p.setAngleDegrees(90 * ScriptOptions.direction);
+	p.setAngle(90 * ScriptOptions.direction);
 	p.moveTo(basepos);
 	p.moveForward(64); p.turnRight(); p.moveForward(16); p.drawVertex();
 	p.turnRight(); p.moveForward(8); p.drawVertex();
@@ -146,7 +148,7 @@ if(ScriptOptions.inactive)
 if(ScriptOptions.looping)
 {
 	// Create the teleport destination line
-	p.setAngleDegrees(90 * ScriptOptions.direction);
+	p.setAngle(90 * ScriptOptions.direction);
 	p.moveTo(basepos);
 	p.moveForward(32); p.turnRight(); p.moveForward(8); p.drawVertex();
 	p.moveForward(closetwidth - 16); p.drawVertex();
@@ -159,7 +161,7 @@ if(ScriptOptions.looping)
 	line.tag = tags[newtagindex];
 	
 	// Create the teleport line
-	p.setAngleDegrees(90 * ScriptOptions.direction);
+	p.setAngle(90 * ScriptOptions.direction);
 	p.moveTo(basepos);
 	p.moveForward(ScriptOptions.length - 32); p.turnRight(); p.moveForward(8); p.drawVertex();
 	p.moveForward(closetwidth - 16); p.drawVertex();
@@ -174,7 +176,7 @@ if(ScriptOptions.looping)
 }
 
 // Compute the new voodoo doll position
-let newpos = new Vector2D(32, 32).GetRotated(Angle2D.DoomToReal(-90 * ScriptOptions.direction - 90));
+let newpos = new Vector2D(32, 32).getRotated(Angle2D.doomToReal(-90 * ScriptOptions.direction - 90));
 newpos.x += basepos.x;
 newpos.y += basepos.y;
 

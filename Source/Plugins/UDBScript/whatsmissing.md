@@ -16,4 +16,4 @@
 ## Other
 - remove the `Wrapper` part from the wrapper class names?
 - some way to get information about the current editing mode (name, ...)
-- add a way to communicate with the user, like message boxes with "OK", "yes/no" etc.
+- radians vs degrees?

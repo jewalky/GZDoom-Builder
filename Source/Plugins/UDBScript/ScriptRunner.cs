@@ -245,6 +245,13 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 				abort = true;
 			}
+			catch(Exception e) // Catch anything else we didn't think about
+			{
+				UDBScriptErrorForm sef = new UDBScriptErrorForm(e.Message, e.StackTrace);
+				sef.ShowDialog();
+
+				abort = true;
+			}
 
 			if (abort)
 			{

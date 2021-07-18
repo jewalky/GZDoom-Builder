@@ -42,6 +42,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 		private uint version;
 		private string name;
+		private string description;
 		private string scriptfile;
 		private List<ScriptOption> options;
 
@@ -50,6 +51,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 		#region ================== Properties
 
 		public string Name { get { return name; } }
+		public string Description { get { return description; } }
 		public string ScriptFile { get { return scriptfile; } }
 		public List<ScriptOption> Options { get { return options; } }
 
@@ -65,6 +67,7 @@ namespace CodeImp.DoomBuilder.UDBScript
 
 			// Set default values
 			name = Path.GetFileNameWithoutExtension(file);
+			description = "No description.";
 			version = 1;
 			options = new List<ScriptOption>();
 
@@ -105,6 +108,9 @@ namespace CodeImp.DoomBuilder.UDBScript
 							break;
 						case "name":
 							name = Regex.Replace(payload, @"(\r\n?|\n)+", " ", RegexOptions.Singleline);
+							break;
+						case "description":
+							description = Regex.Replace(payload, @"(\r\n?|\n)+", " ", RegexOptions.Singleline);
 							break;
 						case "version":
 							if (!uint.TryParse(payload, out version))

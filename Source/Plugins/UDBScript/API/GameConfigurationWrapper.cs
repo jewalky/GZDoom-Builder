@@ -41,6 +41,17 @@ namespace CodeImp.DoomBuilder.UDBScript.API
 			}
 		}
 
+		/// <summary>
+		/// If the game configuration supports local sidedef texture offsets (distinct offsets for upper, middle, and lower sidedef parts).
+		/// </summary>
+		public bool hasLocalSidedefTextureOffsets
+		{
+			get
+			{
+				return General.Map.Config.UseLocalSidedefTextureOffsets;
+			}
+		}
+
 		#endregion
 	}
 }
